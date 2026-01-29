@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 3001",
+    "dev:r2": "next dev -p 3001",
     "build": "NODE_ENV=production node scripts/prebuild-clean.js && next build",
     "start": "next start -p 3001",
     "lint": "next lint",
