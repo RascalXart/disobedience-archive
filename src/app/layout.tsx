@@ -5,6 +5,11 @@ import { MuseumNavigation } from '@/components/MuseumNavigation'
 export const metadata: Metadata = {
   title: 'Rascal Art',
   description: 'Anonymous crypto-art portfolio and storefront',
+  icons: {
+    icon: '/disobedience-archive/favicon.ico',
+    shortcut: '/disobedience-archive/favicon.ico',
+    apple: '/disobedience-archive/apple-touch-icon.png',
+  },
 }
 
 export default function RootLayout({

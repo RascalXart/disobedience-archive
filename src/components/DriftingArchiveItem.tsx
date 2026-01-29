@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import type { DailyArtwork } from '@/types'
 
@@ -85,14 +84,16 @@ export function DriftingArchiveItem({ daily, index, size, onOpenModal }: Driftin
             preload="none"
           />
         ) : (
-          <Image
+          <img
             src={daily.imageUrl}
             alt={daily.id}
-            fill
-            className="object-cover"
-            sizes="(max-width: 768px) 100vw, 50vw"
-            unoptimized={daily.imageUrl.endsWith('.gif')}
+            className="w-full h-full object-cover"
             loading="lazy"
+            onError={(e) => {
+              console.error('Image failed to load:', daily.imageUrl, e)
+              const target = e.target as HTMLImageElement
+              target.style.display = 'none'
+            }}
           />
         )}
 

@@ -1,7 +1,6 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import type { DailyArtwork } from '@/types'
 
@@ -123,14 +122,16 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                   className="w-full h-full object-contain"
                 />
               ) : (
-                <Image
+                <img
                   key={currentDaily.id}
                   src={currentDaily.imageUrl}
                   alt={currentDaily.id}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  unoptimized={currentDaily.imageUrl.endsWith('.gif')}
+                  className="w-full h-full object-contain"
+                  onError={(e) => {
+                    console.error('Image failed to load:', currentDaily.imageUrl, e)
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                  }}
                 />
               )}
             </div>

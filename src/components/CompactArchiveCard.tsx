@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import { useState } from 'react'
 import type { DailyArtwork } from '@/types'
 
@@ -52,15 +51,17 @@ export function CompactArchiveCard({ daily, index, onClick }: CompactArchiveCard
               transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
               className="w-full h-full relative"
             >
-              <Image
+              <img
                 src={daily.imageUrl}
                 alt={daily.id}
-                fill
-                className="object-contain"
-                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-                unoptimized={daily.imageUrl.endsWith('.gif')}
+                className="w-full h-full object-contain"
                 loading="lazy"
                 decoding="async"
+                onError={(e) => {
+                  console.error('Image failed to load:', daily.imageUrl, e)
+                  const target = e.target as HTMLImageElement
+                  target.style.display = 'none'
+                }}
               />
             </motion.div>
           )}

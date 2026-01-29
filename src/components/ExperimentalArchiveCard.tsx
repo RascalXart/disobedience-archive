@@ -1,7 +1,6 @@
 'use client'
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import type { DailyArtwork } from '@/types'
 
@@ -180,17 +179,17 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
             } : {}}
             transition={{ duration: 0.6 }}
           >
-            <Image
+            <img
               src={daily.imageUrl}
               alt={daily.id}
-              fill
-              className="object-contain"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              unoptimized={daily.imageUrl.endsWith('.gif') || daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')}
+              className="w-full h-full object-contain"
               loading="lazy"
               decoding="async"
               onError={(e) => {
                 console.error('Image failed to load:', daily.imageUrl, e)
+                // Set a fallback or hide the broken image
+                const target = e.target as HTMLImageElement
+                target.style.display = 'none'
               }}
               onLoad={() => {
                 // Image loaded successfully

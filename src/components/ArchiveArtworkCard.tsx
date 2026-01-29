@@ -1,7 +1,6 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import Image from 'next/image'
 import { useState } from 'react'
 import type { DailyArtwork } from '@/types'
 import { DailyArtworkModal } from './DailyArtworkModal'
@@ -61,13 +60,15 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
                 playsInline
               />
             ) : (
-              <Image
+              <img
                 src={daily.imageUrl}
                 alt={daily.id}
-                fill
-                className="object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                sizes="(max-width: 768px) 100vw, 60vw"
-                unoptimized={daily.imageUrl.endsWith('.gif')}
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                onError={(e) => {
+                  console.error('Image failed to load:', daily.imageUrl, e)
+                  const target = e.target as HTMLImageElement
+                  target.style.display = 'none'
+                }}
               />
             )}
             <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
