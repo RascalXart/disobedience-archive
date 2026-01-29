@@ -1,6 +1,15 @@
 const fs = require('fs');
 const path = require('path');
 
+// Only run cleanup in production builds (for Cloudflare Pages deployment)
+// In development, keep the files for local testing
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (!isProduction) {
+  console.log('ℹ️  Pre-build cleanup: Skipping in development mode (keeping local dailies files)');
+  process.exit(0);
+}
+
 const PUBLIC_DAILIES = path.join(__dirname, '..', 'public', 'dailies');
 
 console.log('🧹 Pre-build cleanup: Removing dailies media files...');
