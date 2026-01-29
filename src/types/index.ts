@@ -32,5 +32,5 @@ export interface Drop {
   imageUrl: string;
 }
 
-export type FilterStatus = "all" | "available" | "sold";
+export type FilterStatus = "all" | "available" | "sold" | "not_listed";
 
