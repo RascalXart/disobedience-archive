@@ -4,11 +4,10 @@ import dropsData from '@/data/drops.json';
 import type { Artwork, DailyArtwork, Drop } from '@/types';
 
 // BasePath from next.config.mjs - needed for static assets
-// Use NEXT_PUBLIC_BASE_PATH if set, otherwise default to '/disobedience-archive'
-// Note: This must match the basePath in next.config.mjs
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH !== undefined
-  ? process.env.NEXT_PUBLIC_BASE_PATH
-  : '/disobedience-archive';
+// This should match the basePath in next.config.mjs
+// For Cloudflare Pages (root deployment), set NEXT_PUBLIC_BASE_PATH="" in build env
+// For local dev and GitHub Pages, default to '/disobedience-archive'
+const BASE_PATH = '/disobedience-archive';
 
 /**
  * Resolves daily media URLs to external hosting.
