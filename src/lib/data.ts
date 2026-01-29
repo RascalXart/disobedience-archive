@@ -7,25 +7,45 @@ import type { Artwork, DailyArtwork, Drop } from '@/types';
 const BASE_PATH = '/disobedience-archive';
 
 /**
- * Resolves daily media URLs to external hosting if configured
- * If NEXT_PUBLIC_MEDIA_BASE_URL is set and url contains /dailies/,
- * returns ${BASE_URL}/${filename} (no double slashes)
- * Otherwise returns the original url unchanged
+ * Resolves daily media URLs to external hosting.
+ * In production builds, NEXT_PUBLIC_MEDIA_BASE_URL is required.
+ * No fallback to local /public/dailies paths.
  */
 export function resolveDailyMediaUrl(url: string): string {
   const mediaBaseUrl = process.env.NEXT_PUBLIC_MEDIA_BASE_URL;
+  const isProduction = process.env.NODE_ENV === 'production';
   
-  if (mediaBaseUrl) {
-    // Check if URL contains /dailies/ (handles both /dailies/ and /disobedience-archive/dailies/)
-    const dailiesMatch = url.match(/\/dailies\/([^/]+)$/);
-    if (dailiesMatch) {
-      const filename = dailiesMatch[1];
+  // Check if URL contains /dailies/ (handles both /dailies/ and /disobedience-archive/dailies/)
+  const dailiesMatch = url.match(/\/dailies\/([^/]+)$/);
+  if (dailiesMatch) {
+    const filename = dailiesMatch[1];
+    
+    // In production, NEXT_PUBLIC_MEDIA_BASE_URL is required
+    if (isProduction) {
+      if (!mediaBaseUrl) {
+        console.error(
+          'NEXT_PUBLIC_MEDIA_BASE_URL is required in production builds. ' +
+          'Please set this environment variable to your R2/CDN URL.'
+        );
+        // Return a placeholder URL to prevent build failure, but log the error
+        return `#MISSING_MEDIA_BASE_URL/${filename}`;
+      }
       // Remove trailing slash from base URL if present, then add filename
       const baseUrl = mediaBaseUrl.replace(/\/$/, '');
       return `${baseUrl}/${filename}`;
     }
+    
+    // In development, use external URL if available, otherwise fall back to local
+    if (mediaBaseUrl) {
+      const baseUrl = mediaBaseUrl.replace(/\/$/, '');
+      return `${baseUrl}/${filename}`;
+    }
+    
+    // Development fallback: return normalized local path
+    return normalizeImageUrl(url);
   }
   
+  // Not a dailies URL, return as-is
   return url;
 }
 
@@ -64,7 +84,7 @@ export function getAllDailies(): DailyArtwork[] {
   
   cachedDailies = (dailiesData as DailyArtwork[]).map(daily => ({
     ...daily,
-    imageUrl: normalizeImageUrl(daily.imageUrl)
+    imageUrl: resolveDailyMediaUrl(daily.imageUrl)
   })).sort((a, b) => 
     a.savedDate.localeCompare(b.savedDate)
   );
@@ -77,7 +97,7 @@ export function getDailyById(id: string): DailyArtwork | undefined {
   if (daily) {
     return {
       ...daily,
-      imageUrl: normalizeImageUrl(daily.imageUrl)
+      imageUrl: resolveDailyMediaUrl(daily.imageUrl)
     };
   }
   return undefined;
