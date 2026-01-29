@@ -105,7 +105,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.98 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.4 }}
-          className="relative w-full max-w-6xl max-h-[90vh] overflow-auto bg-[#0a0a0a] border border-[#222]"
+          className={`relative w-full max-w-6xl max-h-[90vh] overflow-auto bg-[#0a0a0a] border border-[#222] ${prefersReducedMotion ? '' : 'modal-jitter'}`}
           onClick={(e) => e.stopPropagation()}
         >
           <div className="grid md:grid-cols-2 gap-8 p-6 md:p-8">
@@ -138,18 +138,18 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
 
             {/* Metadata */}
             <div className="flex flex-col">
-              <div className="mono text-[10px] text-[#666] mb-3 tracking-wider">
+              <div className="mono text-[10px] text-[#666] mb-3 tracking-wider terminal-reveal text-hover-glitch">
                 [ARTWORK_INFO]
               </div>
               
-              <h2 className="font-grotesk text-2xl md:text-3xl font-light mb-6 tracking-tighter">
+              <h2 className="font-grotesk text-2xl md:text-3xl font-light mb-6 tracking-tighter terminal-reveal text-hover-glitch">
                 {currentDaily.id.replace(/_/g, ' ').toUpperCase()}
               </h2>
               
               <div className="space-y-4 mb-8 mono text-xs">
-                <div className="flex items-start gap-4 border-b border-[#222] pb-4">
-                  <span className="text-[#666] min-w-[60px]">DATE:</span>
-                  <span className="text-[#999]">
+                <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
+                  <span className="text-[#666] min-w-[60px] text-hover-glitch">DATE:</span>
+                  <span className="text-[#999] terminal-reveal">
                     {new Date(currentDaily.savedDate).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -158,22 +158,22 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                   </span>
                 </div>
 
-                <div className="flex items-start gap-4 border-b border-[#222] pb-4">
-                  <span className="text-[#666] min-w-[60px]">STATUS:</span>
-                  <span className="text-[#999] flex items-center gap-2">
+                <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
+                  <span className="text-[#666] min-w-[60px] text-hover-glitch">STATUS:</span>
+                  <span className="text-[#999] flex items-center gap-2 terminal-reveal">
                     <span className={`w-2 h-2 block ${currentDaily.status === 'available' ? 'bg-[#4a4]' : 'bg-[#666]'}`} />
                     {currentDaily.status.toUpperCase().replace('_', ' ')}
                   </span>
                 </div>
 
                 {currentDaily.tags.length > 0 && (
-                  <div className="flex items-start gap-4 border-b border-[#222] pb-4">
-                    <span className="text-[#666] min-w-[60px]">TAGS:</span>
+                  <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
+                    <span className="text-[#666] min-w-[60px] text-hover-glitch">TAGS:</span>
                     <div className="flex flex-wrap gap-2">
                       {currentDaily.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-1 text-[#666] border border-[#222]"
+                          className="px-2 py-1 text-[#666] border border-[#222] terminal-reveal text-hover-glitch"
                         >
                           {tag.toUpperCase()}
                         </span>

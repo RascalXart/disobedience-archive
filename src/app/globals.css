@@ -28,17 +28,20 @@ body::before {
   width: 100%;
   height: 100%;
   pointer-events: none;
-  opacity: 0.06;
+  opacity: 0.08;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   z-index: 9999;
   animation: grainShift 8s steps(10) infinite;
+  mix-blend-mode: overlay;
+  will-change: transform, opacity;
+  transform: translateZ(0);
 }
 
 @keyframes grainShift {
-  0%, 100% { transform: translate(0, 0); }
-  25% { transform: translate(-2px, 2px); }
-  50% { transform: translate(2px, -2px); }
-  75% { transform: translate(-2px, -2px); }
+  0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.08; }
+  25% { transform: translate(-3px, 3px) scale(1.01); opacity: 0.1; }
+  50% { transform: translate(3px, -3px) scale(0.99); opacity: 0.06; }
+  75% { transform: translate(-2px, -2px) scale(1.005); opacity: 0.09; }
 }
 
 /* Monospace for terminal/placard elements */
@@ -153,6 +156,8 @@ body::before {
   z-index: 10000;
   animation: scanline 6s linear infinite;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Multiple scanlines for depth */
@@ -385,6 +390,170 @@ body::before {
   animation: rgbSplit 3s ease-in-out infinite;
 }
 
+/* VHS-style overlay at very low opacity */
+.vhs-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10001;
+  opacity: 0.03;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 255, 0, 0.03) 2px,
+    rgba(0, 255, 0, 0.03) 4px
+  );
+  mix-blend-mode: screen;
+  animation: vhsFlicker 12s ease-in-out infinite;
+  will-change: opacity;
+  transform: translateZ(0);
+}
+
+@keyframes vhsFlicker {
+  0%, 100% { opacity: 0.03; }
+  25% { opacity: 0.05; }
+  50% { opacity: 0.02; }
+  75% { opacity: 0.04; }
+}
+
+/* Terminal/glitch text reveal effect */
+@keyframes terminalReveal {
+  0% {
+    opacity: 0;
+    filter: blur(2px);
+    transform: translateY(5px);
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  }
+  50% {
+    opacity: 0.7;
+    filter: blur(1px);
+    transform: translateY(2px);
+    text-shadow: 
+      -1px 0 0 rgba(255, 0, 0, 0.3),
+      1px 0 0 rgba(0, 255, 0, 0.3);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0);
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.2);
+  }
+}
+
+.terminal-reveal {
+  animation: terminalReveal 0.6s ease-out forwards;
+  will-change: opacity, transform, filter;
+  transform: translateZ(0);
+}
+
+/* Enhanced hover glitch for artwork */
+.artwork-hover-glitch {
+  transition: transform 0.3s ease;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.artwork-hover-glitch:hover {
+  animation: hoverGlitch 0.4s ease-in-out;
+  filter: 
+    drop-shadow(-1px 0 0 rgba(255, 0, 0, 0.3))
+    drop-shadow(1px 0 0 rgba(0, 255, 0, 0.3))
+    drop-shadow(0 0 5px rgba(0, 0, 255, 0.2));
+  will-change: transform, filter;
+}
+
+@keyframes hoverGlitch {
+  0%, 100% {
+    transform: translate(0, 0);
+    filter: 
+      drop-shadow(-1px 0 0 rgba(255, 0, 0, 0.3))
+      drop-shadow(1px 0 0 rgba(0, 255, 0, 0.3));
+  }
+  25% {
+    transform: translate(-1px, 1px);
+    filter: 
+      drop-shadow(-2px 0 0 rgba(255, 0, 0, 0.4))
+      drop-shadow(2px 0 0 rgba(0, 255, 0, 0.4));
+  }
+  50% {
+    transform: translate(1px, -1px);
+    filter: 
+      drop-shadow(-1px 0 0 rgba(255, 0, 0, 0.3))
+      drop-shadow(1px 0 0 rgba(0, 255, 0, 0.3));
+  }
+  75% {
+    transform: translate(-0.5px, 0.5px);
+    filter: 
+      drop-shadow(-1.5px 0 0 rgba(255, 0, 0, 0.35))
+      drop-shadow(1.5px 0 0 rgba(0, 255, 0, 0.35));
+  }
+}
+
+/* Modal jitter/distortion on open */
+@keyframes modalJitter {
+  0% {
+    transform: translate(0, 0) scale(0.98) rotate(0deg);
+    filter: blur(1px) brightness(0.9);
+  }
+  10% {
+    transform: translate(-2px, 1px) scale(0.99) rotate(0.2deg);
+    filter: blur(0.5px) brightness(1);
+  }
+  20% {
+    transform: translate(2px, -1px) scale(0.985) rotate(-0.2deg);
+    filter: blur(0.8px) brightness(0.95);
+  }
+  30% {
+    transform: translate(-1px, 2px) scale(0.99) rotate(0.1deg);
+    filter: blur(0.3px) brightness(1);
+  }
+  40% {
+    transform: translate(1px, -2px) scale(0.987) rotate(-0.1deg);
+    filter: blur(0.6px) brightness(0.98);
+  }
+  50%, 100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    filter: blur(0px) brightness(1);
+  }
+}
+
+.modal-jitter {
+  animation: modalJitter 0.8s ease-out;
+  will-change: transform, filter;
+  transform: translateZ(0);
+}
+
+/* Text glitch on hover */
+.text-hover-glitch:hover {
+  animation: textGlitch 0.3s ease-in-out;
+  text-shadow: 
+    -1px 0 0 rgba(255, 0, 0, 0.4),
+    1px 0 0 rgba(0, 255, 0, 0.4),
+    0 0 8px rgba(0, 0, 255, 0.3);
+}
+
+@keyframes textGlitch {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(-1px, 1px);
+  }
+  40% {
+    transform: translate(1px, -1px);
+  }
+  60% {
+    transform: translate(-0.5px, 0.5px);
+  }
+  80% {
+    transform: translate(0.5px, -0.5px);
+  }
+}
+
 /* Respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -393,6 +562,14 @@ body::before {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  
+  .vhs-overlay {
+    display: none;
+  }
+  
+  .scanline {
+    display: none;
   }
 }
 

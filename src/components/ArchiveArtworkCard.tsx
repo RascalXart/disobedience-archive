@@ -80,7 +80,7 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
               transition={{ duration: 0.3 }}
               className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0a0a0a]/95 to-transparent"
             >
-              <div className="mono text-xs text-[#666]">
+              <div className="mono text-xs text-[#666] terminal-reveal text-hover-glitch">
                 {new Date(daily.savedDate).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -92,7 +92,7 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
 
           {/* ID label */}
           <div className="mt-3">
-            <div className="mono text-xs text-[#666] group-hover:text-[#888] transition-colors">
+            <div className="mono text-xs text-[#666] group-hover:text-[#888] transition-colors text-hover-glitch">
               {daily.id.replace(/_/g, ' ').toUpperCase()}
             </div>
           </div>

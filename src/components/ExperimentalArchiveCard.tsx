@@ -1,6 +1,7 @@
 'use client'
 
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
+import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import type { DailyArtwork } from '@/types'
 
@@ -143,7 +144,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
 
       {/* Main container with distortion */}
       <motion.div
-        className={`relative ${size.h} overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#444] transition-all duration-500 ${glitchActive ? 'data-corrupt' : ''}`}
+        className={`relative ${size.h} overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#444] transition-all duration-500 artwork-hover-glitch ${glitchActive ? 'data-corrupt' : ''}`}
         animate={isHovered ? {
           scale: 1.02,
           filter: 'brightness(1.15) contrast(1.1) saturate(1.2)',
@@ -179,17 +180,17 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
             } : {}}
             transition={{ duration: 0.6 }}
           >
-            <img
+            <Image
               src={daily.imageUrl}
               alt={daily.id}
-              className="w-full h-full object-contain"
+              fill
+              className="object-contain"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              unoptimized={daily.imageUrl.endsWith('.gif') || daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')}
               loading="lazy"
               decoding="async"
               onError={(e) => {
                 console.error('Image failed to load:', daily.imageUrl, e)
-                // Set a fallback or hide the broken image
-                const target = e.target as HTMLImageElement
-                target.style.display = 'none'
               }}
               onLoad={() => {
                 // Image loaded successfully
@@ -264,21 +265,21 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
               </div>
             </motion.div>
             <motion.div
-              className="mono text-[9px] text-[#999] leading-tight relative corrupt-text"
+              className="mono text-[9px] text-[#999] leading-tight relative corrupt-text terminal-reveal"
               animate={glitchActive ? {
                 x: [-1, 1, -0.5, 0.5, 0],
                 opacity: [1, 0.7, 1, 0.8, 1],
               } : {}}
               transition={{ duration: 0.2 }}
             >
-              <div className="mb-1 flicker rgb-split">
+              <div className="mb-1 flicker rgb-split text-hover-glitch">
                 {new Date(daily.savedDate).toLocaleDateString('en-US', {
                   month: 'short',
                   day: 'numeric',
                   year: 'numeric',
                 }).toUpperCase()}
               </div>
-              <div className="text-[#666] text-[8px]">
+              <div className="text-[#666] text-[8px] text-hover-glitch">
                 {daily.id.replace(/_/g, ' ').toUpperCase()}
               </div>
             </motion.div>

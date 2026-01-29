@@ -60,6 +60,8 @@ export default function HomePage() {
 
   return (
     <main className="min-h-screen pt-24 relative overflow-hidden">
+      {/* VHS-style overlay */}
+      <div className="vhs-overlay" />
       {/* Always-on scrolling scanline */}
       <div className="scanline" />
 
@@ -135,20 +137,23 @@ export default function HomePage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.4, duration: 1 }}
-            className="mono text-xs text-[#888] mb-8 tracking-wider flicker relative"
+            className="mono text-xs text-[#888] mb-8 tracking-wider flicker relative text-hover-glitch"
           >
             {/* Text reflection layers */}
             <span className="absolute left-0 top-0 text-[#888]/10 blur-[2px] translate-y-[3px] scale-y-[-1] select-none pointer-events-none">
               DAILY WORKS ARCHIVE<br />
-              {allDailies.length} PIECES COLLECTED | {Object.keys(groupedByMonth).length} MONTHS
+              CURRENT PRICE: 0.1Ξ PER DAILY<br />
+              <span className="text-[9px]">(PRICE GOES UP 10% PER PURCHASE OF DAILY)</span>
             </span>
             <span className="absolute left-0 top-0 text-green-500/15 blur-[1px] translate-x-[1px] select-none pointer-events-none">
               DAILY WORKS ARCHIVE<br />
-              {allDailies.length} PIECES COLLECTED | {Object.keys(groupedByMonth).length} MONTHS
+              CURRENT PRICE: 0.1Ξ PER DAILY<br />
+              <span className="text-[9px]">(PRICE GOES UP 10% PER PURCHASE OF DAILY)</span>
             </span>
             <span className="relative">
               DAILY WORKS ARCHIVE<br />
-              {allDailies.length} PIECES COLLECTED | {Object.keys(groupedByMonth).length} MONTHS
+              CURRENT PRICE: 0.1Ξ PER DAILY<br />
+              <span className="text-[9px]">(PRICE GOES UP 10% PER PURCHASE OF DAILY)</span>
             </span>
           </motion.p>
           
@@ -191,12 +196,12 @@ export default function HomePage() {
             <span className="absolute left-0 top-0 text-green-500/10 blur-[0.5px] translate-x-[1px] select-none pointer-events-none py-3">
               [ARCHIVE_VIEW] | {allDailies.length} ENTRIES | {isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
             </span>
-            <span className="flicker relative">
+            <span className="flicker relative text-hover-glitch">
               [ARCHIVE_VIEW] | {allDailies.length} ENTRIES | {isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
             </span>
             <button
               onClick={() => setIsReversed(!isReversed)}
-              className="mono text-[9px] px-3 py-1 border border-[#333] hover:border-[#555] text-[#888] hover:text-white transition-all duration-300 hover:glitch"
+              className="mono text-[9px] px-3 py-1 border border-[#333] hover:border-[#555] text-[#888] hover:text-white transition-all duration-300 hover:glitch text-hover-glitch"
             >
               [{isReversed ? '↑' : '↓'} REVERSE]
             </button>
