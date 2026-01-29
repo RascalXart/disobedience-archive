@@ -1,0 +1,63 @@
+[
+  {
+    "id": "daily-001",
+    "title": "Rascal Daily #001",
+    "date": "2024-01-01",
+    "imageUrl": "https://via.placeholder.com/800x800/000000/FFFFFF?text=Rascal+Daily+001",
+    "minted": true,
+    "tokenId": "1",
+    "transientLabsUrl": "https://transientlabs.xyz/token/1",
+    "priceStrategyKey": "ladder_6_9",
+    "status": "sold",
+    "tags": ["abstract", "geometric"]
+  },
+  {
+    "id": "daily-002",
+    "title": "Rascal Daily #002",
+    "date": "2024-01-02",
+    "imageUrl": "https://via.placeholder.com/800x800/1a1a1a/FFFFFF?text=Rascal+Daily+002",
+    "minted": true,
+    "tokenId": "2",
+    "transientLabsUrl": "https://transientlabs.xyz/token/2",
+    "priceStrategyKey": "ladder_6_9",
+    "status": "available",
+    "tags": ["minimalist", "dark"]
+  },
+  {
+    "id": "daily-003",
+    "title": "Rascal Daily #003",
+    "date": "2024-01-03",
+    "imageUrl": "https://via.placeholder.com/800x800/2a2a2a/FFFFFF?text=Rascal+Daily+003",
+    "minted": false,
+    "tokenId": null,
+    "transientLabsUrl": null,
+    "priceStrategyKey": null,
+    "status": "not_listed",
+    "tags": ["experimental"]
+  },
+  {
+    "id": "daily-004",
+    "title": "Rascal Daily #004",
+    "date": "2024-01-04",
+    "imageUrl": "https://via.placeholder.com/800x800/3a3a3a/FFFFFF?text=Rascal+Daily+004",
+    "minted": true,
+    "tokenId": "4",
+    "transientLabsUrl": "https://transientlabs.xyz/token/4",
+    "priceStrategyKey": "ladder_6_9",
+    "status": "available",
+    "tags": ["abstract", "colorful"]
+  },
+  {
+    "id": "daily-005",
+    "title": "Rascal Daily #005",
+    "date": "2024-01-05",
+    "imageUrl": "https://via.placeholder.com/800x800/4a4a4a/FFFFFF?text=Rascal+Daily+005",
+    "minted": true,
+    "tokenId": "5",
+    "transientLabsUrl": "https://transientlabs.xyz/token/5",
+    "priceStrategyKey": "ladder_6_9",
+    "status": "sold",
+    "tags": ["geometric", "minimalist"]
+  }
+]
+
