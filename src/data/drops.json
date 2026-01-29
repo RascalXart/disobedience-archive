@@ -1,0 +1,23 @@
+[
+  {
+    "id": "exhibition-001",
+    "title": "Genesis Collection",
+    "description": "The inaugural collection of Rascal Dailies",
+    "startDate": "2024-01-01",
+    "endDate": "2024-03-31",
+    "active": true,
+    "artworkIds": ["daily-001", "daily-002", "daily-003", "daily-004", "daily-005"],
+    "imageUrl": "https://via.placeholder.com/1200x600/000000/FFFFFF?text=Genesis+Collection"
+  },
+  {
+    "id": "exhibition-002",
+    "title": "Summer Vibes",
+    "description": "A curated selection of vibrant summer pieces",
+    "startDate": "2024-06-01",
+    "endDate": "2024-08-31",
+    "active": false,
+    "artworkIds": [],
+    "imageUrl": "https://via.placeholder.com/1200x600/1a1a1a/FFFFFF?text=Summer+Vibes"
+  }
+]
+
