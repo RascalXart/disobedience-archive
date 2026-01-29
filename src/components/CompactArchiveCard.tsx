@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { useState } from 'react'
 import type { DailyArtwork } from '@/types'
+import { resolveDailyMediaUrl } from '@/lib/data'
 
 interface CompactArchiveCardProps {
   daily: DailyArtwork
@@ -31,7 +32,7 @@ export function CompactArchiveCard({ daily, index, onClick }: CompactArchiveCard
         <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-all duration-500">
           {daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov') ? (
             <motion.video
-              src={daily.imageUrl}
+              src={resolveDailyMediaUrl(daily.imageUrl)}
               className="w-full h-full object-contain"
               muted
               loop
@@ -52,13 +53,13 @@ export function CompactArchiveCard({ daily, index, onClick }: CompactArchiveCard
               className="w-full h-full relative"
             >
               <img
-                src={daily.imageUrl}
+                src={resolveDailyMediaUrl(daily.imageUrl)}
                 alt={daily.id}
                 className="w-full h-full object-contain"
                 loading="lazy"
                 decoding="async"
                 onError={(e) => {
-                  console.error('Image failed to load:', daily.imageUrl, e)
+                  console.error('Image failed to load:', resolveDailyMediaUrl(daily.imageUrl), e)
                   const target = e.target as HTMLImageElement
                   target.style.display = 'none'
                 }}

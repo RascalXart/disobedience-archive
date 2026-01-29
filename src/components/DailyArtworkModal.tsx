@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import type { DailyArtwork } from '@/types'
+import { resolveDailyMediaUrl } from '@/lib/data'
 
 interface DailyArtworkModalProps {
   daily: DailyArtwork
@@ -114,7 +115,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
               {isVideo ? (
                 <video
                   key={currentDaily.id}
-                  src={currentDaily.imageUrl}
+                  src={resolveDailyMediaUrl(currentDaily.imageUrl)}
                   autoPlay
                   loop
                   muted
@@ -124,11 +125,11 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
               ) : (
                 <img
                   key={currentDaily.id}
-                  src={currentDaily.imageUrl}
+                  src={resolveDailyMediaUrl(currentDaily.imageUrl)}
                   alt={currentDaily.id}
                   className="w-full h-full object-contain"
                   onError={(e) => {
-                    console.error('Image failed to load:', currentDaily.imageUrl, e)
+                    console.error('Image failed to load:', resolveDailyMediaUrl(currentDaily.imageUrl), e)
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
                   }}

@@ -7,6 +7,29 @@ import type { Artwork, DailyArtwork, Drop } from '@/types';
 const BASE_PATH = '/disobedience-archive';
 
 /**
+ * Resolves daily media URLs to external hosting if configured
+ * If NEXT_PUBLIC_MEDIA_BASE_URL is set and url contains /dailies/,
+ * returns ${BASE_URL}/${filename} (no double slashes)
+ * Otherwise returns the original url unchanged
+ */
+export function resolveDailyMediaUrl(url: string): string {
+  const mediaBaseUrl = process.env.NEXT_PUBLIC_MEDIA_BASE_URL;
+  
+  if (mediaBaseUrl) {
+    // Check if URL contains /dailies/ (handles both /dailies/ and /disobedience-archive/dailies/)
+    const dailiesMatch = url.match(/\/dailies\/([^/]+)$/);
+    if (dailiesMatch) {
+      const filename = dailiesMatch[1];
+      // Remove trailing slash from base URL if present, then add filename
+      const baseUrl = mediaBaseUrl.replace(/\/$/, '');
+      return `${baseUrl}/${filename}`;
+    }
+  }
+  
+  return url;
+}
+
+/**
  * Normalizes image URLs to include the basePath prefix
  * This is necessary because Next.js basePath affects static asset paths
  */

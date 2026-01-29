@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import type { DailyArtwork } from '@/types'
+import { resolveDailyMediaUrl } from '@/lib/data'
 
 interface DriftingArchiveItemProps {
   daily: DailyArtwork
@@ -54,6 +55,7 @@ export function DriftingArchiveItem({ daily, index, size, onOpenModal }: Driftin
   const offset = offsetVariants[index % offsetVariants.length]
 
   const isVideo = daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')
+  const mediaUrl = resolveDailyMediaUrl(daily.imageUrl)
 
   return (
     <motion.div
@@ -76,7 +78,7 @@ export function DriftingArchiveItem({ daily, index, size, onOpenModal }: Driftin
       <div className={`relative overflow-hidden bg-[#111] ${sizeHeights[size]}`}>
         {isVideo ? (
           <video
-            src={daily.imageUrl}
+            src={mediaUrl}
             className="w-full h-full object-cover"
             muted
             loop
@@ -85,12 +87,12 @@ export function DriftingArchiveItem({ daily, index, size, onOpenModal }: Driftin
           />
         ) : (
           <img
-            src={daily.imageUrl}
+            src={mediaUrl}
             alt={daily.id}
             className="w-full h-full object-cover"
             loading="lazy"
             onError={(e) => {
-              console.error('Image failed to load:', daily.imageUrl, e)
+              console.error('Image failed to load:', mediaUrl, e)
               const target = e.target as HTMLImageElement
               target.style.display = 'none'
             }}

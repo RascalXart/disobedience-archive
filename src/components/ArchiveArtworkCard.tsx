@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import type { DailyArtwork } from '@/types'
 import { DailyArtworkModal } from './DailyArtworkModal'
-import { getAllDailies } from '@/lib/data'
+import { getAllDailies, resolveDailyMediaUrl } from '@/lib/data'
 
 interface ArchiveArtworkCardProps {
   daily: DailyArtwork
@@ -53,7 +53,7 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
           <div className="relative overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors aspect-square">
             {daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov') ? (
               <video
-                src={daily.imageUrl}
+                src={resolveDailyMediaUrl(daily.imageUrl)}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                 muted
                 loop
@@ -61,11 +61,11 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
               />
             ) : (
               <img
-                src={daily.imageUrl}
+                src={resolveDailyMediaUrl(daily.imageUrl)}
                 alt={daily.id}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                 onError={(e) => {
-                  console.error('Image failed to load:', daily.imageUrl, e)
+                  console.error('Image failed to load:', resolveDailyMediaUrl(daily.imageUrl), e)
                   const target = e.target as HTMLImageElement
                   target.style.display = 'none'
                 }}

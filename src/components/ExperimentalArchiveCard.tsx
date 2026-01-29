@@ -4,6 +4,7 @@ import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import Image from 'next/image'
 import { useState, useEffect, useRef } from 'react'
 import type { DailyArtwork } from '@/types'
+import { resolveDailyMediaUrl } from '@/lib/data'
 
 interface ExperimentalArchiveCardProps {
   daily: DailyArtwork
@@ -89,6 +90,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
   }, [isHovered, x, y])
 
   const isVideo = daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')
+  const mediaUrl = resolveDailyMediaUrl(daily.imageUrl)
   
   // Consistent sizing - no weird cropping
   const size = { w: 'w-full', h: 'aspect-square' }
@@ -155,7 +157,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
       >
         {isVideo ? (
           <motion.video
-            src={daily.imageUrl}
+            src={mediaUrl}
             className="w-full h-full object-contain"
             autoPlay
             muted
@@ -163,7 +165,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
             playsInline
             preload="auto"
             onError={(e) => {
-              console.error('Video failed to load:', daily.imageUrl, e)
+              console.error('Video failed to load:', mediaUrl, e)
             }}
             animate={isHovered ? {
               scale: 1.02,
@@ -181,7 +183,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
             transition={{ duration: 0.6 }}
           >
             <Image
-              src={daily.imageUrl}
+              src={mediaUrl}
               alt={daily.id}
               fill
               className="object-contain"
@@ -190,7 +192,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
               loading="lazy"
               decoding="async"
               onError={(e) => {
-                console.error('Image failed to load:', daily.imageUrl, e)
+                console.error('Image failed to load:', mediaUrl, e)
               }}
               onLoad={() => {
                 // Image loaded successfully
