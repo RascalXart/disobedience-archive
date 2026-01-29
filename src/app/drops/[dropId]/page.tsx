@@ -1,8 +1,16 @@
 import { notFound } from 'next/navigation'
-import { getDropById } from '@/lib/data'
+import { getDropById, getAllDrops } from '@/lib/data'
 import { getAllArtworks } from '@/lib/data'
 import { ArtworkCard } from '@/components/ArtworkCard'
 import Image from 'next/image'
+
+// Required for static export with dynamic routes
+export function generateStaticParams() {
+  const drops = getAllDrops()
+  return drops.map((drop) => ({
+    dropId: drop.id,
+  }))
+}
 
 interface DropPageProps {
   params: Promise<{ dropId: string }>

@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useState } from 'react'
 import type { DailyArtwork } from '@/types'
 import { DailyArtworkModal } from './DailyArtworkModal'
+import { getAllDailies } from '@/lib/data'
 
 interface ArchiveArtworkCardProps {
   daily: DailyArtwork
@@ -14,6 +15,7 @@ interface ArchiveArtworkCardProps {
 export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
+  const allDailies = getAllDailies()
 
   // Standardized size - consistent width
   const sizeClass = 'w-full'
@@ -97,7 +99,7 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
       </motion.div>
 
       {isModalOpen && (
-        <DailyArtworkModal daily={daily} onClose={() => setIsModalOpen(false)} />
+        <DailyArtworkModal daily={daily} allDailies={allDailies} onClose={() => setIsModalOpen(false)} />
       )}
     </>
   )
