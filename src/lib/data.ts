@@ -4,7 +4,11 @@ import dropsData from '@/data/drops.json';
 import type { Artwork, DailyArtwork, Drop } from '@/types';
 
 // BasePath from next.config.mjs - needed for static assets
-const BASE_PATH = '/disobedience-archive';
+// Use NEXT_PUBLIC_BASE_PATH if set, otherwise default to '/disobedience-archive'
+// Note: This must match the basePath in next.config.mjs
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH !== undefined
+  ? process.env.NEXT_PUBLIC_BASE_PATH
+  : '/disobedience-archive';
 
 /**
  * Resolves daily media URLs to external hosting.
@@ -20,19 +24,16 @@ export function resolveDailyMediaUrl(url: string): string {
   if (dailiesMatch) {
     const filename = dailiesMatch[1];
     
-    // In production, NEXT_PUBLIC_MEDIA_BASE_URL is required
+    // In production, prefer NEXT_PUBLIC_MEDIA_BASE_URL if set
     if (isProduction) {
-      if (!mediaBaseUrl) {
-        console.error(
-          'NEXT_PUBLIC_MEDIA_BASE_URL is required in production builds. ' +
-          'Please set this environment variable to your R2/CDN URL.'
-        );
-        // Return a placeholder URL to prevent build failure, but log the error
-        return `#MISSING_MEDIA_BASE_URL/${filename}`;
+      if (mediaBaseUrl) {
+        // Remove trailing slash from base URL if present, then add filename
+        const baseUrl = mediaBaseUrl.replace(/\/$/, '');
+        return `${baseUrl}/${filename}`;
       }
-      // Remove trailing slash from base URL if present, then add filename
-      const baseUrl = mediaBaseUrl.replace(/\/$/, '');
-      return `${baseUrl}/${filename}`;
+      // Production fallback: use local paths (for local builds)
+      // Deploy builds won't have local files due to prebuild cleanup
+      return normalizeImageUrl(url);
     }
     
     // In development, use external URL if available, otherwise fall back to local
@@ -41,7 +42,8 @@ export function resolveDailyMediaUrl(url: string): string {
       return `${baseUrl}/${filename}`;
     }
     
-    // Development fallback: return normalized local path
+    // Development fallback: return normalized local path (for local dev server)
+    // This allows local development without requiring NEXT_PUBLIC_MEDIA_BASE_URL
     return normalizeImageUrl(url);
   }
   
