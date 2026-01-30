@@ -233,30 +233,46 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     )
   }
 
-  // Always render the exact same structure to prevent hydration mismatch
-  // Structure must be identical on server and client
+  // Always render identical structure - use useEffect to update after mount
+  // This ensures server and client initial render match exactly
+  useEffect(() => {
+    if (!mounted || !containerRef.current) return
+    
+    // Update data attributes after mount to trigger CSS changes
+    const placeholder = containerRef.current.querySelector('.ipfs-placeholder') as HTMLElement
+    const loadingOverlay = containerRef.current.querySelector('.ipfs-loading') as HTMLElement
+    const img = containerRef.current.querySelector('img') as HTMLImageElement
+    
+    if (placeholder) {
+      placeholder.style.display = (shouldLoad && currentSrc) ? 'none' : 'block'
+    }
+    if (loadingOverlay) {
+      loadingOverlay.style.display = (shouldLoad && isLoading) ? 'block' : 'none'
+    }
+    if (img) {
+      img.style.opacity = (shouldLoad && !isLoading && currentSrc) ? '1' : '0'
+      if (shouldLoad && currentSrc) {
+        img.src = currentSrc
+      }
+    }
+  }, [mounted, shouldLoad, currentSrc, isLoading])
+
   return (
     <div ref={containerRef} className="w-full h-full relative">
-      {/* Placeholder - always rendered */}
+      {/* Placeholder - always rendered with same initial style */}
       <div 
-        className="absolute inset-0 bg-[#111] w-full h-full"
-        style={{ 
-          display: (mounted && shouldLoad && currentSrc) ? 'none' : 'block',
-          zIndex: 1,
-        }}
+        className="absolute inset-0 bg-[#111] w-full h-full ipfs-placeholder"
+        style={{ zIndex: 1, display: 'block' }}
       />
-      {/* Loading overlay - always rendered */}
+      {/* Loading overlay - always rendered with same initial style */}
       <div 
-        className="absolute inset-0 bg-[#111] w-full h-full"
-        style={{ 
-          display: (mounted && shouldLoad && isLoading) ? 'block' : 'none',
-          zIndex: 2,
-        }}
+        className="absolute inset-0 bg-[#111] w-full h-full ipfs-loading"
+        style={{ zIndex: 2, display: 'none' }}
       />
-      {/* Image - always rendered, same structure always */}
+      {/* Image - always rendered with same initial src and style */}
       <img
         ref={imgRef}
-        src={mounted && shouldLoad && currentSrc ? currentSrc : 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}
+        src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
         alt={alt}
         className={className}
         loading={loading}
@@ -264,12 +280,13 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
         onError={handleError}
         onLoad={handleLoad}
         style={{
-          opacity: (mounted && shouldLoad && !isLoading && currentSrc) ? 1 : 0,
+          opacity: 0,
           transition: 'opacity 0.3s ease-in',
           position: 'relative',
           zIndex: 0,
         }}
         fetchPriority={fetchPriority}
+        suppressHydrationWarning
       />
     </div>
   )
