@@ -59,7 +59,8 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
   const [pathIndex, setPathIndex] = useState(0)
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [shouldLoad, setShouldLoad] = useState(loading === 'eager')
+  // For eager images, always load immediately - don't wait for intersection observer
+  const [shouldLoad, setShouldLoad] = useState(loading === 'eager' || fetchPriority === 'high')
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const imgRef = useRef<HTMLImageElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -129,7 +130,8 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
   
   // Intersection Observer for lazy loading
   useEffect(() => {
-    if (loading === 'eager') {
+    // Eager or high priority images load immediately
+    if (loading === 'eager' || fetchPriority === 'high') {
       setShouldLoad(true)
       return
     }
@@ -278,26 +280,43 @@ export default function CollectionPage() {
     if (clippius?.owner) resolveENS(clippius.owner)
   }, [popeDoom, clippius, ensNames])
   
-  // Preload Pope Doom and Clippius images - highest priority
+  // Preload Pope Doom and Clippius images - highest priority, run immediately
   useEffect(() => {
-    if (popeDoom?.imageUrl) {
-      const resolvedUrl = resolveIpfsUrl(popeDoom.imageUrl) || popeDoom.imageUrl
-      const link = document.createElement('link')
-      link.rel = 'preload'
-      link.as = 'image'
-      link.href = resolvedUrl
-      link.setAttribute('fetchpriority', 'high')
-      document.head.appendChild(link)
+    // Run immediately, don't wait
+    const preloadImages = () => {
+      if (popeDoom?.imageUrl) {
+        const resolvedUrl = resolveIpfsUrl(popeDoom.imageUrl) || popeDoom.imageUrl
+        // Remove existing preload if any
+        const existing = document.querySelector(`link[rel="preload"][href="${resolvedUrl}"]`)
+        if (existing) existing.remove()
+        
+        const link = document.createElement('link')
+        link.rel = 'preload'
+        link.as = 'image'
+        link.href = resolvedUrl
+        link.setAttribute('fetchpriority', 'high')
+        document.head.insertBefore(link, document.head.firstChild) // Insert at top for priority
+      }
+      if (clippius?.imageUrl) {
+        const resolvedUrl = resolveIpfsUrl(clippius.imageUrl) || clippius.imageUrl
+        // Remove existing preload if any
+        const existing = document.querySelector(`link[rel="preload"][href="${resolvedUrl}"]`)
+        if (existing) existing.remove()
+        
+        const link = document.createElement('link')
+        link.rel = 'preload'
+        link.as = 'image'
+        link.href = resolvedUrl
+        link.setAttribute('fetchpriority', 'high')
+        document.head.insertBefore(link, document.head.firstChild) // Insert at top for priority
+      }
     }
-    if (clippius?.imageUrl) {
-      const resolvedUrl = resolveIpfsUrl(clippius.imageUrl) || clippius.imageUrl
-      const link = document.createElement('link')
-      link.rel = 'preload'
-      link.as = 'image'
-      link.href = resolvedUrl
-      link.setAttribute('fetchpriority', 'high')
-      document.head.appendChild(link)
-    }
+    
+    // Run immediately
+    preloadImages()
+    
+    // Also run on next tick to ensure DOM is ready
+    setTimeout(preloadImages, 0)
   }, [popeDoom?.imageUrl, clippius?.imageUrl])
   
   useEffect(() => {
