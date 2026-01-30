@@ -227,32 +227,32 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     )
   }
 
-  // Don't render image until mounted and shouldLoad is true (prevents hydration mismatch)
-  if (!mounted || (!shouldLoad && loading !== 'eager' && fetchPriority !== 'high')) {
-    return (
-      <div ref={containerRef} className="w-full h-full relative bg-[#111]" />
-    )
-  }
-
+  // Always render placeholder first to ensure server/client match
+  // Only render image after mount to prevent hydration mismatch
   return (
     <div ref={containerRef} className="w-full h-full relative">
-      {isLoading && <div className="absolute inset-0 bg-[#111] w-full h-full" />}
-      {currentSrc && (
-        <img
-          ref={imgRef}
-          src={currentSrc}
-          alt={alt}
-          className={className}
-          loading={loading}
-          decoding="async"
-          onError={handleError}
-          onLoad={handleLoad}
-          style={{
-            opacity: isLoading ? 0 : 1,
-            transition: 'opacity 0.3s ease-in',
-          }}
-          fetchPriority={fetchPriority}
-        />
+      {(!mounted || !shouldLoad) && (
+        <div className="absolute inset-0 bg-[#111] w-full h-full" />
+      )}
+      {mounted && shouldLoad && currentSrc && (
+        <>
+          {isLoading && <div className="absolute inset-0 bg-[#111] w-full h-full" />}
+          <img
+            ref={imgRef}
+            src={currentSrc}
+            alt={alt}
+            className={className}
+            loading={loading}
+            decoding="async"
+            onError={handleError}
+            onLoad={handleLoad}
+            style={{
+              opacity: isLoading ? 0 : 1,
+              transition: 'opacity 0.3s ease-in',
+            }}
+            fetchPriority={fetchPriority}
+          />
+        </>
       )}
     </div>
   )

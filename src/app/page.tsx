@@ -201,17 +201,17 @@ export default function HomePage() {
             <span className="absolute left-0 top-0 text-[#888]/10 blur-[2px] translate-y-[3px] scale-y-[-1] select-none pointer-events-none">
               DAILY WORKS ARCHIVE<br />
               CURRENT PRICE: 0.1Ξ PER DAILY<br />
-              <span className="text-[9px]">(PRICE GOES UP 10% PER PURCHASE OF DAILY)</span>
+              <span className="text-[9px]">(PRICE GOES UP 10% PER PURCHASE OF EVERYDAY)</span>
             </span>
             <span className="absolute left-0 top-0 text-green-500/15 blur-[1px] translate-x-[1px] select-none pointer-events-none">
               DAILY WORKS ARCHIVE<br />
               CURRENT PRICE: 0.1Ξ PER DAILY<br />
-              <span className="text-[9px]">(PRICE GOES UP 10% PER PURCHASE OF DAILY)</span>
+              <span className="text-[9px]">(PRICE GOES UP 10% PER PURCHASE OF EVERYDAY)</span>
             </span>
             <span className="relative">
               DAILY WORKS ARCHIVE<br />
               CURRENT PRICE: 0.1Ξ PER DAILY<br />
-              <span className="text-[9px]">(PRICE GOES UP 10% PER PURCHASE OF DAILY)</span>
+              <span className="text-[9px]">(PRICE GOES UP 10% PER PURCHASE OF EVERYDAY)</span>
             </span>
           </motion.p>
           
