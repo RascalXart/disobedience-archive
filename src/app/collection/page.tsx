@@ -11,7 +11,9 @@ function IpfsImage({ src, alt, className, loading }: { src: string; alt: string;
   const [currentSrc, setCurrentSrc] = useState<string>(resolveIpfsUrl(src) || src)
   const [gatewayIndex, setGatewayIndex] = useState(0)
   const [hasError, setHasError] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const imgRef = useRef<HTMLImageElement | null>(null)
 
   const handleError = useMemo(() => {
     return () => {
@@ -23,33 +25,39 @@ function IpfsImage({ src, alt, className, loading }: { src: string; alt: string;
       const nextGatewayIndex = gatewayIndex + 1
       const fallback = getFallbackIpfsUrl(src, nextGatewayIndex)
       if (fallback) {
-        // Only log if we're past the first fallback (gateway 2+)
-        if (nextGatewayIndex >= 2) {
-          console.log(`[IpfsImage] Gateway ${gatewayIndex + 1} failed, trying ${nextGatewayIndex + 1}`)
-        }
+        // Silently try next gateway - no console logging
         setCurrentSrc(fallback)
         setGatewayIndex(nextGatewayIndex)
+        setIsLoading(true)
       } else {
-        console.error('[IpfsImage] All gateways failed for:', src)
+        // Only log in development mode
+        if (process.env.NODE_ENV === 'development') {
+          console.warn('[IpfsImage] All gateways failed for:', src)
+        }
         setHasError(true)
+        setIsLoading(false)
       }
     }
   }, [src, gatewayIndex])
 
   useEffect(() => {
-    // Set a timeout for each gateway attempt (15 seconds)
+    // Reset loading state when src changes
+    setIsLoading(true)
+    
+    // Set a timeout for each gateway attempt (20 seconds)
     timeoutRef.current = setTimeout(() => {
-      if (!hasError) {
+      // Only trigger error if still loading and no error yet
+      if (isLoading && !hasError && imgRef.current && !imgRef.current.complete) {
         handleError()
       }
-    }, 15000)
+    }, 20000)
 
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
       }
     }
-  }, [currentSrc, hasError, handleError])
+  }, [currentSrc, isLoading, hasError, handleError])
 
   // Clear timeout when image loads successfully
   const handleLoad = () => {
@@ -57,6 +65,7 @@ function IpfsImage({ src, alt, className, loading }: { src: string; alt: string;
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
     }
+    setIsLoading(false)
   }
 
   if (hasError) {
@@ -69,6 +78,7 @@ function IpfsImage({ src, alt, className, loading }: { src: string; alt: string;
 
   return (
     <img
+      ref={imgRef}
       src={currentSrc}
       alt={alt}
       className={className}
