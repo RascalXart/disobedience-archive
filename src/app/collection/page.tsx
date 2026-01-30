@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllCollectionNFTs, getCollection, getSpecialCollectionNFTs, getRegularCollectionNFTs } from '@/lib/data'
 import { resolveIpfsUrl, getFallbackIpfsUrl } from '@/lib/ipfs'
@@ -48,23 +48,12 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
   // Check if URL is already R2 or non-IPFS - use directly
   const isR2OrDirect = src && (src.includes('r2.dev') || src.includes('r2.cloudflarestorage.com') || (!src.includes('ipfs') && (src.startsWith('http://') || src.startsWith('https://'))))
   
-  if (isR2OrDirect) {
-    return (
-      <div className="w-full h-full relative">
-        <img
-          src={src}
-          alt={alt}
-          className={className}
-          loading={loading}
-          decoding="async"
-          style={{ opacity: 1, transition: 'opacity 0.2s ease-in' }}
-        />
-      </div>
-    )
-  }
-  
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const originalResolved = resolveIpfsUrl(src) || src
-  const pathVariations = useMemo(() => generateIpfsPathVariations(originalResolved), [originalResolved])
+  const pathVariations = useMemo(() => {
+    if (isR2OrDirect) return []
+    return generateIpfsPathVariations(originalResolved)
+  }, [originalResolved, isR2OrDirect])
   
   const [gatewayIndex, setGatewayIndex] = useState(0)
   const [pathIndex, setPathIndex] = useState(0)
@@ -74,6 +63,69 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const imgRef = useRef<HTMLImageElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  
+  // Build current URL
+  const currentSrc = useMemo(() => {
+    if (!shouldLoad || isR2OrDirect) return ''
+    const gateway = IPFS_GATEWAYS[gatewayIndex] || IPFS_GATEWAYS[0]
+    const path = pathVariations[pathIndex] || pathVariations[0]
+    return `${gateway}${path}`
+  }, [gatewayIndex, pathIndex, pathVariations, shouldLoad, isR2OrDirect])
+
+  // Handle image error - try next gateway/path
+  const handleError = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+
+    // Try next path variation first
+    if (pathIndex + 1 < pathVariations.length) {
+      setTimeout(() => {
+        setPathIndex(pathIndex + 1)
+        setIsLoading(true)
+      }, 300)
+      return
+    }
+    
+    // Try next gateway
+    if (gatewayIndex + 1 < IPFS_GATEWAYS.length) {
+      setTimeout(() => {
+        setGatewayIndex(gatewayIndex + 1)
+        setPathIndex(0)
+        setIsLoading(true)
+      }, 500)
+      return
+    }
+    
+    // All options exhausted
+    setHasError(true)
+    setIsLoading(false)
+  }, [pathIndex, pathVariations.length, gatewayIndex])
+
+  // Reset when src changes
+  useEffect(() => {
+    setGatewayIndex(0)
+    setPathIndex(0)
+    setHasError(false)
+    setIsLoading(true)
+  }, [src])
+
+  // Set timeout for current attempt
+  useEffect(() => {
+    if (!shouldLoad || !currentSrc || isR2OrDirect) return
+    
+    setIsLoading(true)
+    const timeout = setTimeout(() => {
+      if (imgRef.current && !imgRef.current.complete) {
+        handleError()
+      }
+    }, 4000) // 4 second timeout per attempt
+
+    return () => {
+      clearTimeout(timeout)
+    }
+  }, [currentSrc, shouldLoad, handleError, isR2OrDirect])
   
   // Intersection Observer for lazy loading
   useEffect(() => {
@@ -107,68 +159,21 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     return () => observer.disconnect()
   }, [loading, shouldLoad])
   
-  // Build current URL
-  const currentSrc = useMemo(() => {
-    if (!shouldLoad) return ''
-    const gateway = IPFS_GATEWAYS[gatewayIndex] || IPFS_GATEWAYS[0]
-    const path = pathVariations[pathIndex] || pathVariations[0]
-    return `${gateway}${path}`
-  }, [gatewayIndex, pathIndex, pathVariations, shouldLoad])
-
-  // Handle image error - try next gateway/path
-  const handleError = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-
-    // Try next path variation first
-    if (pathIndex + 1 < pathVariations.length) {
-      setTimeout(() => {
-        setPathIndex(pathIndex + 1)
-        setIsLoading(true)
-      }, 300)
-      return
-    }
-    
-    // Try next gateway
-    if (gatewayIndex + 1 < IPFS_GATEWAYS.length) {
-      setTimeout(() => {
-        setGatewayIndex(gatewayIndex + 1)
-        setPathIndex(0)
-        setIsLoading(true)
-      }, 500)
-      return
-    }
-    
-    // All options exhausted
-    setHasError(true)
-    setIsLoading(false)
+  // Early return for R2/direct URLs AFTER all hooks
+  if (isR2OrDirect) {
+    return (
+      <div className="w-full h-full relative">
+        <img
+          src={src}
+          alt={alt}
+          className={className}
+          loading={loading}
+          decoding="async"
+          style={{ opacity: 1, transition: 'opacity 0.2s ease-in' }}
+        />
+      </div>
+    )
   }
-
-  // Reset when src changes
-  useEffect(() => {
-    setGatewayIndex(0)
-    setPathIndex(0)
-    setHasError(false)
-    setIsLoading(true)
-  }, [src])
-
-  // Set timeout for current attempt
-  useEffect(() => {
-    if (!shouldLoad || !currentSrc) return
-    
-    setIsLoading(true)
-    timeoutRef.current = setTimeout(() => {
-      if (imgRef.current && !imgRef.current.complete) {
-        handleError()
-      }
-    }, 4000) // 4 second timeout per attempt
-
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    }
-  }, [currentSrc, shouldLoad])
 
   const handleLoad = () => {
     if (timeoutRef.current) {
@@ -215,24 +220,25 @@ export default function CollectionPage() {
   const specialNFTs = getSpecialCollectionNFTs()
   const regularNFTs = getRegularCollectionNFTs()
   
-  if (!collection) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
-        <div className="mono text-sm text-[#666]">NO COLLECTION DATA</div>
-      </div>
-    )
-  }
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
   
-  const allNFTs = [...specialNFTs, ...regularNFTs]
+  // Memoize allNFTs to prevent dependency issues
+  const allNFTs = useMemo(() => [...specialNFTs, ...regularNFTs], [specialNFTs, regularNFTs])
   
-  const popeDoom = specialNFTs.find(nft => 
-    nft.name && (nft.name.includes('Pope Doom') || nft.name.includes('Pøpe Døøm') || nft.name.includes('POPE DOOM'))
+  const popeDoom = useMemo(() => 
+    specialNFTs.find(nft => 
+      nft.name && (nft.name.includes('Pope Doom') || nft.name.includes('Pøpe Døøm') || nft.name.includes('POPE DOOM'))
+    ),
+    [specialNFTs]
   )
   
-  const clippius = specialNFTs.find(nft => 
-    nft.name && (nft.name.includes('Clippius') || nft.name.includes('CLIPPIUS') || nft.name.includes('Murdered Pope'))
+  const clippius = useMemo(() =>
+    specialNFTs.find(nft => 
+      nft.name && (nft.name.includes('Clippius') || nft.name.includes('CLIPPIUS') || nft.name.includes('Murdered Pope'))
+    ),
+    [specialNFTs]
   )
   
   const selectedNFT = useMemo(() => {
@@ -385,17 +391,17 @@ export default function CollectionPage() {
               </span>
             </div>
             
-            {collection.description && (
+            {collection?.description && (
               <div className="mono text-sm text-[#888] mb-6 leading-relaxed max-w-3xl">
-                {collection.description}
+                {collection?.description}
               </div>
             )}
             
             <div className="mono text-sm text-[#888] mb-12 space-y-2">
-              <p>{collection.totalSupply} {collection.totalSupply === 1 ? 'TOKEN' : 'TOKENS'}</p>
+              <p>{collection?.totalSupply} {collection?.totalSupply === 1 ? 'TOKEN' : 'TOKENS'}</p>
               <p>Created: May 2025</p>
-              <p className="text-[10px] text-[#555]">Contract: {collection.contractAddress}</p>
-              <p className="text-[10px] text-[#555]">Chain: {collection.chain.toUpperCase()}</p>
+              <p className="text-[10px] text-[#555]">Contract: {collection?.contractAddress}</p>
+              <p className="text-[10px] text-[#555]">Chain: {collection?.chain?.toUpperCase()}</p>
             </div>
 
             {/* Pope Doom */}
@@ -421,7 +427,7 @@ export default function CollectionPage() {
                   
                   <div className="space-y-4">
                     <div className="mono text-[10px] text-[#666] mb-2 tracking-wider">
-                      THE CURRENT POPE OF WEB3 DECIDED IN 2025 BY {collection.totalSupply} CARDINALS
+                      THE CURRENT POPE OF WEB3 DECIDED IN 2025 BY {collection?.totalSupply} CARDINALS
                     </div>
                     <h2 className="font-grotesk text-3xl md:text-4xl font-light mb-4">{popeDoom.name}</h2>
                     {popeDoom.owner && (
