@@ -3,12 +3,13 @@
  * Using multiple reliable public gateways
  */
 
+// Prioritize reliable IPFS gateways
+// Removed gateways with CORS issues (Pinata, NFT.Storage, gateway.ipfs.io)
+// Using only gateways that work reliably without CORS requirements
 const IPFS_GATEWAYS = [
-  'https://gateway.pinata.cloud/ipfs/',
-  'https://ipfs.io/ipfs/',
-  'https://dweb.link/ipfs/',
-  'https://nftstorage.link/ipfs/',
-  'https://ipfs.filebase.io/ipfs/',
+  'https://ipfs.io/ipfs/', // Public IPFS - most reliable
+  'https://dweb.link/ipfs/', // Protocol Labs - good fallback
+  'https://ipfs.filebase.io/ipfs/', // Filebase - reliable
 ]
 
 /**
@@ -45,7 +46,7 @@ export function resolveIpfsUrl(ipfsUrl: string | null): string | null {
     cid = ipfsUrl
   }
   
-  // Always use primary gateway (Pinata)
+  // Always use primary gateway (ipfs.io)
   const baseUrl = `${IPFS_GATEWAYS[0]}${cid}`
   return path ? `${baseUrl}/${path}` : baseUrl
 }

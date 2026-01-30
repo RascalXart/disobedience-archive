@@ -68,7 +68,7 @@ export default function HomePage() {
           // Reveal archive cards with satisfying staggered animation
           const cards = document.querySelectorAll('[data-scroll-reveal="card"]')
           cards.forEach((card, index) => {
-            sr.reveal(card, {
+            sr.reveal(card as HTMLElement, {
               delay: (index % 6) * 60, // Stagger by 60ms per card, reset every 6
               distance: '50px',
               scale: 0.9,
@@ -82,7 +82,7 @@ export default function HomePage() {
           // Reveal month headers
           const monthHeaders = document.querySelectorAll('[data-scroll-reveal="month"]')
           monthHeaders.forEach((header, index) => {
-            sr.reveal(header, {
+            sr.reveal(header as HTMLElement, {
               delay: index * 100,
               distance: '40px',
               opacity: 0,

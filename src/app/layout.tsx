@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { MuseumNavigation } from '@/components/MuseumNavigation'
-import { TextCorruption } from '@/components/TextCorruption'
+import { AnimatedNoise } from '@/components/AnimatedNoise'
 
 // Favicon configuration - use absolute paths for production
 // Next.js static export handles public folder assets at root
@@ -27,7 +27,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="bg-[#0a0a0a]">
-        <TextCorruption />
+        <AnimatedNoise />
         <MuseumNavigation />
         {children}
       </body>

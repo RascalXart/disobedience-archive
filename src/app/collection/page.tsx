@@ -6,171 +6,170 @@ import { getAllCollectionNFTs, getCollection, getSpecialCollectionNFTs, getRegul
 import { resolveIpfsUrl, getFallbackIpfsUrl } from '@/lib/ipfs'
 import Link from 'next/link'
 
-const IPFS_GATEWAYS = [
-  'https://gateway.pinata.cloud/ipfs/',
-  'https://ipfs.io/ipfs/',
-  'https://dweb.link/ipfs/',
-  'https://nftstorage.link/ipfs/',
-  'https://ipfs.filebase.io/ipfs/',
-]
+// IPFS Gateways - prioritize dedicated gateway if available
+// To use Pinata dedicated gateway (free tier available):
+// 1. Sign up at https://app.pinata.cloud/
+// 2. Get your gateway token
+// 3. Set NEXT_PUBLIC_PINATA_GATEWAY_TOKEN in .env.local
+const PINATA_GATEWAY_TOKEN = process.env.NEXT_PUBLIC_PINATA_GATEWAY_TOKEN || ''
+const PINATA_DEDICATED = PINATA_GATEWAY_TOKEN 
+  ? `https://${PINATA_GATEWAY_TOKEN}.mypinata.cloud/ipfs/`
+  : null
+
+// Prioritize reliable IPFS gateways
+// Removed gateways with CORS issues (Pinata, NFT.Storage, gateway.ipfs.io)
+// Using only gateways that work reliably
+const IPFS_GATEWAYS = PINATA_DEDICATED
+  ? [PINATA_DEDICATED, 'https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://ipfs.filebase.io/ipfs/']
+  : ['https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://ipfs.filebase.io/ipfs/']
 
 // Generate path variations to try when original fails
-// Returns array of paths (CID + optional path) that can be used with any gateway
 function generateIpfsPathVariations(originalUrl: string): string[] {
-  // Extract CID and path from URL
   const match = originalUrl.match(/\/ipfs\/([^?]+)/)
-  if (!match) {
-    return [originalUrl] // Return original if can't parse
-  }
+  if (!match) return [originalUrl]
   
   const cidAndPath = match[1]
   const parts = cidAndPath.split('/')
   const cid = parts[0]
   const originalPath = parts.slice(1).join('/')
   
-  const variations: string[] = []
-  const extensions = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg']
+  const variations: string[] = [cidAndPath] // Always try original first
   
-  // 1. Try original path first (it might be correct)
+  // If path exists, try CID root as fallback
   if (originalPath) {
-    variations.push(cidAndPath)
-  } else {
-    // If no path, try CID root with common names
     variations.push(cid)
   }
   
-  // 2. If path ends with /media, try removing it and checking root
-  if (originalPath && (originalPath.endsWith('/media') || originalPath === 'media')) {
-    const basePath = originalPath.replace(/\/?media$/, '')
-    
-    // Try just CID root (many NFTs have image here)
-    variations.push(cid)
-    
-    // Try common file names at root
-    const rootFileNames: string[] = ['image', '0', '1']
-    rootFileNames.forEach((name: string) => {
-      variations.push(`${cid}/${name}`)
-      extensions.slice(0, 3).forEach((ext: string) => { // Try most common extensions first
-        variations.push(`${cid}/${name}.${ext}`)
-      })
-    })
-    
-    // Try base path without /media
-    if (basePath) {
-      variations.push(`${cid}/${basePath}`)
-    }
-    
-    // Try files in /media directory
-    rootFileNames.forEach((name: string) => {
-      const pathPrefix = basePath ? `${basePath}/media/` : 'media/'
-      variations.push(`${cid}/${pathPrefix}${name}`)
-      extensions.slice(0, 3).forEach((ext: string) => {
-        variations.push(`${cid}/${pathPrefix}${name}.${ext}`)
-      })
-    })
-  } else if (originalPath) {
-    // Original path exists but doesn't end with /media
-    // Try adding extensions if it doesn't have one
-    if (!originalPath.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i)) {
-      extensions.slice(0, 3).forEach((ext: string) => {
-        variations.push(`${cidAndPath}.${ext}`)
-      })
-    }
-    // Also try CID root
-    variations.push(cid)
-  } else {
-    // No path, try common file names at root
-    const rootFileNames: string[] = ['image', '0', '1']
-    rootFileNames.forEach((name: string) => {
-      variations.push(`${cid}/${name}`)
-      extensions.slice(0, 3).forEach((ext: string) => {
-        variations.push(`${cid}/${name}.${ext}`)
-      })
-    })
-  }
-  
-  // Remove duplicates while preserving order
   return Array.from(new Set(variations))
 }
 
-// IPFS Image component with fallback gateways and URL variations
-function IpfsImage({ src, alt, className, loading }: { src: string; alt: string; className?: string; loading?: 'lazy' | 'eager' }) {
+// Simplified IPFS Image component - tries gateways sequentially with proper delays
+function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: string; alt: string; className?: string; loading?: 'lazy' | 'eager'; fetchPriority?: 'high' | 'low' | 'auto' }) {
+  // Check if URL is already R2 or non-IPFS - use directly
+  const isR2OrDirect = src && (src.includes('r2.dev') || src.includes('r2.cloudflarestorage.com') || (!src.includes('ipfs') && (src.startsWith('http://') || src.startsWith('https://'))))
+  
+  if (isR2OrDirect) {
+    return (
+      <div className="w-full h-full relative">
+        <img
+          src={src}
+          alt={alt}
+          className={className}
+          loading={loading}
+          decoding="async"
+          style={{ opacity: 1, transition: 'opacity 0.2s ease-in' }}
+        />
+      </div>
+    )
+  }
+  
   const originalResolved = resolveIpfsUrl(src) || src
   const pathVariations = useMemo(() => generateIpfsPathVariations(originalResolved), [originalResolved])
   
-  // Initialize with first gateway and first path variation
   const [gatewayIndex, setGatewayIndex] = useState(0)
-  const [pathVariationIndex, setPathVariationIndex] = useState(0)
+  const [pathIndex, setPathIndex] = useState(0)
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [shouldLoad, setShouldLoad] = useState(loading === 'eager')
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const imgRef = useRef<HTMLImageElement | null>(null)
+  const containerRef = useRef<HTMLDivElement | null>(null)
   
-  // Construct current URL from gateway and path variation
-  const currentSrc = useMemo(() => {
-    const gateway = IPFS_GATEWAYS[gatewayIndex] || IPFS_GATEWAYS[0]
-    const path = pathVariations[pathVariationIndex] || pathVariations[0]
-    return `${gateway}${path}`
-  }, [gatewayIndex, pathVariationIndex, pathVariations])
-
-  const handleError = useMemo(() => {
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-
-      // First try different path variations for current gateway
-      const nextPathVariationIndex = pathVariationIndex + 1
-      if (nextPathVariationIndex < pathVariations.length) {
-        setPathVariationIndex(nextPathVariationIndex)
-        setIsLoading(true)
-        return
-      }
-      
-      // If all path variations tried, try next gateway with first variation
-      const nextGatewayIndex = gatewayIndex + 1
-      if (nextGatewayIndex < IPFS_GATEWAYS.length) {
-        setGatewayIndex(nextGatewayIndex)
-        setPathVariationIndex(0) // Reset to first variation for new gateway
-        setIsLoading(true)
-        return
-      }
-      
-      // All gateways and variations exhausted
-      setHasError(true)
-      setIsLoading(false)
+  // Intersection Observer for lazy loading
+  useEffect(() => {
+    if (loading === 'eager') {
+      setShouldLoad(true)
+      return
     }
-  }, [gatewayIndex, pathVariationIndex, pathVariations])
+    
+    if (shouldLoad) return
+    
+    // Check if already in viewport
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      if (rect.top < window.innerHeight + 200 && rect.bottom > -200) {
+        setShouldLoad(true)
+        return
+      }
+    }
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setShouldLoad(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '200px', threshold: 0.01 }
+    )
 
-  // Reset state when src prop changes
+    if (containerRef.current) observer.observe(containerRef.current)
+    return () => observer.disconnect()
+  }, [loading, shouldLoad])
+  
+  // Build current URL
+  const currentSrc = useMemo(() => {
+    if (!shouldLoad) return ''
+    const gateway = IPFS_GATEWAYS[gatewayIndex] || IPFS_GATEWAYS[0]
+    const path = pathVariations[pathIndex] || pathVariations[0]
+    return `${gateway}${path}`
+  }, [gatewayIndex, pathIndex, pathVariations, shouldLoad])
+
+  // Handle image error - try next gateway/path
+  const handleError = () => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+
+    // Try next path variation first
+    if (pathIndex + 1 < pathVariations.length) {
+      setTimeout(() => {
+        setPathIndex(pathIndex + 1)
+        setIsLoading(true)
+      }, 300)
+      return
+    }
+    
+    // Try next gateway
+    if (gatewayIndex + 1 < IPFS_GATEWAYS.length) {
+      setTimeout(() => {
+        setGatewayIndex(gatewayIndex + 1)
+        setPathIndex(0)
+        setIsLoading(true)
+      }, 500)
+      return
+    }
+    
+    // All options exhausted
+    setHasError(true)
+    setIsLoading(false)
+  }
+
+  // Reset when src changes
   useEffect(() => {
     setGatewayIndex(0)
-    setPathVariationIndex(0)
+    setPathIndex(0)
     setHasError(false)
     setIsLoading(true)
-  }, [src, pathVariations])
+  }, [src])
 
+  // Set timeout for current attempt
   useEffect(() => {
-    // Reset loading state when currentSrc changes
-    setIsLoading(true)
+    if (!shouldLoad || !currentSrc) return
     
-    // Set a timeout for each attempt (5 seconds - faster cycling through variations)
+    setIsLoading(true)
     timeoutRef.current = setTimeout(() => {
-      // Only trigger error if still loading and no error yet
-      if (isLoading && !hasError && imgRef.current && !imgRef.current.complete) {
+      if (imgRef.current && !imgRef.current.complete) {
         handleError()
       }
-    }, 5000)
+    }, 4000) // 4 second timeout per attempt
 
     return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
     }
-  }, [currentSrc, isLoading, hasError, handleError])
+  }, [currentSrc, shouldLoad])
 
-  // Clear timeout when image loads successfully
   const handleLoad = () => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
@@ -181,22 +180,33 @@ function IpfsImage({ src, alt, className, loading }: { src: string; alt: string;
 
   if (hasError) {
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center bg-[#111]">
         <span className="mono text-xs text-[#666]">NO IMAGE</span>
       </div>
     )
   }
 
   return (
-    <img
-      ref={imgRef}
-      src={currentSrc}
-      alt={alt}
-      className={className}
-      loading={loading}
-      onError={handleError}
-      onLoad={handleLoad}
-    />
+    <div ref={containerRef} className="w-full h-full relative">
+      {isLoading && <div className="absolute inset-0 bg-[#111] w-full h-full" />}
+      {shouldLoad && currentSrc && (
+        <img
+          ref={imgRef}
+          src={currentSrc}
+          alt={alt}
+          className={className}
+          loading={loading}
+          decoding="async"
+          onError={handleError}
+          onLoad={handleLoad}
+          style={{
+            opacity: isLoading ? 0 : 1,
+            transition: 'opacity 0.3s ease-in',
+          }}
+          fetchPriority={fetchPriority}
+        />
+      )}
+    </div>
   )
 }
 
@@ -204,18 +214,23 @@ export default function CollectionPage() {
   const collection = getCollection()
   const specialNFTs = getSpecialCollectionNFTs()
   const regularNFTs = getRegularCollectionNFTs()
+  
+  if (!collection) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center">
+        <div className="mono text-sm text-[#666]">NO COLLECTION DATA</div>
+      </div>
+    )
+  }
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
   
-  // Combine for finding selected NFT
   const allNFTs = [...specialNFTs, ...regularNFTs]
   
-  // Find Pope Doom (should be first in specialNFTs)
   const popeDoom = specialNFTs.find(nft => 
     nft.name && (nft.name.includes('Pope Doom') || nft.name.includes('Pøpe Døøm') || nft.name.includes('POPE DOOM'))
   )
   
-  // Find Clippius (The Murdered Pope)
   const clippius = specialNFTs.find(nft => 
     nft.name && (nft.name.includes('Clippius') || nft.name.includes('CLIPPIUS') || nft.name.includes('Murdered Pope'))
   )
@@ -225,56 +240,11 @@ export default function CollectionPage() {
     return allNFTs.find((nft) => nft.tokenId === selectedTokenId) || null
   }, [selectedTokenId, allNFTs])
   
-  // Resolve ENS names for all tokens
+  // Resolve ENS names
   useEffect(() => {
     const resolveENS = async (address: string) => {
-      if (!address) return
+      if (!address || ensNames[address]) return
       
-      // Check if already resolved
-      if (ensNames[address]) return
-      
-      try {
-        // Try public ENS API first
-        const response = await fetch(`https://api.ensideas.com/ens/resolve/${address}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.name) {
-            setEnsNames(prev => ({ ...prev, [address]: data.name }))
-            return
-          }
-        }
-      } catch (e) {
-        // Fallback: try ethers.js if available
-        try {
-          const { ethers } = await import('ethers')
-          const provider = new ethers.JsonRpcProvider('https://eth.llamarpc.com')
-          const name = await provider.lookupAddress(address)
-          if (name) {
-            setEnsNames(prev => ({ ...prev, [address]: name }))
-          }
-        } catch (err) {
-          // ENS resolution failed, will show truncated address
-        }
-      }
-    }
-    
-    // Resolve ENS for Pope Doom and Clippius
-    if (popeDoom?.owner) {
-      resolveENS(popeDoom.owner)
-    }
-    if (clippius?.owner) {
-      resolveENS(clippius.owner)
-    }
-  }, [popeDoom, specialNFTs])
-  
-  // Resolve ENS for selected NFT when modal opens
-  useEffect(() => {
-    if (!selectedNFT?.owner) return
-    
-    // Check if already resolved
-    if (ensNames[selectedNFT.owner]) return
-    
-    const resolveENS = async (address: string) => {
       try {
         const response = await fetch(`https://api.ensideas.com/ens/resolve/${address}`)
         if (response.ok) {
@@ -298,283 +268,275 @@ export default function CollectionPage() {
       }
     }
     
+    if (popeDoom?.owner) resolveENS(popeDoom.owner)
+    if (clippius?.owner) resolveENS(clippius.owner)
+  }, [popeDoom, clippius, ensNames])
+  
+  // Preload Pope Doom and Clippius images - highest priority
+  useEffect(() => {
+    if (popeDoom?.imageUrl) {
+      const resolvedUrl = resolveIpfsUrl(popeDoom.imageUrl) || popeDoom.imageUrl
+      const link = document.createElement('link')
+      link.rel = 'preload'
+      link.as = 'image'
+      link.href = resolvedUrl
+      link.setAttribute('fetchpriority', 'high')
+      document.head.appendChild(link)
+    }
+    if (clippius?.imageUrl) {
+      const resolvedUrl = resolveIpfsUrl(clippius.imageUrl) || clippius.imageUrl
+      const link = document.createElement('link')
+      link.rel = 'preload'
+      link.as = 'image'
+      link.href = resolvedUrl
+      link.setAttribute('fetchpriority', 'high')
+      document.head.appendChild(link)
+    }
+  }, [popeDoom?.imageUrl, clippius?.imageUrl])
+  
+  useEffect(() => {
+    if (!selectedNFT?.owner) return
+    if (ensNames[selectedNFT.owner]) return
+    
+    const resolveENS = async (address: string) => {
+      try {
+        const response = await fetch(`https://api.ensideas.com/ens/resolve/${address}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.name) {
+            setEnsNames(prev => ({ ...prev, [address]: data.name }))
+          }
+        }
+      } catch (e) {
+        try {
+          const { ethers } = await import('ethers')
+          const provider = new ethers.JsonRpcProvider('https://eth.llamarpc.com')
+          const name = await provider.lookupAddress(address)
+          if (name) {
+            setEnsNames(prev => ({ ...prev, [address]: name }))
+          }
+        } catch (err) {
+          // ENS resolution failed
+        }
+      }
+    }
+    
     resolveENS(selectedNFT.owner)
-  }, [selectedNFT?.owner, ensNames])
-
-  if (!collection) {
-    return (
-      <main className="min-h-screen pt-24">
-        <div className="container mx-auto px-4 py-16">
-          <div className="max-w-7xl mx-auto">
-            <div className="mono text-xs text-[#666] mb-4 tracking-wider">
-              [CONCLAVE_VIEW]
-            </div>
-            <h1 className="font-grotesk text-5xl md:text-7xl font-light mb-4 tracking-tighter">
-              CONCLAVE
-            </h1>
-            <p className="mono text-sm text-[#888] mb-12">
-              Collection data not found. Run: <code className="bg-[#111] px-2 py-1">node scripts/fetch-collection.js</code>
-            </p>
-          </div>
-        </div>
-      </main>
-    )
-  }
+  }, [selectedNFT, ensNames])
 
   return (
-    <main className="min-h-screen pt-24">
-      <div className="container mx-auto px-4 py-16">
+    <div className="min-h-screen bg-[#0a0a0a] text-white pt-24">
+      <div className="container mx-auto px-4 py-12 md:py-20">
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
           className="max-w-7xl mx-auto"
         >
           {/* Header */}
-          <div className="mono text-xs text-[#666] mb-4 tracking-wider">
-            [CONCLAVE_VIEW]
-          </div>
-          <motion.h1 
-            className="font-grotesk text-5xl md:text-7xl font-light mb-4 tracking-tighter relative"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1 }}
-          >
-            {/* Multi-layer reflection effect with mirror offset */}
-            <span className="absolute left-0 top-0 text-[#666]/10 blur-[3px] translate-y-[4px] scale-y-[-1] select-none pointer-events-none">
-              CONCLAVE
-            </span>
-            <span className="absolute left-0 top-0 text-red-500/20 blur-[2px] -translate-x-[2px] select-none pointer-events-none">
-              CONCLAVE
-            </span>
-            <span className="absolute left-0 top-0 text-green-500/20 blur-[2px] translate-x-[2px] select-none pointer-events-none">
-              CONCLAVE
-            </span>
-            <span className="absolute left-0 top-0 text-blue-500/20 blur-[2px] translate-y-[1px] select-none pointer-events-none">
-              CONCLAVE
-            </span>
-            <motion.span
-              className="inline-block relative"
-              animate={{
-                textShadow: [
-                  '0 0 10px rgba(255,255,255,0.1)',
-                  '0 0 20px rgba(255,255,255,0.1)',
-                  '0 0 10px rgba(255,255,255,0.1)',
-                ],
+          <div className="mb-16">
+            <motion.h1
+              className="font-grotesk text-5xl md:text-7xl font-light mb-6"
+              style={{
+                textShadow: '0 0 20px rgba(0, 255, 0, 0.3), 2px 0 0 rgba(255, 0, 0, 0.2)',
+                filter: 'contrast(1.2)',
               }}
-              transition={{ duration: 2, repeat: Infinity }}
             >
-              CONCLAVE
-            </motion.span>
-          </motion.h1>
-          
-          {/* Project Description */}
-          <div 
-            className="mono text-sm text-[#888] mb-6 leading-relaxed max-w-3xl flicker corrupt-text relative"
-            style={{
-              animation: 'flicker 1.5s ease-in-out infinite, corruptText 3s ease-in-out infinite',
-              textShadow: `
-                0 0 4px rgba(0, 255, 0, 0.6),
-                2px 0 0 rgba(255, 0, 0, 0.5),
-                -2px 0 0 rgba(0, 0, 255, 0.5),
-                0 2px 0 rgba(255, 255, 0, 0.4),
-                1px 1px 2px rgba(255, 0, 255, 0.3)
-              `,
-              filter: 'contrast(1.3) brightness(1.1)',
-            }}
-          >
-            <span style={{ 
-              position: 'relative',
-              display: 'inline-block',
-              animation: 'textGlitch 2s ease-in-out infinite',
-              transform: 'translateZ(0)',
-            }}>
-              whispers echo in the chamber<br />
-              the eternal conclave gathers.<br />
-              each cardinal minted, holy,<br />
-              (a dark glimmer in their eye)<br />
-              deciding with a single vote,<br />
-              the fate of the pøpe of web3.
-            </span>
-          </div>
-          
-          {/* Collection Description if available (from metadata) */}
-          {collection.description && (
-            <div className="mono text-sm text-[#888] mb-6 leading-relaxed max-w-3xl">
-              {collection.description}
-            </div>
-          )}
-          
-          <div className="mono text-sm text-[#888] mb-12 space-y-2">
-            <p>
-              {collection.totalSupply} {collection.totalSupply === 1 ? 'TOKEN' : 'TOKENS'}
-            </p>
-            <p>
-              Created: May 2025
-            </p>
-            <p className="text-[10px] text-[#555]">
-              Contract: {collection.contractAddress}
-            </p>
-            <p className="text-[10px] text-[#555]">
-              Chain: {collection.chain.toUpperCase()}
-            </p>
-          </div>
-
-          {/* Pope Doom - Featured Section */}
-          {popeDoom && (
-            <div className="mb-16 border-b border-[#222] pb-16">
-              <div className="mono text-xs text-[#666] mb-6 tracking-wider">
-                [CURRENT_POPE]
-              </div>
-              <div className="grid md:grid-cols-2 gap-8 items-start">
-                {/* Image */}
-                <div className="relative aspect-square overflow-hidden bg-[#111] border-2 border-[#444]">
-                  {popeDoom.imageUrl ? (
-                    <IpfsImage
-                      src={popeDoom.imageUrl}
-                      alt={popeDoom.name}
-                      className="w-full h-full object-contain"
-                      loading="eager"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="mono text-xs text-[#666]">NO IMAGE</span>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Info */}
-                <div className="space-y-4">
-                  <div className="mono text-[10px] text-[#666] mb-2 tracking-wider">
-                    THE CURRENT POPE OF WEB3 DECIDED IN 2025 BY {collection.totalSupply} CARDINALS
-                  </div>
-                  <h2 className="font-grotesk text-3xl md:text-4xl font-light mb-4">
-                    {popeDoom.name}
-                  </h2>
-                  {popeDoom.owner && (
-                    <div className="mono text-xs text-[#888]">
-                      OWNED BY{' '}
-                      <a
-                        href={`https://opensea.io/${ensNames[popeDoom.owner]?.replace('.eth', '') || popeDoom.owner}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-white hover:text-[#888] transition-colors underline"
-                      >
-                        {ensNames[popeDoom.owner] || `${popeDoom.owner.slice(0, 6)}...${popeDoom.owner.slice(-4)}`}
-                      </a>
-                    </div>
-                  )}
-                  {popeDoom.description && (
-                    <div className="mono text-sm text-[#888] leading-relaxed mt-6 whitespace-pre-line">
-                      {popeDoom.description}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Clippius - Featured Section */}
-          {clippius && (
-            <div className="mb-16 border-b border-[#222] pb-16">
-              <div className="mono text-xs text-[#666] mb-6 tracking-wider">
-                [MURDERED_POPE]
-              </div>
-              <div className="grid md:grid-cols-3 gap-8 items-start">
-                {/* Image - Smaller */}
-                <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#333] max-w-xs">
-                  {clippius.imageUrl ? (
-                    <IpfsImage
-                      src={clippius.imageUrl}
-                      alt={clippius.name}
-                      className="w-full h-full object-contain"
-                      loading="eager"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <span className="mono text-xs text-[#666]">NO IMAGE</span>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Info */}
-                <div className="md:col-span-2 space-y-4">
-                  <div className="mono text-[10px] text-[#666] mb-2 tracking-wider">
-                    THE MURDERED POPE OF WEB3
-                  </div>
-                  <h2 className="font-grotesk text-3xl md:text-4xl font-light mb-4">
-                    {clippius.name}
-                  </h2>
-                  {clippius.owner && (
-                    <div className="mono text-xs text-[#888]">
-                      OWNED BY{' '}
-                      <a
-                        href={`https://opensea.io/${ensNames[clippius.owner]?.replace('.eth', '') || clippius.owner}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-white hover:text-[#888] transition-colors underline"
-                      >
-                        {ensNames[clippius.owner] || `${clippius.owner.slice(0, 6)}...${clippius.owner.slice(-4)}`}
-                      </a>
-                    </div>
-                  )}
-                  {clippius.description && (
-                    <div className="mono text-sm text-[#888] leading-relaxed mt-6 whitespace-pre-line">
-                      {clippius.description}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Regular NFT Grid */}
-          {regularNFTs.length === 0 && specialNFTs.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-24"
+              <motion.span
+                animate={{
+                  textShadow: [
+                    '0 0 20px rgba(0, 255, 0, 0.3), 2px 0 0 rgba(255, 0, 0, 0.2)',
+                    '0 0 25px rgba(0, 255, 0, 0.4), -2px 0 0 rgba(0, 0, 255, 0.3)',
+                    '0 0 20px rgba(0, 255, 0, 0.3), 2px 0 0 rgba(255, 0, 0, 0.2)',
+                  ],
+                }}
+                transition={{ duration: 2, repeat: Infinity }}
+              >
+                CONCLAVE
+              </motion.span>
+            </motion.h1>
+            
+            <div 
+              className="mono text-sm text-[#888] mb-6 leading-relaxed max-w-3xl flicker corrupt-text relative"
+              style={{
+                animation: 'flicker 1.5s ease-in-out infinite, corruptText 3s ease-in-out infinite',
+                textShadow: `
+                  0 0 4px rgba(0, 255, 0, 0.6),
+                  2px 0 0 rgba(255, 0, 0, 0.5),
+                  -2px 0 0 rgba(0, 0, 255, 0.5),
+                  0 2px 0 rgba(255, 255, 0, 0.4),
+                  1px 1px 2px rgba(255, 0, 255, 0.3)
+                `,
+                filter: 'contrast(1.3) brightness(1.1)',
+              }}
             >
-              <p className="mono text-sm text-[#666]">NO TOKENS FOUND</p>
-            </motion.div>
-          ) : regularNFTs.length > 0 ? (
-            <>
-              <div className="mono text-xs text-[#666] mb-6 tracking-wider border-b border-[#222] pb-2">
-                [ALL_TOKENS]
+              <span style={{ 
+                position: 'relative',
+                display: 'inline-block',
+                animation: 'textGlitch 2s ease-in-out infinite',
+                transform: 'translateZ(0)',
+              }}>
+                whispers echo in the chamber<br />
+                the eternal conclave gathers.<br />
+                each cardinal minted, holy,<br />
+                (a dark glimmer in their eye)<br />
+                deciding with a single vote,<br />
+                the fate of the pøpe of web3.
+              </span>
+            </div>
+            
+            {collection.description && (
+              <div className="mono text-sm text-[#888] mb-6 leading-relaxed max-w-3xl">
+                {collection.description}
               </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {regularNFTs.map((nft, index) => (
-                <motion.div
-                  key={nft.tokenId}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                  className="group cursor-pointer"
-                  onClick={() => setSelectedTokenId(nft.tokenId)}
-                >
-                  <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
-                    {nft.imageUrl ? (
+            )}
+            
+            <div className="mono text-sm text-[#888] mb-12 space-y-2">
+              <p>{collection.totalSupply} {collection.totalSupply === 1 ? 'TOKEN' : 'TOKENS'}</p>
+              <p>Created: May 2025</p>
+              <p className="text-[10px] text-[#555]">Contract: {collection.contractAddress}</p>
+              <p className="text-[10px] text-[#555]">Chain: {collection.chain.toUpperCase()}</p>
+            </div>
+
+            {/* Pope Doom */}
+            {popeDoom && (
+              <div className="mb-16 border-b border-[#222] pb-16">
+                <div className="mono text-xs text-[#666] mb-6 tracking-wider">[CURRENT_POPE]</div>
+                <div className="grid md:grid-cols-2 gap-8 items-start">
+                  <div className="relative aspect-square overflow-hidden bg-[#111] border-2 border-[#444]">
+                    {popeDoom.imageUrl ? (
                       <IpfsImage
-                        src={nft.imageUrl}
-                        alt={nft.name}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                        loading="lazy"
+                        src={popeDoom.imageUrl}
+                        alt={popeDoom.name}
+                        className="w-full h-full object-contain"
+                        loading="eager"
+                        fetchPriority="high"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <span className="mono text-xs text-[#666]">NO IMAGE</span>
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
                   </div>
-                  <div className="mt-3">
-                    <div className="mono text-xs text-[#666] group-hover:text-[#888] transition-colors">
-                      {nft.name}
+                  
+                  <div className="space-y-4">
+                    <div className="mono text-[10px] text-[#666] mb-2 tracking-wider">
+                      THE CURRENT POPE OF WEB3 DECIDED IN 2025 BY {collection.totalSupply} CARDINALS
                     </div>
-                    <div className="mono text-[10px] text-[#555]">
-                      Token #{nft.tokenId}
-                    </div>
+                    <h2 className="font-grotesk text-3xl md:text-4xl font-light mb-4">{popeDoom.name}</h2>
+                    {popeDoom.owner && (
+                      <div className="mono text-xs text-[#888]">
+                        OWNED BY{' '}
+                        <a
+                          href={`https://opensea.io/${ensNames[popeDoom.owner]?.replace('.eth', '') || popeDoom.owner}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white hover:text-[#888] transition-colors underline"
+                        >
+                          {ensNames[popeDoom.owner] || `${popeDoom.owner.slice(0, 6)}...${popeDoom.owner.slice(-4)}`}
+                        </a>
+                      </div>
+                    )}
+                    {popeDoom.description && (
+                      <div className="mono text-sm text-[#888] leading-relaxed mt-6 whitespace-pre-line">
+                        {popeDoom.description}
+                      </div>
+                    )}
                   </div>
-                </motion.div>
+                </div>
+              </div>
+            )}
+
+            {/* Clippius */}
+            {clippius && (
+              <div className="mb-16 border-b border-[#222] pb-16">
+                <div className="mono text-xs text-[#666] mb-6 tracking-wider">[MURDERED_POPE]</div>
+                <div className="grid md:grid-cols-3 gap-8 items-start">
+                  <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#333] max-w-xs">
+                    {clippius.imageUrl ? (
+                      <IpfsImage
+                        src={clippius.imageUrl}
+                        alt={clippius.name}
+                        className="w-full h-full object-contain"
+                        loading="eager"
+                        fetchPriority="high"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="mono text-xs text-[#666]">NO IMAGE</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="md:col-span-2 space-y-4">
+                    <div className="mono text-[10px] text-[#666] mb-2 tracking-wider">THE MURDERED POPE OF WEB3</div>
+                    <h2 className="font-grotesk text-3xl md:text-4xl font-light mb-4">{clippius.name}</h2>
+                    {clippius.owner && (
+                      <div className="mono text-xs text-[#888]">
+                        OWNED BY{' '}
+                        <a
+                          href={`https://opensea.io/${ensNames[clippius.owner]?.replace('.eth', '') || clippius.owner}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-white hover:text-[#888] transition-colors underline"
+                        >
+                          {ensNames[clippius.owner] || `${clippius.owner.slice(0, 6)}...${clippius.owner.slice(-4)}`}
+                        </a>
+                      </div>
+                    )}
+                    {clippius.description && (
+                      <div className="mono text-sm text-[#888] leading-relaxed mt-6 whitespace-pre-line">
+                        {clippius.description}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* All Tokens Grid */}
+          {regularNFTs.length === 0 && specialNFTs.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="mono text-sm text-[#666]">NO TOKENS FOUND</p>
+            </div>
+          ) : regularNFTs.length > 0 ? (
+            <>
+              <div className="mono text-xs text-[#666] mb-6 tracking-wider border-b border-[#222] pb-2">
+                [ALL_TOKENS]
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                {regularNFTs.map((nft, index) => (
+                  <motion.div
+                    key={nft.tokenId}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.03 }}
+                    className="group cursor-pointer"
+                    onClick={() => setSelectedTokenId(nft.tokenId)}
+                  >
+                    <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
+                      {nft.imageUrl ? (
+                        <IpfsImage
+                          src={nft.imageUrl}
+                          alt={nft.name}
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <span className="mono text-xs text-[#666]">NO IMAGE</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
+                    </div>
+                    <div className="mt-3">
+                      <div className="mono text-xs text-[#666] group-hover:text-[#888] transition-colors">
+                        {nft.name}
+                      </div>
+                      <div className="mono text-[10px] text-[#555]">Token #{nft.tokenId}</div>
+                    </div>
+                  </motion.div>
                 ))}
               </div>
             </>
@@ -582,7 +544,7 @@ export default function CollectionPage() {
         </motion.div>
       </div>
 
-      {/* Modal for NFT details */}
+      {/* Modal */}
       {selectedNFT && (
         <motion.div
           initial={{ opacity: 0 }}
@@ -605,7 +567,6 @@ export default function CollectionPage() {
             </button>
 
             <div className="grid md:grid-cols-2 gap-8">
-              {/* Image */}
               <div className="relative aspect-square bg-[#0a0a0a]">
                 {selectedNFT.imageUrl ? (
                   <IpfsImage
@@ -621,78 +582,42 @@ export default function CollectionPage() {
                 )}
               </div>
 
-              {/* Metadata */}
               <div className="space-y-6">
                 <div>
-                  <h2 className="font-grotesk text-3xl font-light mb-2">
-                    {selectedNFT.name}
-                  </h2>
-                  <p className="mono text-xs text-[#666] mb-3">
-                    Token #{selectedNFT.tokenId}
-                  </p>
-                  
-                  {/* Owner Info */}
-                  {selectedNFT.owner && (
-                    <div className="mono text-xs text-[#888]">
-                      OWNED BY{' '}
-                      <a
-                        href={`https://opensea.io/${ensNames[selectedNFT.owner]?.replace('.eth', '') || selectedNFT.owner}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-white hover:text-[#888] transition-colors underline"
-                      >
-                        {ensNames[selectedNFT.owner] || `${selectedNFT.owner.slice(0, 6)}...${selectedNFT.owner.slice(-4)}`}
-                      </a>
-                    </div>
-                  )}
+                  <h2 className="font-grotesk text-3xl md:text-4xl font-light mb-2">{selectedNFT.name}</h2>
+                  <div className="mono text-xs text-[#666]">Token #{selectedNFT.tokenId}</div>
                 </div>
 
                 {selectedNFT.description && (
-                  <div>
-                    <div className="mono text-[10px] text-[#666] mb-2">DESCRIPTION</div>
-                    <p className="mono text-sm text-[#888] leading-relaxed whitespace-pre-line">
-                      {selectedNFT.description}
-                    </p>
+                  <div className="mono text-sm text-[#888] leading-relaxed whitespace-pre-line">
+                    {selectedNFT.description}
+                  </div>
+                )}
+
+                {selectedNFT.owner && (
+                  <div className="mono text-xs text-[#888]">
+                    OWNED BY{' '}
+                    <a
+                      href={`https://opensea.io/${ensNames[selectedNFT.owner]?.replace('.eth', '') || selectedNFT.owner}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-[#888] transition-colors underline"
+                    >
+                      {ensNames[selectedNFT.owner] || `${selectedNFT.owner.slice(0, 6)}...${selectedNFT.owner.slice(-4)}`}
+                    </a>
                   </div>
                 )}
 
                 {selectedNFT.attributes && selectedNFT.attributes.length > 0 && (
                   <div>
-                    <div className="mono text-[10px] text-[#666] mb-3">ATTRIBUTES</div>
+                    <div className="mono text-xs text-[#666] mb-3">ATTRIBUTES</div>
                     <div className="grid grid-cols-2 gap-2">
-                      {selectedNFT.attributes.map((attr, idx) => (
-                        <div
-                          key={idx}
-                          className="border border-[#222] p-2 bg-[#0a0a0a]"
-                        >
-                          <div className="mono text-[10px] text-[#666] mb-1">
-                            {attr.trait_type}
-                          </div>
-                          <div className="mono text-xs text-[#999]">
-                            {attr.value}
-                          </div>
+                      {selectedNFT.attributes.map((attr: any, idx: number) => (
+                        <div key={idx} className="mono text-xs text-[#888] border border-[#222] p-2">
+                          <div className="text-[#666]">{attr.trait_type || attr.name}</div>
+                          <div>{attr.value}</div>
                         </div>
                       ))}
-                    </div>
-                  </div>
-                )}
-
-                {collection && (
-                  <div className="pt-4 border-t border-[#222]">
-                    <div className="mono text-[10px] text-[#666] mb-2">CONTRACT INFO</div>
-                    <div className="mono text-xs text-[#888] space-y-1">
-                      <p>Address: {collection.contractAddress}</p>
-                      <p>Chain: {collection.chain.toUpperCase()}</p>
-                      {selectedNFT.externalUrl && (
-                        <Link
-                          href={selectedNFT.externalUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#666] hover:text-white transition-colors underline"
-                        >
-                          View on Explorer →
-                        </Link>
-                      )}
                     </div>
                   </div>
                 )}
@@ -701,7 +626,6 @@ export default function CollectionPage() {
           </motion.div>
         </motion.div>
       )}
-    </main>
+    </div>
   )
 }
-
