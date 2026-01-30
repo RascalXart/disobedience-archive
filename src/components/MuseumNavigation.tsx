@@ -9,9 +9,9 @@ export function MuseumNavigation() {
 
   const navItems = [
     { href: '/', label: 'ARCHIVE', code: 'HOME' },
-    { href: '/gallery', label: 'GALLERY', code: 'VIEW' },
-    { href: '/collect', label: 'COLLECT', code: 'ACQ' },
-    { href: '/drops', label: 'DROPS', code: 'EXH' },
+    { href: '/collection', label: 'CONCLAVE', code: 'NFT' },
+    { href: '/winions', label: 'WINIØNS', code: 'WIN' },
+    { href: '/timeline', label: 'TIMELINE', code: 'TIME' },
   ]
 
   return (

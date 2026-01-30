@@ -1,0 +1,1080 @@
+{
+  "contractAddress": "0xb06d423129152b9f84d37cc8ee6fe93ba5f26a7a",
+  "chain": "ethereum",
+  "name": "CONCLAVE",
+  "symbol": "CNCLV",
+  "totalSupply": 106,
+  "fetchedAt": "2026-01-30T05:22:16.645Z",
+  "tokens": [
+    {
+      "tokenId": "91",
+      "tokenURI": "ipfs://QmXZAQ4Ay7T2HqDbsbjCGM6PyofucmFJjWe3Xwi2Ng7MZi",
+      "owner": "0x1e8E749b2B578E181Ca01962e9448006772b24a2",
+      "imageUrl": "https://ipfs.io/ipfs/QmRpuW16imzXasPVfY6MEGMTG2tyJeZCC3VzABwBCJw4aS",
+      "name": "Pøpe Døøm",
+      "description": "Was it he? Cardinal Dr Doomio? \nWho plotted this all along? \nBut he is not a member \nOf the murderous and traitorous \nC Family… \nPerhaps just a beneficiary of a plot unbeknownst? Or was it he who planned this all… \nBut he wasn't in the room when the knife was driven through Cardinal Clippius's back… \n…either way, he takes the throne, as the living cardinal with the most votes  \n\nOn June 2, 2025 we usher in:  \n\nPØPE DØØM",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "16",
+      "tokenURI": "ipfs://QmcLnWPuwJQ5pbVsQ2PoZ7rF6ikrLMeVr7SFxMXhyzDg29",
+      "owner": "0x34202f199ef058302DcceD326a0105fe2Db53E12",
+      "imageUrl": "https://ipfs.io/ipfs/QmefHnFezqL2tR9N7iyFq3YKTm1gshxNVGMUQtAYDSsrY4",
+      "name": "The Murdered Pope Clippius",
+      "description": "It was plotted from the beginning \nThe winner was always going to die \nMurdered \nBy members of the CØNCLAVE \nThe C Family conspired \nAnd he was slain by sword \nLying dead in the chamber \nSo pure, so helpful \nThis token headby becomes \nA monument \nTo Pøpe Clippius, the slain",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "1",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/0",
+      "owner": "0xC3f15D95d7b1fbD991ac0bb0feD514A99B92566B",
+      "imageUrl": "https://ipfs.io/ipfs/QmW9W5FuKPbfDuvnfRwu2aHLKPhT1FqKgEdNHpQnsSDocB/media",
+      "name": "Cardinal Rickus Sancheuz",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "2",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/1",
+      "owner": "0x53BEbD20781Aaa3a831f45B3C6889010A706ff9f",
+      "imageUrl": "https://ipfs.io/ipfs/QmaAj8cwi6sTizdxfSyQVKWMBY82hCFLHRYe5CpH2dGd1C/media",
+      "name": "Cardinal Spikeon",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "3",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/2",
+      "owner": "0xD793F8c26d5f84738671be17DCfF6dFde5cF7aEd",
+      "imageUrl": "https://ipfs.io/ipfs/Qmehpeu2MkuPYmXwtZ34Fay5fkg7uBMDvkDMuGY8GG3wjt/media",
+      "name": "Cardinal Kool Aid Maneus II",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "4",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/3",
+      "owner": "0x92b9DF264DB4f2d0c8032A904d3e040F3E926145",
+      "imageUrl": "https://ipfs.io/ipfs/QmZV76BU58zCTwt2QwDyjQKVojFHyTspnGwCDW3CkaUuGc/media",
+      "name": "Cardinal Hamburglernio",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "5",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/4",
+      "owner": "0x3255439A973F32Bc854a9E8DFd713D33C70a48eC",
+      "imageUrl": "https://ipfs.io/ipfs/QmapAQZWYp5SRTisbpQ5LHEPRvXXSkvZ3hcGkGyN5zGDmi/media",
+      "name": "Cardinal Captonios Falcon",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "6",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/5",
+      "owner": "0xF05155F792819710Da259C103D30e4B70178eA9f",
+      "imageUrl": "https://ipfs.io/ipfs/QmbMEqjXkZpMtknixzuGCCf7YJ7qPxQyEtKpyDQTBgrXy4/media",
+      "name": "Cardinal Darthon Vaderus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "7",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/6",
+      "owner": "0x8485867178fdE14AbAD7EBfaEdAc46E50fA41288",
+      "imageUrl": "https://ipfs.io/ipfs/QmZnGzsC2wu35QPk4X9E3sFgsJYUyoT5LdRPEJzkKoG8tg/media",
+      "name": "Cardinal Goku III",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "8",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/7",
+      "owner": "0xbb85bFF98F145af30BA935Ae4DeD97C7A5Ce9bF2",
+      "imageUrl": "https://ipfs.io/ipfs/QmNWyH1ySqdMPg2inj8EWC227aH96Gu738RPCL9V1cnmr4/media",
+      "name": "Cardinal Solidion Snakear",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "9",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/8",
+      "owner": "0x68db9722b96702b1B9B8847A347765184b32Ef74",
+      "imageUrl": "https://ipfs.io/ipfs/QmQYHZkwQvgw5HuPLxwngQFZZaKfMQCQL7gqyLrXUn2CGD/media",
+      "name": "Cardinal Linkeo",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "10",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/9",
+      "owner": "0xC3f15D95d7b1fbD991ac0bb0feD514A99B92566B",
+      "imageUrl": "https://ipfs.io/ipfs/QmapKKgVZdfQkTHH8c6Zq4eJn2Kvkb6jzep7UGZmn8CbnZ/media",
+      "name": "Cardinal Gengar II",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "11",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/10",
+      "owner": "0x9ECF343F68eEC9a5f259F02aC3149E3b3B867445",
+      "imageUrl": "https://ipfs.io/ipfs/QmVTDrP9BJnsPyFzsjzVXYjNN9TXDS4x8DKdPumwAyro8t/media",
+      "name": "Cardinal Cookie Monsteron",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "12",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/11",
+      "owner": "0x509d2b0056DF686c6c8CC639f6fc173791410fe9",
+      "imageUrl": "https://ipfs.io/ipfs/Qmdmwo34XyNs2vWwx9YiYuzQZxNFrh8cT1bwkwBBnbbYYb/media",
+      "name": "Cardinal Peteron Griffinus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "13",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/12",
+      "owner": "0x66fF8F288C413e61c8Ee807088Ce301C03076e6E",
+      "imageUrl": "https://ipfs.io/ipfs/QmNafbdeZAMdR75McUgH1CgaipADLGHf87FF4xTmYuCsS1/media",
+      "name": "Cardinal Squidwardion",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "14",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/13",
+      "owner": "0x1D95b0b6D3582FEeC7Ef35D2CCF91564DEd0Cf7f",
+      "imageUrl": "https://ipfs.io/ipfs/QmcE7GPVaUpXVP4LPPwuCj146uyKHfAeCWgMgJv2dqsgbo/media",
+      "name": "Cardinal Homerion",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "15",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/14",
+      "owner": "0x7c632D97febeBafA33F12d750bfC378906341263",
+      "imageUrl": "https://ipfs.io/ipfs/QmVmomy9UWHEenejxKjvR6bPWXoJsVZdDkj9un5SpVXmig/media",
+      "name": "Cardinal Ronaldar Mcdonaldus IV",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "17",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/16",
+      "owner": "0x9CE2A86115dE63e8C6d4688C1E85720C7CC786Be",
+      "imageUrl": "https://ipfs.io/ipfs/QmeWhsp76PpWkXMPy2DhB5E5y5hxsMPxGfx7iuNobPEWhk/media",
+      "name": "Cardinal Raphael Turtolio",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "18",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/17",
+      "owner": "0x9237C2eC55dD857536a1E5bd57Ed020aFA71f814",
+      "imageUrl": "https://ipfs.io/ipfs/QmcNQLEgZss7B36fgArjuif4DcAxEGj7sW6xSiWY2QtGrm/media",
+      "name": "Cardinal Elmus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "19",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/18",
+      "owner": "0x98f1BdA2d45ffacA73fCF2154E9E007871e14934",
+      "imageUrl": "https://ipfs.io/ipfs/QmNvSHJuWMtvNkBrjxezwdo6qWg2Dk9GCFbquZ6cpVWXtR/media",
+      "name": "Cardinal Benderion",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "20",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/19",
+      "owner": "0xCc48857242141CC7F4f8555f8a3d5bED03556C19",
+      "imageUrl": "https://ipfs.io/ipfs/QmaDGS5jx4JyV26KVgzUEKAfSVMburzcXaU1kYHZQgg3X3/media",
+      "name": "Cardinal Kermiton",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "21",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/20",
+      "owner": "0xC8E4813877F7fFe878aB2e198114bDFD3897C94D",
+      "imageUrl": "https://ipfs.io/ipfs/QmQGbWjfN7oxCEEMv37DSXqqCPmLb9rHpc7RDtgqYxTAuE/media",
+      "name": "Cardinal Buttheadarius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "22",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/21",
+      "owner": "0x3A661a18CB0258119636DfDDe098648c6ad5bA62",
+      "imageUrl": "https://ipfs.io/ipfs/QmQfon8NiR6o4Zk7e5w4nf1NayTJRQYwVzLkTm1YTVj276/media",
+      "name": "Cardinal Arnold Footballheadius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "23",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/22",
+      "owner": "0xA501eC048Fb89E3bd3e1354751A2C04e953aFb6F",
+      "imageUrl": "https://ipfs.io/ipfs/QmUcViPDrMzxfnYUZZMuKwVREzqzsDkiPkWETgVYf8AVEy/media",
+      "name": "Cardinal Jarius Jarius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "24",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/23",
+      "owner": "0xfeDE80c58FbF66BB573C16B623D838aA61204e8F",
+      "imageUrl": "https://ipfs.io/ipfs/QmUT9eNdiyZfY6G5RiQygK1gK6v9i5MxLCuyDUqJzGDwr7/media",
+      "name": "Cardinal Barnius Dino",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "25",
+      "tokenURI": "ipfs://QmZneMXgckCBi2eZ3frx8dkmqWW85udu1VRQCcjoYcq4cB/24",
+      "owner": "0xB179736efc88D0D54653D6c4e713E30f0528F680",
+      "imageUrl": "https://ipfs.io/ipfs/Qmcx5ocXiYsVQzRZDgzgxuJdmahob4cbLGH4dCoy5kYawV/media",
+      "name": "Cardinal Bert And Ernius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "26",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/0",
+      "owner": "0x232444efa19d1aa555A50399F438Ce61FD2E2dD6",
+      "imageUrl": "https://ipfs.io/ipfs/QmS6scJaLCio6aF23bFSN54PAPAunkY3Mx4aqQDYKJwXTg/media",
+      "name": "Cardinal Slippius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "27",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/1",
+      "owner": "0x3255439A973F32Bc854a9E8DFd713D33C70a48eC",
+      "imageUrl": "https://ipfs.io/ipfs/QmadPz83YKvDsNzuRXo2FUtR4kUAx7cZFFD8dzevSEMRFu/media",
+      "name": "Cardinal Nemus IV",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "28",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/2",
+      "owner": "0x270b43C8e8F1082f9784e9046D4db50D55D64EEb",
+      "imageUrl": "https://ipfs.io/ipfs/QmY4cLW8JB7DGgW5MEB7kArzcQnLqLk7kTTkzB4hyT1oHs/media",
+      "name": "Cardinal Scoobius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "29",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/3",
+      "owner": "0x270b43C8e8F1082f9784e9046D4db50D55D64EEb",
+      "imageUrl": "https://ipfs.io/ipfs/QmYtKv5rMvPshRFHB3x5EuKZXThHwsWYq7kLRKmGeipQsL/media",
+      "name": "Cardinal Mojus Jojus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "30",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/4",
+      "owner": "0x720Bf57F67b6B00B97cBD9d967a0Af2427352435",
+      "imageUrl": "https://ipfs.io/ipfs/QmbdRehSUwBiLGZ5EFy5fcycdyKQgM7D8LJp29WybRxoEP/media",
+      "name": "Cardinal Patrickus Staronius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "31",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/5",
+      "owner": "0x4B92e36CeD303EEB59Bd6c5daC555b2be13Fe2B6",
+      "imageUrl": "https://ipfs.io/ipfs/QmcvQru2MDkUeiP8znq9aoCyaCcAJ2vD3tTHPb1GcjLLwd/media",
+      "name": "Cardinal Illidanus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "32",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/6",
+      "owner": "0xA3744483083BA9a535A9d161e0fcF2fCBe17d1b2",
+      "imageUrl": "https://ipfs.io/ipfs/QmP7984hXnsgRCGBJnE1Re46ELDoDEiZePSLWuKDDRFh46/media",
+      "name": "Cardinal Godzillaus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "33",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/7",
+      "owner": "0xE85041b675b616f635798A63db467289E5aA1E4D",
+      "imageUrl": "https://ipfs.io/ipfs/QmVu9kqnbdbm7U9gguDebc8e2zFkrPMGGhD6RsfEj7iBj5/media",
+      "name": "Cardinal Ryu III",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "34",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/8",
+      "owner": "0x849a27048dE274c084F42551f395823F8fa18f2E",
+      "imageUrl": "https://ipfs.io/ipfs/QmWPpD8xSvQ57g3xbh7cGs7ma9QxQ359uS8W3dBpSY5kXJ/media",
+      "name": "Cardinal Mickeius Mouseon",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "35",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/9",
+      "owner": "0x849a27048dE274c084F42551f395823F8fa18f2E",
+      "imageUrl": "https://ipfs.io/ipfs/QmWfk291hwS13A8TAt1CKhErZK8nWsHxtDXBztutR7Vfva/media",
+      "name": "Cardinal Kirbius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "36",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/10",
+      "owner": "0x1363EBA51AC0eA3d33CD377e2355cb243F9a7c05",
+      "imageUrl": "https://ipfs.io/ipfs/Qmf5UNfPLAbCoy7vmgwroAFA29So5dYKwBJeKiGE6QHhin/media",
+      "name": "Cardinal Yosemite Samuel III",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "37",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/11",
+      "owner": "0xc0619BB479AF57E9E76C1FB24BdE919364291DcA",
+      "imageUrl": "https://ipfs.io/ipfs/QmbRGFFnazoEXh8LnWi1yEXwE1YXSRZ7t9ZrNbmfHm3VUQ/media",
+      "name": "Cardinal Tiggeron",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "38",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/12",
+      "owner": "0xF035839DaaF652f03156B297a27EdA25a35e6316",
+      "imageUrl": "https://ipfs.io/ipfs/QmX72oERT2mshYktUQ9h4trgbD8cxKZY2fCxFJKoJCuvjq/media",
+      "name": "Cardinal Crashar Bandicootio",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "39",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/13",
+      "owner": "0xF035839DaaF652f03156B297a27EdA25a35e6316",
+      "imageUrl": "https://ipfs.io/ipfs/QmS2AVjFG9eGy3wMGVqb9D7AxK8NWXCSyy8GQrepFfhdGG/media",
+      "name": "Cardinal Spidermanuel II",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "40",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/14",
+      "owner": "0x4E4b427cea47bD43c6f829FC3eA61B640FF7BFE5",
+      "imageUrl": "https://ipfs.io/ipfs/QmRwTHYdUg4mp8rc4Hz1fVFHqY8M3iafzLU5giduQs4t2d/media",
+      "name": "Cardinal Minionion",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "41",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/15",
+      "owner": "0x9ec022D5D0B2540941Ce76B3EC65936542246fA6",
+      "imageUrl": "https://ipfs.io/ipfs/QmXPW1r3cTkg6dqDLqsXjJLVD4Um9mPGRLYgpgTNLkm3bm/media",
+      "name": "Cardinal Lordius Farquaadon",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "42",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/16",
+      "owner": "0x6fa96b50a896f57B57C8105A8aaB45949F33a535",
+      "imageUrl": "https://ipfs.io/ipfs/QmWbVzMus6xhk8zyU6ZYp4jHuCpr7HLH2jpLtKCywEFDkb/media",
+      "name": "Cardinal Beavison",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "43",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/17",
+      "owner": "0x4C5287834576F7f1F3732FC2dDDEF2d2Db3fea53",
+      "imageUrl": "https://ipfs.io/ipfs/QmaRTdPReqh5ptwRQ7UPSQ1RaeiPRDMU1A3piaexBz8eoF/media",
+      "name": "Cardinal Marius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "44",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/18",
+      "owner": "0x31f90c16B9dCa1dA6cC4b8e1c9C803B1E341EdF5",
+      "imageUrl": "https://ipfs.io/ipfs/QmXmTMeGYPkzMLtnRLL9BpByhVn7Mj5VrbPHs5t6MC5mzr/media",
+      "name": "Cardinal Winniear The Poonius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "45",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/19",
+      "owner": "0xC06a69871eCF0f6F5426c409B450a0e7Bc21bc4c",
+      "imageUrl": "https://ipfs.io/ipfs/QmZLACXD54EDETWU9P3sX5KZ13vEyHBEzHDa9L48DY5pcC/media",
+      "name": "Cardinal Masterar Chiefus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "46",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/20",
+      "owner": "0xD793F8c26d5f84738671be17DCfF6dFde5cF7aEd",
+      "imageUrl": "https://ipfs.io/ipfs/QmVjgD6KpCi4GM22wcUMcGeaMf9RNmGHsC6WuoNprY7YMx/media",
+      "name": "Cardinal Yodanardo",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "47",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/21",
+      "owner": "0x7DcCC79361b0227A85c2FF788cA240d31f2a78d0",
+      "imageUrl": "https://ipfs.io/ipfs/QmTBZibNPv6cCASZi3fGDEuUKeGi3Xtpkd5awJxa97KERX/media",
+      "name": "Cardinal Michaelangelo Wazowskiar",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "48",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/22",
+      "owner": "0x7DcCC79361b0227A85c2FF788cA240d31f2a78d0",
+      "imageUrl": "https://ipfs.io/ipfs/QmYyBAdWCkkqiH1KsczxUE4Ed5V3XGeSDhhp9Wstdf8qVD/media",
+      "name": "Cardinal Donkeius Kong",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "49",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/23",
+      "owner": "0x07f6f97aC29Fb6882746E7C95797d30c1B50448F",
+      "imageUrl": "https://ipfs.io/ipfs/QmaRRwnHE3DEaEhCny1FWwRiEdFaqaxMHe8PykJmTA6RTH/media",
+      "name": "Cardinal Jim Raynoron",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "50",
+      "tokenURI": "ipfs://Qmda995QmhVF3kX3r9f9itPW9MwCSJALrYcFeFAfnW12eL",
+      "owner": "0x454eE605b0E070145FadFcE49B072b029099078D",
+      "imageUrl": "https://ipfs.io/ipfs/QmUdAMkZWxaMALdZtmFbX4LLHNSWEmz5rZdwcgNFoj47LQ",
+      "name": "Cardinal Darius Devilio",
+      "description": "One of three mystery cardinals \nHis identity was revealed by \n@RedruM upon mint  \n\n– \nwhispers echo in the chamber \nthe eternal conclave gathers. \neach cardinal minted, holy, \n(a dark glimmer in their eye) \ndeciding with a single vote, \nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "51",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/25",
+      "owner": "0x454eE605b0E070145FadFcE49B072b029099078D",
+      "imageUrl": "https://ipfs.io/ipfs/QmPtnD3Zjfx2zk3rumZxmqFnPoyXndy8eQvAME4CNqNXH5/media",
+      "name": "Cardinal Meowthar",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "52",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/26",
+      "owner": "0x1B609FDa3C97e90003Be00c8223026e0D99f49b4",
+      "imageUrl": "https://ipfs.io/ipfs/QmXuNNQbYhooBaCR8hW1Js2udb3J7ee4tSedAgn427yMkY/media",
+      "name": "Cardinal Stitchar",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "53",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/27",
+      "owner": "0xD41fcbB0e58cbEAe68b151e07bd8f991aFc5E1AF",
+      "imageUrl": "https://ipfs.io/ipfs/QmNdE8DsCyzkoSBNDNobSkUjmq3sqeRvJ92XoFjs7tKFMV/media",
+      "name": "Cardinal Heatmeiserus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "54",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/28",
+      "owner": "0x32d3aA5DF3203Ac5613cd5b22C642929e3DaE423",
+      "imageUrl": "https://ipfs.io/ipfs/QmeDaa9upwsWdXpvUPJmrY5VxcomMfAhv68RpU2wcFyk6J/media",
+      "name": "Cardinal Meatwadar",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "55",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/29",
+      "owner": "0x32d3aA5DF3203Ac5613cd5b22C642929e3DaE423",
+      "imageUrl": "https://ipfs.io/ipfs/QmYXKeZpabQrLFS8LTvifQrSRETMoyu6LifLj4rCVyBaET/media",
+      "name": "Cardinal Smurfus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "56",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/30",
+      "owner": "0x1B609FDa3C97e90003Be00c8223026e0D99f49b4",
+      "imageUrl": "https://ipfs.io/ipfs/QmV19e6WuU1WAwVAXMfTNoAFAegBApsyrHi9csqHi2Ytna/media",
+      "name": "Cardinal Randius Marsh",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "57",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/31",
+      "owner": "0xD41fcbB0e58cbEAe68b151e07bd8f991aFc5E1AF",
+      "imageUrl": "https://ipfs.io/ipfs/QmUeJNiwTPcsJkBrB1KBt4ogkDprq3iDj9uhuVf5ZBDzqZ/media",
+      "name": "Cardinal Narutus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "58",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/32",
+      "owner": "0x63f51cd8Ac4757d9fbB52da4E0B467f4FBc23A21",
+      "imageUrl": "https://ipfs.io/ipfs/QmSj3yNL8zPYuKmvGEVjyUpG8gVaBofqDkt4uN9M3u2MZC/media",
+      "name": "Cardinal Toadfredo",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "59",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/33",
+      "owner": "0x63f51cd8Ac4757d9fbB52da4E0B467f4FBc23A21",
+      "imageUrl": "https://ipfs.io/ipfs/QmWKJZdxHpkBNaCwtEokdVbLKYv4kJnQ7h7TPLZ5y1m7nR/media",
+      "name": "Cardinal William E Coyote",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "60",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/34",
+      "owner": "0x5108d9Ad6DD9491be41C771042479871593b70B4",
+      "imageUrl": "https://ipfs.io/ipfs/QmcvvDqdeDtS4HUiE9XrEEpDmhrrxZWDz9CoVRRVz87mEw/media",
+      "name": "Cardinal Buzzius Lightyear",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "61",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/35",
+      "owner": "0x74A7b842FDeb244C152aa5BC8B7fbae362091EE1",
+      "imageUrl": "https://ipfs.io/ipfs/QmZ5GdYaNWWVxzwkyHZs5zvzBpYPUQcTYWpkhCxLm2PNzs/media",
+      "name": "Cardinal Furby-o",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "62",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/36",
+      "owner": "0xE667Ed56927f0Ae54d6706B4d98c55B036789627",
+      "imageUrl": "https://ipfs.io/ipfs/QmfNR7Bmkn7GwbH9KcJupnM4GQSWeF1N2BUKmF8mbgL85f/media",
+      "name": "Cardinal Doug Funniear",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "63",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/37",
+      "owner": "0xE667Ed56927f0Ae54d6706B4d98c55B036789627",
+      "imageUrl": "https://ipfs.io/ipfs/QmTe8eftJJuE18JBWA629qsWgKJ67mZbS1NthV3ZVwPmgd/media",
+      "name": "Cardinal He Man II",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "64",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/38",
+      "owner": "0x74A7b842FDeb244C152aa5BC8B7fbae362091EE1",
+      "imageUrl": "https://ipfs.io/ipfs/QmeV4Dq5fscVoaFavS4kpcHYiD9RgJx2cLsyfg1mtdFei8/media",
+      "name": "Cardinal Charizardio",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "65",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/39",
+      "owner": "0x3bD09f5E80FeD8D46a677bd4eD54Bb253233CDa2",
+      "imageUrl": "https://ipfs.io/ipfs/QmV3m1AM3rGVHNMRWfBEWN7jN3gRK5DDqZCxH5KW137LDN/media",
+      "name": "Cardinal Robinar Hoodius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "66",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/40",
+      "owner": "0xdE9B4206B1499e56E4417f8EdB7bE4586FeD30Ba",
+      "imageUrl": "https://ipfs.io/ipfs/QmQnxhm5hVcSGQigZ67H8zs38BwTzFAvNMWz8WYyp6ScoZ/media",
+      "name": "Cardinal Rafikius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "67",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/41",
+      "owner": "0x4c6E348056b8d35075AF1d92d521f9fFDeA531E2",
+      "imageUrl": "https://ipfs.io/ipfs/QmWJvJWDAd7XPFxsC5yPHLCcUHgijqVq9Myawrpt1Lh4Vz/media",
+      "name": "Cardinal Diablus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "68",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/42",
+      "owner": "0x8d44Bb7001D613F20cBb4a3931e1126eCd9220F8",
+      "imageUrl": "https://ipfs.io/ipfs/QmT8QaUigKpNujfRtX3VdqMzZ3omfYUAr862x4tcnvSH7o/media",
+      "name": "Cardinal Smokeius The Bear",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "69",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/43",
+      "owner": "0x8d44Bb7001D613F20cBb4a3931e1126eCd9220F8",
+      "imageUrl": "https://ipfs.io/ipfs/QmZcrK4pn53rWWNWY4ovJeAxkdDBpNPoEdyPWBtm2Vug55/media",
+      "name": "Cardinal Bugs Bunnius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "70",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/44",
+      "owner": "0x2285Ec40F3618718EDF88A305fDf4b9fE89ba5CE",
+      "imageUrl": "https://ipfs.io/ipfs/Qmb8AqbyZYVZwreWm9FEDipd4exETvxmQTsoxsziYk3fiN/media",
+      "name": "Cardinal Ashius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "71",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/45",
+      "owner": "0x2285Ec40F3618718EDF88A305fDf4b9fE89ba5CE",
+      "imageUrl": "https://ipfs.io/ipfs/QmTdzEgZvZPtEmNsAv1Ee3r7XaLBS2f77zATxbQ9Wye2ME/media",
+      "name": "Cardinal Ice King IV",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "72",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/46",
+      "owner": "0xdF8b134fb7743aCD805eCDeE11335dd0Cca921fc",
+      "imageUrl": "https://ipfs.io/ipfs/QmNtbL9NAJ9j6LDMSYtxZhhrUebPtMxyHbHSYmhXcEeNUF/media",
+      "name": "Cardinal Vegenus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "73",
+      "tokenURI": "ipfs://QmP6PJChdwqRMYcoTFxECC1JoawgW3RJM3jjDBYeHTVpSK",
+      "owner": "0x68db9722b96702b1B9B8847A347765184b32Ef74",
+      "imageUrl": "https://ipfs.io/ipfs/QmNsbyGZxngqEFBmv5kfxvEcbrKHNnpJweesxUzdrGHAPY",
+      "name": "Cardinal Pepenius the 69th",
+      "description": "One of three mystery cardinals \nHis identity was revealed by \nLeftwiththeart.eth (@Chipmouse) upon \nmint  \n\n– \nwhispers echo in the chamber \nthe eternal conclave gathers. \neach cardinal minted, holy, \n(a dark glimmer in their eye) \ndeciding with a single vote, \nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "74",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/48",
+      "owner": "0x68db9722b96702b1B9B8847A347765184b32Ef74",
+      "imageUrl": "https://ipfs.io/ipfs/Qma1swV3dxr8ojD49pnJ2u2zoTa1ujV2REd9m4za61oZJK/media",
+      "name": "Cardinal Felixus the Cat",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "75",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/49",
+      "owner": "0x4E4b427cea47bD43c6f829FC3eA61B640FF7BFE5",
+      "imageUrl": "https://ipfs.io/ipfs/Qme6oGyuxvpP1Pigz3Sos8kpATu5BPVu8TFb3fiVj4q3tv/media",
+      "name": "Cardinal Pikachuar",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "76",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/50",
+      "owner": "0x3E070155c3099E557847154c9637aDe3510cBdA0",
+      "imageUrl": "https://ipfs.io/ipfs/QmfDpnWSyg1ZXsUZbAdRAS9WuMnR9jkp8dUzWUDfChMvpt/media",
+      "name": "Cardinal Cartmanius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "77",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/51",
+      "owner": "0x3E070155c3099E557847154c9637aDe3510cBdA0",
+      "imageUrl": "https://ipfs.io/ipfs/QmbzFFLeogDneWBsX1xYvVWwpcncYVNFzed2joNWM421bV/media",
+      "name": "Cardinal Jackus Skelingtoneus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "78",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/52",
+      "owner": "0x53BEbD20781Aaa3a831f45B3C6889010A706ff9f",
+      "imageUrl": "https://ipfs.io/ipfs/QmYwJxAzip6kx2GU8L4uVmtcuGAxQFFrdQhFzHvP8JKdb9/media",
+      "name": "Cardinal Charlieus Brownar",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "79",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/53",
+      "owner": "0x78086Ad810f8F99A0B6c92a9A6c8857d3c665622",
+      "imageUrl": "https://ipfs.io/ipfs/QmaTXXxNRemFj9pE4hwyeSso8auUDaz1mKvidTb4qoYxsW/media",
+      "name": "Cardinal Poporo",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "80",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/54",
+      "owner": "0xB9DE11263A585a55F00cF80EF071583c8035708E",
+      "imageUrl": "https://ipfs.io/ipfs/QmZJK31dcX1NJ59LtqUA24TV2LF2onZXwCFMXWfve7rciU/media",
+      "name": "Cardinal Leonardus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "81",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/55",
+      "owner": "0xB9DE11263A585a55F00cF80EF071583c8035708E",
+      "imageUrl": "https://ipfs.io/ipfs/QmVwVV6fz1sDKeTAAG9Fb36oJaMuRdSV7V1Lxn2WyHcvk1/media",
+      "name": "Cardinal Sonic of Hedgehoggus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "82",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/56",
+      "owner": "0xCF5e26cDD475ffc6290FeBDa598f7b1D21D66BF3",
+      "imageUrl": "https://ipfs.io/ipfs/QmRAwPwSUSX58i7SfksCpy5u8tVucqy3nxKwZfc5q6xLBN/media",
+      "name": "Cardinal Launchpadar Mcquackus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "83",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/57",
+      "owner": "0x89D53e8612E8416bf960Dc9444ce0e2a0878a582",
+      "imageUrl": "https://ipfs.io/ipfs/QmZ77tiMcAaMAtMXAZWqjNX9KVSn6dKje92fmAq7j1EhTW/media",
+      "name": "Cardinal Finneus Humanius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "84",
+      "tokenURI": "ipfs://QmW1BVBudD9spbMgmm4ezgypjDfRFMKzYpCRo2TL9UHUFA",
+      "owner": "0xD37905283aDf21d3E628B423cBE20c4583BA9979",
+      "imageUrl": "https://ipfs.io/ipfs/QmRsmq6BzAEPohu87wUYeXsMyksRcDrXWFQGBKVnWqWU5c",
+      "name": "Cardinal Pink Pantheron",
+      "description": "One of three mystery cardinals \nHis identity was revealed by \nBananaJam.eth upon mint  \n\n– \nwhispers echo in the chamber \nthe eternal conclave gathers. \neach cardinal minted, holy, \n(a dark glimmer in their eye) \ndeciding with a single vote, \nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "85",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/59",
+      "owner": "0x613b8DF440180365BF020298d1c70BEcB505E6f5",
+      "imageUrl": "https://ipfs.io/ipfs/QmfAocGJBrXPtSaQSwJQhRaeiQHZRTPLTkNCE4YQTD9oYU/media",
+      "name": "Cardinal Frius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "86",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/60",
+      "owner": "0x079e05835adaE146e97e72ae4e8c84671C2208BC",
+      "imageUrl": "https://ipfs.io/ipfs/Qmcfbadsgut6mqGAa4bad9FrkTpmNrLB3nfEV3NUtCeBL7/media",
+      "name": "Cardinal Sullius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "87",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/61",
+      "owner": "0x079e05835adaE146e97e72ae4e8c84671C2208BC",
+      "imageUrl": "https://ipfs.io/ipfs/QmWKwNvnbR8TCHwUC2ER7e8MjGEZ3BYm8pou4ymbWRQfs1/media",
+      "name": "Cardinal Eddius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "88",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/62",
+      "owner": "0xaA4f4217fB74f6e7F846ACbCB1eD4465F9660543",
+      "imageUrl": "https://ipfs.io/ipfs/QmfFhmJDgqPqjWRwyjMmMi23aCppQ8FruZcxHQGjJSmHBq/media",
+      "name": "Cardinal Skeletoron",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "89",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/63",
+      "owner": "0x0f94325DCc0e118fb3454Bceff6bcd814aD2b58f",
+      "imageUrl": "https://ipfs.io/ipfs/QmT3V4dsrugpPo5AcQjwTDiuxaXfvzm7qBndeD4SCqj5Ey/media",
+      "name": "Cardinal Bartholoemew",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "90",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/64",
+      "owner": "0x113c6e8D6ACB173dA6cEd275c00aAEad1Fa831dE",
+      "imageUrl": "https://ipfs.io/ipfs/QmdRAi6nqjnCiyxWJzQWBmiJ6ypBJZGp17BshAqsQhC8a7/media",
+      "name": "Cardinal Sponge-Roberto",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "92",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/66",
+      "owner": "0xFf61aa7cb77E166a5934f76884fF714aC03CEA14",
+      "imageUrl": "https://ipfs.io/ipfs/QmR9gXn9CRGF6nv9jBha7BqWQ1Exx4aTKQ8vbhd74VqGez/media",
+      "name": "Cardinal Woodius Woodpeckerar",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "93",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/67",
+      "owner": "0xFf61aa7cb77E166a5934f76884fF714aC03CEA14",
+      "imageUrl": "https://ipfs.io/ipfs/QmdXmYGo1tTpWFAuZJkQfdc9LwAKHb6thUtobxhfHkW9fD/media",
+      "name": "Cardinal Wallius E III",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "94",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/68",
+      "owner": "0x46F655abF896301b72eb27B76F5e063899b9067C",
+      "imageUrl": "https://ipfs.io/ipfs/QmcENzYkuaZX47sBQgYcBf5NAG8NoeUKAv5kG4nYyJZrgC/media",
+      "name": "Cardinal Yoshinus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "95",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/69",
+      "owner": "0x46F655abF896301b72eb27B76F5e063899b9067C",
+      "imageUrl": "https://ipfs.io/ipfs/QmPE7J2KfUcfF5Qh4q7x1gRhE1Ky6TquwwCGJvaNu7mobC/media",
+      "name": "Cardinal Diddius Kong",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "96",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/70",
+      "owner": "0x1e8E749b2B578E181Ca01962e9448006772b24a2",
+      "imageUrl": "https://ipfs.io/ipfs/QmXVSUaEYMYj2CCHjMsuJdFdQreCxGLRgTssXcPinx1yRE/media",
+      "name": "Cardinal Porkius Swine III",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "97",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/71",
+      "owner": "0x0f94325DCc0e118fb3454Bceff6bcd814aD2b58f",
+      "imageUrl": "https://ipfs.io/ipfs/QmZHMJL7pNh7x4qDUTyH8XDmCu1wgQtUmnesbjmkURBAz8/media",
+      "name": "Cardinal Mortius",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "98",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/72",
+      "owner": "0xdE4b72239F6D6E2342CBC48Ca8FB04E05A25f1c7",
+      "imageUrl": "https://ipfs.io/ipfs/Qmcd6cVg8gzAyyaonqt3FegYtftc56MzvGaePDkhL4tynX/media",
+      "name": "Cardinal Rockoneo",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "99",
+      "tokenURI": "ipfs://QmZduGQG15BAnVaxczkezgWzLX1nSUYGazxhwYNo9f2oNN/73",
+      "owner": "0xdE4b72239F6D6E2342CBC48Ca8FB04E05A25f1c7",
+      "imageUrl": "https://ipfs.io/ipfs/QmWZ4K236sjvNA9ngdgtLTsdfrnuDe6bxodmcMPqwwNnWN/media",
+      "name": "Cardinal Johnnius Bravus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "104",
+      "tokenURI": "ipfs://QmaKXKypHwj4Ai9xLwHqCEwpEDfMXdkTFFy3pwxgarYHdu/0",
+      "owner": "0x5B18281422AEc857644D0B54E14033E7573Ed6d2",
+      "imageUrl": "https://ipfs.io/ipfs/QmamkmmyPsBNMFejYPSKqzoRdGKddqwE7DkdY3NTFLLQfy/media",
+      "name": "Cardinal Po Pandaar",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "105",
+      "tokenURI": "ipfs://QmNRZuPaNLEPr6aP72abs7Ezt2ehoqe6hrNwZaMGfvDRBd",
+      "owner": "0xf17D45d3e6ecC5a8125e0E056f4A01d40D47CaEc",
+      "imageUrl": "https://ipfs.io/ipfs/QmPTQNqd4ddgPppfKgQfso9GjscvTUCUCq48LQmSY8GSw1",
+      "name": "Cardinal Skibideus Toilethead V",
+      "description": "One of three mystery cardinals \nHis identity was revealed by \n@Airshiptycoon upon mint  \n\n- \nwhispers echo in the chamber \nthe eternal conclave gathers. \neach cardinal minted, holy, \n(a dark glimmer in their eye) \ndeciding with a single vote, \nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "106",
+      "tokenURI": "ipfs://Qmf462fwUs5ezdfQShTBfR35NuiopkboAz3iW1fF9GtFAw/0",
+      "owner": "0x3255439A973F32Bc854a9E8DFd713D33C70a48eC",
+      "imageUrl": "https://ipfs.io/ipfs/QmXGVaTmTBtMyM78WY8cSkaDYCJKyHJVNeKesBBfMDbggQ/media",
+      "name": "Cardinal Satoshi Nakamotus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [
+        {
+          "trait_type": "Color",
+          "value": "BTC orange"
+        }
+      ],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "107",
+      "tokenURI": "ipfs://QmazQEY1bRCyJAXdewaSYo7frtvLNNGWzsQLJQ8fdP8toQ/0",
+      "owner": "0x9CE2A86115dE63e8C6d4688C1E85720C7CC786Be",
+      "imageUrl": "https://ipfs.io/ipfs/QmUdXdswFGjXFVfMaB5z3TpwcL8wvrSPzGvmg4dvcMUECp/media",
+      "name": "Cardinal Grifticus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "108",
+      "tokenURI": "ipfs://Qmb3sNfEpxND3g8iMAyVjRqEgsZHnQZmLsMD8gPxpcGtES/0",
+      "owner": "0x8f791F061d7f36dc07De081ad88F87d71be1585E",
+      "imageUrl": "https://ipfs.io/ipfs/QmRS8zEBTnWGaV1HKUvLDn85W5oKutCDyL6zUqVPzAyVrM/media",
+      "name": "Cardinal Goofius Maximus",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "109",
+      "tokenURI": "ipfs://QmX6n711oXWywrH4dg9PbNjLsjPdVZPqhTMxknLNKchKKx/0",
+      "owner": "0x6f66b95a0C512f3497FB46660E0BC3B94B989F8d",
+      "imageUrl": "https://ipfs.io/ipfs/Qmdwt37M7FAxX1znpMNokdgd2NdHKLBvudWWjigT1hT8tB/media",
+      "name": "Cardinal Thanos Snapper II",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    },
+    {
+      "tokenId": "110",
+      "tokenURI": "ipfs://QmX6n711oXWywrH4dg9PbNjLsjPdVZPqhTMxknLNKchKKx/1",
+      "owner": "0x6f66b95a0C512f3497FB46660E0BC3B94B989F8d",
+      "imageUrl": "https://ipfs.io/ipfs/QmXkRELZXiMmPjKcxECKHiDncbtXWRgak2GW7avCB8bGC4/media",
+      "name": "Cardinal Mega Man III",
+      "description": "whispers echo in the chamber\nthe eternal conclave gathers.\neach cardinal minted, holy, \n(a dark glimmer in their eye)\ndeciding with a single vote,\nthe fate of the pøpe of web3. \nthe throne waits, watching.",
+      "attributes": [],
+      "externalUrl": null
+    }
+  ],
+  "filteredAt": "2026-01-30T05:26:47.715Z",
+  "specialTokens": {
+    "popeDoom": "91",
+    "clippius": "16"
+  }
+}

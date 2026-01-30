@@ -1,7 +1,7 @@
 import artworksData from '@/data/artworks.json';
 import dailiesData from '@/data/dailies.json';
 import dropsData from '@/data/drops.json';
-import type { Artwork, DailyArtwork, Drop } from '@/types';
+import type { Artwork, DailyArtwork, Drop, Collection, CollectionNFT } from '@/types';
 
 // BasePath from next.config.mjs - needed for static assets
 // This should match the basePath in next.config.mjs
@@ -108,5 +108,58 @@ export function getActiveDrops(): Drop[] {
 
 export function getDropById(id: string): Drop | undefined {
   return dropsData.find((drop) => drop.id === id) as Drop | undefined;
+}
+
+// Collection data (NFTs from contract)
+let collectionData: Collection | null = null;
+
+export function getCollection(): Collection | null {
+  if (collectionData) {
+    return collectionData;
+  }
+
+  try {
+    // Dynamic import to handle missing file gracefully
+    const data = require('@/data/collection.json');
+    collectionData = data as Collection;
+    return collectionData;
+  } catch (error) {
+    // Collection data not found - that's okay
+    return null;
+  }
+}
+
+export function getAllCollectionNFTs(): CollectionNFT[] {
+  const collection = getCollection();
+  return collection?.tokens || [];
+}
+
+export function getSpecialCollectionNFTs(): CollectionNFT[] {
+  const collection = getCollection();
+  if (!collection || !('specialTokens' in collection)) {
+    return [];
+  }
+  const special = (collection as any).specialTokens;
+  if (!special) return [];
+  
+  const tokens = collection.tokens || [];
+  const specialTokenIds = [special.popeDoom, special.clippius].filter(Boolean);
+  return tokens.filter(t => specialTokenIds.includes(t.tokenId));
+}
+
+export function getRegularCollectionNFTs(): CollectionNFT[] {
+  const collection = getCollection();
+  if (!collection) return [];
+  
+  const special = (collection as any).specialTokens;
+  if (!special) return collection.tokens || [];
+  
+  const specialTokenIds = [special.popeDoom, special.clippius].filter(Boolean);
+  return (collection.tokens || []).filter(t => !specialTokenIds.includes(t.tokenId));
+}
+
+export function getCollectionNFTByTokenId(tokenId: string): CollectionNFT | undefined {
+  const collection = getCollection();
+  return collection?.tokens.find((nft) => nft.tokenId === tokenId);
 }
 

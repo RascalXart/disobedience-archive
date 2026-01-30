@@ -34,3 +34,31 @@ export interface Drop {
 
 export type FilterStatus = "all" | "available" | "sold";
 
+export interface NFTAttribute {
+  trait_type: string;
+  value: string | number;
+  display_type?: string;
+}
+
+export interface CollectionNFT {
+  tokenId: string;
+  tokenURI: string | null;
+  owner: string | null;
+  imageUrl: string | null;
+  name: string;
+  description: string | null;
+  attributes: NFTAttribute[];
+  externalUrl: string | null;
+}
+
+export interface Collection {
+  contractAddress: string;
+  chain: string;
+  name: string;
+  symbol: string;
+  totalSupply: number;
+  fetchedAt: string;
+  description?: string; // Optional collection description
+  tokens: CollectionNFT[];
+}
+
