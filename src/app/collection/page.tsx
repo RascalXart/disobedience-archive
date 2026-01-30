@@ -30,10 +30,7 @@ function IpfsImage({ src, alt, className, loading }: { src: string; alt: string;
         setGatewayIndex(nextGatewayIndex)
         setIsLoading(true)
       } else {
-        // Only log in development mode
-        if (process.env.NODE_ENV === 'development') {
-          console.warn('[IpfsImage] All gateways failed for:', src)
-        }
+        // Silently fail - no console logging
         setHasError(true)
         setIsLoading(false)
       }
