@@ -227,33 +227,45 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     )
   }
 
-  // Always render placeholder first to ensure server/client match
-  // Only render image after mount to prevent hydration mismatch
+  // Always render the exact same structure to prevent hydration mismatch
+  // Structure must be identical on server and client
   return (
     <div ref={containerRef} className="w-full h-full relative">
-      {(!mounted || !shouldLoad) && (
-        <div className="absolute inset-0 bg-[#111] w-full h-full" />
-      )}
-      {mounted && shouldLoad && currentSrc && (
-        <>
-          {isLoading && <div className="absolute inset-0 bg-[#111] w-full h-full" />}
-          <img
-            ref={imgRef}
-            src={currentSrc}
-            alt={alt}
-            className={className}
-            loading={loading}
-            decoding="async"
-            onError={handleError}
-            onLoad={handleLoad}
-            style={{
-              opacity: isLoading ? 0 : 1,
-              transition: 'opacity 0.3s ease-in',
-            }}
-            fetchPriority={fetchPriority}
-          />
-        </>
-      )}
+      {/* Placeholder - always rendered */}
+      <div 
+        className="absolute inset-0 bg-[#111] w-full h-full"
+        style={{ 
+          display: (mounted && shouldLoad && currentSrc) ? 'none' : 'block',
+          zIndex: 1,
+        }}
+      />
+      {/* Loading overlay - always rendered */}
+      <div 
+        className="absolute inset-0 bg-[#111] w-full h-full"
+        style={{ 
+          display: (mounted && shouldLoad && isLoading) ? 'block' : 'none',
+          zIndex: 2,
+        }}
+      />
+      {/* Image - always rendered, same structure always */}
+      <img
+        ref={imgRef}
+        src={mounted && shouldLoad && currentSrc ? currentSrc : 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'}
+        alt={alt}
+        className={className}
+        loading={loading}
+        decoding="async"
+        onError={mounted && shouldLoad ? handleError : undefined}
+        onLoad={mounted && shouldLoad ? handleLoad : undefined}
+        style={{
+          opacity: (mounted && shouldLoad && !isLoading && currentSrc) ? 1 : 0,
+          transition: 'opacity 0.3s ease-in',
+          position: 'relative',
+          zIndex: 0,
+        }}
+        fetchPriority={mounted && shouldLoad ? fetchPriority : undefined}
+        suppressHydrationWarning
+      />
     </div>
   )
 }
