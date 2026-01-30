@@ -15,42 +15,29 @@ const BASE_PATH = '/disobedience-archive';
  * No fallback to local /public/dailies paths.
  */
 export function resolveDailyMediaUrl(url: string): string {
-  // Access env var - Next.js replaces NEXT_PUBLIC_* vars at build time
-  const mediaBaseUrl = typeof window !== 'undefined' 
-    ? (window as any).__NEXT_DATA__?.env?.NEXT_PUBLIC_MEDIA_BASE_URL 
-    : process.env.NEXT_PUBLIC_MEDIA_BASE_URL;
-  
-  const isProduction = process.env.NODE_ENV === 'production';
+  // Access env var - Next.js replaces NEXT_PUBLIC_* vars at build time for client bundle
+  // In Next.js, NEXT_PUBLIC_* vars are embedded at build time, so process.env works in both server and client
+  const mediaBaseUrl = process.env.NEXT_PUBLIC_MEDIA_BASE_URL;
   
   // Check if URL contains /dailies/ (handles both /dailies/ and /disobedience-archive/dailies/)
   const dailiesMatch = url.match(/\/dailies\/([^/]+)$/);
   if (dailiesMatch) {
     const filename = dailiesMatch[1];
     
-    // If NEXT_PUBLIC_MEDIA_BASE_URL is set, use it (both dev and production)
-    if (mediaBaseUrl && mediaBaseUrl !== 'https://your-r2-url.r2.dev') {
+    // If NEXT_PUBLIC_MEDIA_BASE_URL is set and not a placeholder, use it
+    if (mediaBaseUrl && !mediaBaseUrl.includes('your-r2-url')) {
+      // Remove trailing slash from base URL if present
       const baseUrl = mediaBaseUrl.replace(/\/$/, '');
-      const resolvedUrl = `${baseUrl}/${filename}`;
-      
-      // Debug logging (only in development)
-      if (!isProduction && typeof window !== 'undefined') {
-        console.log(`[resolveDailyMediaUrl] Resolved ${url} -> ${resolvedUrl}`);
-      }
-      
+      // Construct the full URL
+      // If baseUrl already includes /dailies, just append filename, otherwise append /dailies/filename
+      const resolvedUrl = baseUrl.includes('/dailies')
+        ? `${baseUrl}/${filename}`
+        : `${baseUrl}/dailies/${filename}`;
       return resolvedUrl;
     }
     
-    // Fallback: if no R2 URL is set, log warning and return broken URL so it's obvious
-    if (typeof window !== 'undefined') {
-      console.warn(
-        `[resolveDailyMediaUrl] NEXT_PUBLIC_MEDIA_BASE_URL not set! ` +
-        `Image will not load: ${filename}. ` +
-        `Set NEXT_PUBLIC_MEDIA_BASE_URL in .env.local (dev) or Cloudflare Pages (production)`
-      );
-    }
-    
-    // Return a placeholder that will clearly fail
-    return `#MISSING_R2_URL/${filename}`;
+    // Fallback: return normalized local path (will fail if files don't exist, but no console spam)
+    return normalizeImageUrl(url);
   }
   
   // Not a dailies URL, return as-is
