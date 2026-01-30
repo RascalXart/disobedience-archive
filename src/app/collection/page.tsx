@@ -6,14 +6,67 @@ import { getAllCollectionNFTs, getCollection, getSpecialCollectionNFTs, getRegul
 import { resolveIpfsUrl, getFallbackIpfsUrl } from '@/lib/ipfs'
 import Link from 'next/link'
 
-// IPFS Image component with fallback gateways and timeout handling
+const IPFS_GATEWAYS = [
+  'https://gateway.pinata.cloud/ipfs/',
+  'https://ipfs.io/ipfs/',
+  'https://dweb.link/ipfs/',
+  'https://nftstorage.link/ipfs/',
+  'https://ipfs.filebase.io/ipfs/',
+]
+
+// Generate path variations to try when original fails
+// Returns array of paths (CID + optional path) that can be used with any gateway
+function generateIpfsPathVariations(originalUrl: string): string[] {
+  // Extract CID and path from URL
+  const match = originalUrl.match(/\/ipfs\/([^?]+)/)
+  if (!match) {
+    return [originalUrl] // Return original if can't parse
+  }
+  
+  const cidAndPath = match[1]
+  const parts = cidAndPath.split('/')
+  const cid = parts[0]
+  const originalPath = parts.slice(1).join('/')
+  
+  const variations: string[] = [cidAndPath] // Original path
+  
+  // If path ends with /media, try variations
+  if (originalPath.endsWith('/media') || originalPath === 'media') {
+    const basePath = originalPath.replace(/\/?media$/, '')
+    variations.push(
+      cid, // Just CID, no path
+      basePath ? `${cid}/${basePath}` : cid,
+      `${cid}/${basePath ? basePath + '/' : ''}image`,
+      `${cid}/${basePath ? basePath + '/' : ''}image.png`,
+      `${cid}/${basePath ? basePath + '/' : ''}image.jpg`,
+      `${cid}/${basePath ? basePath + '/' : ''}image.jpeg`,
+      `${cid}/${basePath ? basePath + '/' : ''}image.webp`,
+      `${cid}/${basePath ? basePath + '/' : ''}image.gif`,
+    )
+  }
+  
+  return variations
+}
+
+// IPFS Image component with fallback gateways and URL variations
 function IpfsImage({ src, alt, className, loading }: { src: string; alt: string; className?: string; loading?: 'lazy' | 'eager' }) {
-  const [currentSrc, setCurrentSrc] = useState<string>(resolveIpfsUrl(src) || src)
+  const originalResolved = resolveIpfsUrl(src) || src
+  const pathVariations = useMemo(() => generateIpfsPathVariations(originalResolved), [originalResolved])
+  
+  // Initialize with first gateway and first path variation
   const [gatewayIndex, setGatewayIndex] = useState(0)
+  const [pathVariationIndex, setPathVariationIndex] = useState(0)
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const imgRef = useRef<HTMLImageElement | null>(null)
+  
+  // Construct current URL from gateway and path variation
+  const currentSrc = useMemo(() => {
+    const gateway = IPFS_GATEWAYS[gatewayIndex] || IPFS_GATEWAYS[0]
+    const path = pathVariations[pathVariationIndex] || pathVariations[0]
+    return `${gateway}${path}`
+  }, [gatewayIndex, pathVariationIndex, pathVariations])
 
   const handleError = useMemo(() => {
     return () => {
@@ -22,23 +75,39 @@ function IpfsImage({ src, alt, className, loading }: { src: string; alt: string;
         timeoutRef.current = null
       }
 
-      const nextGatewayIndex = gatewayIndex + 1
-      const fallback = getFallbackIpfsUrl(src, nextGatewayIndex)
-      if (fallback) {
-        // Silently try next gateway - no console logging
-        setCurrentSrc(fallback)
-        setGatewayIndex(nextGatewayIndex)
+      // First try different path variations for current gateway
+      const nextPathVariationIndex = pathVariationIndex + 1
+      if (nextPathVariationIndex < pathVariations.length) {
+        setPathVariationIndex(nextPathVariationIndex)
         setIsLoading(true)
-      } else {
-        // Silently fail - no console logging
-        setHasError(true)
-        setIsLoading(false)
+        return
       }
+      
+      // If all path variations tried, try next gateway with first variation
+      const nextGatewayIndex = gatewayIndex + 1
+      if (nextGatewayIndex < IPFS_GATEWAYS.length) {
+        setGatewayIndex(nextGatewayIndex)
+        setPathVariationIndex(0) // Reset to first variation for new gateway
+        setIsLoading(true)
+        return
+      }
+      
+      // All gateways and variations exhausted
+      setHasError(true)
+      setIsLoading(false)
     }
-  }, [src, gatewayIndex])
+  }, [gatewayIndex, pathVariationIndex, pathVariations])
+
+  // Reset state when src prop changes
+  useEffect(() => {
+    setGatewayIndex(0)
+    setPathVariationIndex(0)
+    setHasError(false)
+    setIsLoading(true)
+  }, [src, pathVariations])
 
   useEffect(() => {
-    // Reset loading state when src changes
+    // Reset loading state when currentSrc changes
     setIsLoading(true)
     
     // Set a timeout for each gateway attempt (20 seconds)
