@@ -28,24 +28,69 @@ function generateIpfsPathVariations(originalUrl: string): string[] {
   const cid = parts[0]
   const originalPath = parts.slice(1).join('/')
   
-  const variations: string[] = [cidAndPath] // Original path
+  const variations: string[] = []
+  const extensions = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg']
   
-  // If path ends with /media, try variations
-  if (originalPath.endsWith('/media') || originalPath === 'media') {
-    const basePath = originalPath.replace(/\/?media$/, '')
-    variations.push(
-      cid, // Just CID, no path
-      basePath ? `${cid}/${basePath}` : cid,
-      `${cid}/${basePath ? basePath + '/' : ''}image`,
-      `${cid}/${basePath ? basePath + '/' : ''}image.png`,
-      `${cid}/${basePath ? basePath + '/' : ''}image.jpg`,
-      `${cid}/${basePath ? basePath + '/' : ''}image.jpeg`,
-      `${cid}/${basePath ? basePath + '/' : ''}image.webp`,
-      `${cid}/${basePath ? basePath + '/' : ''}image.gif`,
-    )
+  // 1. Try original path first (it might be correct)
+  if (originalPath) {
+    variations.push(cidAndPath)
+  } else {
+    // If no path, try CID root with common names
+    variations.push(cid)
   }
   
-  return variations
+  // 2. If path ends with /media, try removing it and checking root
+  if (originalPath && (originalPath.endsWith('/media') || originalPath === 'media')) {
+    const basePath = originalPath.replace(/\/?media$/, '')
+    
+    // Try just CID root (many NFTs have image here)
+    variations.push(cid)
+    
+    // Try common file names at root
+    const rootFileNames: string[] = ['image', '0', '1']
+    rootFileNames.forEach((name: string) => {
+      variations.push(`${cid}/${name}`)
+      extensions.slice(0, 3).forEach((ext: string) => { // Try most common extensions first
+        variations.push(`${cid}/${name}.${ext}`)
+      })
+    })
+    
+    // Try base path without /media
+    if (basePath) {
+      variations.push(`${cid}/${basePath}`)
+    }
+    
+    // Try files in /media directory
+    rootFileNames.forEach((name: string) => {
+      const pathPrefix = basePath ? `${basePath}/media/` : 'media/'
+      variations.push(`${cid}/${pathPrefix}${name}`)
+      extensions.slice(0, 3).forEach((ext: string) => {
+        variations.push(`${cid}/${pathPrefix}${name}.${ext}`)
+      })
+    })
+  } else if (originalPath) {
+    // Original path exists but doesn't end with /media
+    // Try adding extensions if it doesn't have one
+    if (!originalPath.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i)) {
+      extensions.slice(0, 3).forEach((ext: string) => {
+        variations.push(`${cidAndPath}.${ext}`)
+      })
+    }
+    // Also try CID root
+    variations.push(cid)
+  } else {
+    // No path, try common file names at root
+    const rootFileNames: string[] = ['image', '0', '1']
+    rootFileNames.forEach((name: string) => {
+      variations.push(`${cid}/${name}`)
+      extensions.slice(0, 3).forEach((ext: string) => {
+        variations.push(`${cid}/${name}.${ext}`)
+      })
+    })
+  }
+  
+  // Remove duplicates while preserving order
+  return Array.from(new Set(variations))
 }
 
 // IPFS Image component with fallback gateways and URL variations
@@ -110,13 +155,13 @@ function IpfsImage({ src, alt, className, loading }: { src: string; alt: string;
     // Reset loading state when currentSrc changes
     setIsLoading(true)
     
-    // Set a timeout for each gateway attempt (20 seconds)
+    // Set a timeout for each attempt (5 seconds - faster cycling through variations)
     timeoutRef.current = setTimeout(() => {
       // Only trigger error if still loading and no error yet
       if (isLoading && !hasError && imgRef.current && !imgRef.current.complete) {
         handleError()
       }
-    }, 20000)
+    }, 5000)
 
     return () => {
       if (timeoutRef.current) {
@@ -543,18 +588,18 @@ export default function CollectionPage() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0a]/95 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0a]/95 backdrop-blur-sm overflow-y-auto"
           onClick={() => setSelectedTokenId(null)}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="relative max-w-4xl w-full bg-[#111] border border-[#222] p-8"
+            className="relative max-w-4xl w-full bg-[#111] border border-[#222] p-8 my-8"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={() => setSelectedTokenId(null)}
-              className="absolute top-4 right-4 mono text-xs text-[#666] hover:text-white transition-colors"
+              className="sticky top-4 float-right mono text-xs text-[#666] hover:text-white transition-colors z-10 bg-[#111] px-2 py-1"
             >
               [CLOSE]
             </button>
