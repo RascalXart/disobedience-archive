@@ -60,7 +60,11 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   // For eager images, always load immediately - don't wait for intersection observer
-  const [shouldLoad, setShouldLoad] = useState(loading === 'eager' || fetchPriority === 'high')
+  // For lazy images, start as false and let Intersection Observer handle it
+  const [shouldLoad, setShouldLoad] = useState(() => {
+    if (typeof window === 'undefined') return false // SSR: always false to prevent hydration mismatch
+    return loading === 'eager' || fetchPriority === 'high'
+  })
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const imgRef = useRef<HTMLImageElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -128,7 +132,7 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     }
   }, [currentSrc, shouldLoad, handleError, isR2OrDirect])
   
-  // Intersection Observer for lazy loading
+  // Intersection Observer for lazy loading - client-side only to prevent hydration issues
   useEffect(() => {
     // Eager or high priority images load immediately
     if (loading === 'eager' || fetchPriority === 'high') {
@@ -138,28 +142,53 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     
     if (shouldLoad) return
     
-    // Check if already in viewport
-    if (containerRef.current) {
+    // Only run on client
+    if (typeof window === 'undefined') return
+    
+    let observer: IntersectionObserver | null = null
+    
+    const checkAndObserve = () => {
+      if (!containerRef.current) return
+      
+      // Check if already in viewport
       const rect = containerRef.current.getBoundingClientRect()
       if (rect.top < window.innerHeight + 200 && rect.bottom > -200) {
         setShouldLoad(true)
         return
       }
+      
+      // Set up Intersection Observer for images not yet in viewport
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0]?.isIntersecting) {
+            setShouldLoad(true)
+            if (observer) {
+              observer.disconnect()
+              observer = null
+            }
+          }
+        },
+        { rootMargin: '200px', threshold: 0.01 }
+      )
+
+      if (containerRef.current) {
+        observer.observe(containerRef.current)
+      }
     }
     
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0]?.isIntersecting) {
-          setShouldLoad(true)
-          observer.disconnect()
-        }
-      },
-      { rootMargin: '200px', threshold: 0.01 }
-    )
-
-    if (containerRef.current) observer.observe(containerRef.current)
-    return () => observer.disconnect()
-  }, [loading, shouldLoad])
+    // Check immediately
+    checkAndObserve()
+    
+    // Also check after a small delay to catch any layout shifts
+    const timer = setTimeout(checkAndObserve, 100)
+    
+    return () => {
+      clearTimeout(timer)
+      if (observer) {
+        observer.disconnect()
+      }
+    }
+  }, [loading, shouldLoad, fetchPriority])
   
   // Early return for R2/direct URLs AFTER all hooks
   if (isR2OrDirect) {
@@ -193,10 +222,17 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     )
   }
 
+  // Don't render image until shouldLoad is true (prevents hydration mismatch)
+  if (!shouldLoad && loading !== 'eager' && fetchPriority !== 'high') {
+    return (
+      <div ref={containerRef} className="w-full h-full relative bg-[#111]" />
+    )
+  }
+
   return (
     <div ref={containerRef} className="w-full h-full relative">
       {isLoading && <div className="absolute inset-0 bg-[#111] w-full h-full" />}
-      {shouldLoad && currentSrc && (
+      {currentSrc && (
         <img
           ref={imgRef}
           src={currentSrc}
@@ -217,7 +253,7 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
   )
 }
 
-export default function CollectionPage() {
+export default function ConclavePage() {
   const collection = getCollection()
   const specialNFTs = getSpecialCollectionNFTs()
   const regularNFTs = getRegularCollectionNFTs()
@@ -280,9 +316,10 @@ export default function CollectionPage() {
     if (clippius?.owner) resolveENS(clippius.owner)
   }, [popeDoom, clippius, ensNames])
   
-  // Preload Pope Doom and Clippius images - highest priority, run immediately
+  // Preload Pope Doom and Clippius images - client-side only to prevent hydration issues
   useEffect(() => {
-    // Run immediately, don't wait
+    if (typeof window === 'undefined') return
+    
     const preloadImages = () => {
       if (popeDoom?.imageUrl) {
         const resolvedUrl = resolveIpfsUrl(popeDoom.imageUrl) || popeDoom.imageUrl
@@ -295,7 +332,7 @@ export default function CollectionPage() {
         link.as = 'image'
         link.href = resolvedUrl
         link.setAttribute('fetchpriority', 'high')
-        document.head.insertBefore(link, document.head.firstChild) // Insert at top for priority
+        document.head.insertBefore(link, document.head.firstChild)
       }
       if (clippius?.imageUrl) {
         const resolvedUrl = resolveIpfsUrl(clippius.imageUrl) || clippius.imageUrl
@@ -308,15 +345,13 @@ export default function CollectionPage() {
         link.as = 'image'
         link.href = resolvedUrl
         link.setAttribute('fetchpriority', 'high')
-        document.head.insertBefore(link, document.head.firstChild) // Insert at top for priority
+        document.head.insertBefore(link, document.head.firstChild)
       }
     }
     
-    // Run immediately
-    preloadImages()
-    
-    // Also run on next tick to ensure DOM is ready
-    setTimeout(preloadImages, 0)
+    // Run after a small delay to ensure DOM is ready
+    const timer = setTimeout(preloadImages, 100)
+    return () => clearTimeout(timer)
   }, [popeDoom?.imageUrl, clippius?.imageUrl])
   
   useEffect(() => {
