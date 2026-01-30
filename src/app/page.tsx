@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { getAllDailies } from '@/lib/data'
 import { ExperimentalArchiveCard } from '@/components/ExperimentalArchiveCard'
 import { DailyArtworkModal } from '@/components/DailyArtworkModal'
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 import type { DailyArtwork } from '@/types'
 
 export default function HomePage() {
@@ -16,6 +16,7 @@ export default function HomePage() {
   const [globalGlitch, setGlobalGlitch] = useState(false)
   const allDailies = getAllDailies()
   const availableDailies = allDailies.filter(d => d.status === 'available')
+  const isModalOpen = selectedDaily !== null
 
   // Mouse tracking for global effects
   useEffect(() => {
@@ -26,6 +27,11 @@ export default function HomePage() {
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
+
+  // Sort dailies based on reverse state
+  const sortedDailies = useMemo(() => {
+    return isReversed ? [...allDailies].reverse() : allDailies
+  }, [allDailies, isReversed])
 
   // Random global glitch effects
   useEffect(() => {
@@ -39,10 +45,62 @@ export default function HomePage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Sort dailies based on reverse state
-  const sortedDailies = useMemo(() => {
-    return isReversed ? [...allDailies].reverse() : allDailies
-  }, [allDailies, isReversed])
+  // Initialize ScrollReveal - only once, don't reset on mouse moves
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // Dynamically import ScrollReveal to avoid SSR issues
+      import('scrollreveal').then((ScrollReveal) => {
+        // Small delay to ensure DOM is ready
+        const timer = setTimeout(() => {
+          const sr = ScrollReveal.default({
+            origin: 'bottom',
+            distance: '50px',
+            duration: 1200,
+            delay: 0,
+            easing: 'cubic-bezier(0.5, 0, 0, 1)',
+            reset: false, // Don't reset animations
+            mobile: true,
+            viewFactor: 0.15, // Trigger when 15% of element is visible
+            scale: 1,
+            useDelay: 'always', // Always use delay, don't skip
+          })
+
+          // Reveal archive cards with satisfying staggered animation
+          const cards = document.querySelectorAll('[data-scroll-reveal="card"]')
+          cards.forEach((card, index) => {
+            sr.reveal(card, {
+              delay: (index % 6) * 60, // Stagger by 60ms per card, reset every 6
+              distance: '50px',
+              scale: 0.9,
+              opacity: 0,
+              easing: 'cubic-bezier(0.5, 0, 0, 1)',
+              duration: 1000,
+              reset: false, // Never reset this animation
+            })
+          })
+
+          // Reveal month headers
+          const monthHeaders = document.querySelectorAll('[data-scroll-reveal="month"]')
+          monthHeaders.forEach((header, index) => {
+            sr.reveal(header, {
+              delay: index * 100,
+              distance: '40px',
+              opacity: 0,
+              duration: 800,
+              easing: 'ease-out',
+              reset: false, // Never reset this animation
+            })
+          })
+        }, 100)
+
+        return () => {
+          clearTimeout(timer)
+        }
+      }).catch((err) => {
+        console.error('Failed to load ScrollReveal:', err)
+      })
+    }
+  }, [sortedDailies, isReversed]) // Re-run when dailies change
 
   // Group by month
   const groupedByMonth = useMemo(() => {
@@ -223,6 +281,7 @@ export default function HomePage() {
                   animate={{
                     x: globalGlitch ? [-1, 1, 0] : 0,
                   }}
+                  data-scroll-reveal="month"
                 >
                   <div className="flex items-baseline gap-3 relative">
                     {/* Text reflection layers */}
@@ -260,14 +319,16 @@ export default function HomePage() {
                   {dailies.map((daily, index) => {
                     const globalIndex = sortedDailies.findIndex(d => d.id === daily.id)
                     return (
-                      <ExperimentalArchiveCard
-                        key={daily.id}
-                        daily={daily}
-                        index={globalIndex}
-                        onClick={() => setSelectedDaily(daily)}
-                        mouseX={mouseX}
-                        mouseY={mouseY}
-                      />
+                              <div key={daily.id} data-scroll-reveal="card">
+                                <ExperimentalArchiveCard
+                                  daily={daily}
+                                  index={globalIndex}
+                                  onClick={() => setSelectedDaily(daily)}
+                                  mouseX={mouseX}
+                                  mouseY={mouseY}
+                                  isModalOpen={isModalOpen}
+                                />
+                              </div>
                     )
                   })}
                 </div>

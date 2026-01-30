@@ -1,7 +1,6 @@
 'use client'
 
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import Image from 'next/image'
+import { motion } from 'framer-motion'
 import { useState, useEffect, useRef } from 'react'
 import type { DailyArtwork } from '@/types'
 import { resolveDailyMediaUrl } from '@/lib/data'
@@ -12,26 +11,13 @@ interface ExperimentalArchiveCardProps {
   onClick?: () => void
   mouseX: number
   mouseY: number
+  isModalOpen?: boolean
 }
 
-export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY }: ExperimentalArchiveCardProps) {
-  const [isHovered, setIsHovered] = useState(false)
+export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY, isModalOpen = false }: ExperimentalArchiveCardProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const cardRef = useRef<HTMLDivElement>(null)
-  
-  // Mouse tracking for parallax/distortion
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
-  const rotateXValue = useTransform(y, [-0.5, 0.5], [5, -5])
-  const rotateYValue = useTransform(x, [-0.5, 0.5], [-5, 5])
-  const rotateX = useSpring(rotateXValue, { stiffness: 300, damping: 30 })
-  const rotateY = useSpring(rotateYValue, { stiffness: 300, damping: 30 })
-  
-  const translateX = useTransform(x, [-0.5, 0.5], [-10, 10])
-  const translateY = useTransform(y, [-0.5, 0.5], [-10, 10])
-  const shadowX = useTransform(x, [-0.5, 0.5], [-20, 20])
-  const shadowY = useTransform(y, [-0.5, 0.5], [-20, 20])
 
   // Random glitch intervals
   useEffect(() => {
@@ -47,20 +33,35 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
     return () => clearInterval(interval)
   }, [isVisible])
 
-  // Intersection observer for visibility - start visible to avoid blank squares
+  // Intersection observer for visibility - only load images/videos when visible
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [shouldLoad, setShouldLoad] = useState(false)
+  
   useEffect(() => {
-    // Set visible immediately for better UX
-    setIsVisible(true)
-    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true)
+          const isIntersecting = entry.isIntersecting
+          setIsVisible(isIntersecting)
+          
+          // Only load media when actually visible (or about to be)
+          if (isIntersecting && !shouldLoad) {
+            setShouldLoad(true)
+          }
+          
+          // Pause/play video based on visibility
+          if (videoRef.current) {
+            if (isIntersecting) {
+              videoRef.current.play().catch(() => {
+                // Ignore autoplay errors
+              })
+            } else {
+              videoRef.current.pause()
+            }
           }
         })
       },
-      { rootMargin: '500px', threshold: 0.01 }
+      { rootMargin: '200px', threshold: 0.01 } // Start loading 200px before entering viewport
     )
 
     if (cardRef.current) {
@@ -68,26 +69,8 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
     }
 
     return () => observer.disconnect()
-  }, [])
+  }, [shouldLoad])
 
-  // Mouse position tracking
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!cardRef.current) return
-      const rect = cardRef.current.getBoundingClientRect()
-      const centerX = rect.left + rect.width / 2
-      const centerY = rect.top + rect.height / 2
-      const deltaX = (e.clientX - centerX) / rect.width
-      const deltaY = (e.clientY - centerY) / rect.height
-      x.set(deltaX)
-      y.set(deltaY)
-    }
-
-    if (isHovered) {
-      window.addEventListener('mousemove', handleMouseMove)
-      return () => window.removeEventListener('mousemove', handleMouseMove)
-    }
-  }, [isHovered, x, y])
 
   const isVideo = daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')
   const mediaUrl = resolveDailyMediaUrl(daily.imageUrl)
@@ -113,23 +96,10 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
         ease: [0.25, 0.1, 0.25, 1]
       }}
       className={`${size.w} mb-8 md:mb-12 group cursor-pointer relative`}
-      style={{
-        x: isHovered ? translateX : offsetX,
-        y: isHovered ? translateY : offsetY,
-        rotateX: isHovered ? rotateX : 0,
-        rotateY: isHovered ? rotateY : 0,
-        transformStyle: 'preserve-3d',
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false)
-        x.set(0)
-        y.set(0)
-      }}
       onClick={onClick}
     >
       {/* Glitch overlay */}
-      {glitchActive && (
+      {isVisible && glitchActive && (
         <motion.div
           className="absolute inset-0 z-10 pointer-events-none"
           initial={{ opacity: 0 }}
@@ -145,72 +115,64 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
       )}
 
       {/* Main container with distortion */}
-      <motion.div
-        className={`relative ${size.h} overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#444] transition-all duration-500 artwork-hover-glitch ${glitchActive ? 'data-corrupt' : ''}`}
-        animate={isHovered ? {
-          scale: 1.02,
-          filter: 'brightness(1.15) contrast(1.1) saturate(1.2)',
-        } : {}}
+      <div
+        className={`relative ${size.h} overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#444] transition-all duration-500 artwork-hover-glitch ${glitchActive && isVisible ? 'data-corrupt' : ''} group-hover:scale-[1.02] group-hover:brightness-110`}
         style={{
-          transform: isHovered ? 'perspective(1000px)' : 'none',
+          opacity: isVisible ? 1 : 0.3,
         }}
       >
         {isVideo ? (
-          <motion.video
-            src={mediaUrl}
-            className="w-full h-full object-contain"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            onError={(e) => {
-              console.error('Video failed to load:', mediaUrl, e)
-            }}
-            animate={isHovered ? {
-              scale: 1.02,
-              filter: 'brightness(1.2)',
-            } : {}}
-            transition={{ duration: 0.6 }}
-          />
-        ) : (
-          <motion.div
-            className="w-full h-full relative"
-            animate={isHovered ? {
-              scale: 1.02,
-              filter: 'brightness(1.2) contrast(1.1)',
-            } : {}}
-            transition={{ duration: 0.6 }}
-          >
-            <Image
+          shouldLoad ? (
+            <video
+              ref={videoRef}
               src={mediaUrl}
-              alt={daily.id}
-              fill
-              className="object-contain"
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              unoptimized={daily.imageUrl.endsWith('.gif') || daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')}
-              loading="lazy"
-              decoding="async"
+              className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.02] group-hover:brightness-110"
+              autoPlay={isVisible && !isModalOpen}
+              muted
+              loop
+              playsInline
+              preload="none"
               onError={(e) => {
-                console.error('Image failed to load:', mediaUrl, e)
-              }}
-              onLoad={() => {
-                // Image loaded successfully
+                console.error('Video failed to load:', mediaUrl, e)
               }}
             />
-          </motion.div>
+          ) : (
+            <div className="w-full h-full bg-[#111]" />
+          )
+        ) : (
+          <div className="w-full h-full relative">
+            {isVisible ? (
+              <img
+                src={mediaUrl}
+                alt={daily.id}
+                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.02] group-hover:brightness-110"
+                loading="lazy"
+                decoding="async"
+                style={{
+                  willChange: isModalOpen ? 'auto' : 'transform',
+                  opacity: isModalOpen ? 0.3 : 1,
+                  filter: isModalOpen ? 'blur(2px)' : 'none',
+                }}
+                onError={(e) => {
+                  console.error('Image failed to load:', mediaUrl, e)
+                  const target = e.target as HTMLImageElement
+                  target.style.display = 'none'
+                }}
+              />
+            ) : (
+              <div className="w-full h-full bg-[#111]" />
+            )}
+          </div>
         )}
 
         {/* Chromatic aberration overlay on hover */}
-        {isHovered && (
-          <motion.div
-            className="absolute inset-0 pointer-events-none chromatic"
-            style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255,0,0,0.1) 25%, rgba(0,255,0,0.1) 50%, rgba(0,0,255,0.1) 75%, transparent 100%)',
-              mixBlendMode: 'screen',
-            }}
-          />
-        )}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{
+            background: 'linear-gradient(90deg, transparent 0%, rgba(255,0,0,0.1) 25%, rgba(0,255,0,0.1) 50%, rgba(0,0,255,0.1) 75%, transparent 100%)',
+            mixBlendMode: 'screen',
+          }}
+        />
 
         {/* Corrupted data overlay */}
         <motion.div
@@ -222,13 +184,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
         />
 
         {/* Label reveal with glitch text and reflections */}
-        {isHovered && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="absolute bottom-0 left-0 right-0 p-3 bg-[#0a0a0a]/98 backdrop-blur-md border-t border-[#333] relative"
-          >
+        <div className="absolute bottom-0 left-0 right-0 p-3 bg-[#0a0a0a]/98 backdrop-blur-md border-t border-[#333] relative opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             {/* Text reflection layers */}
             <motion.div
               className="absolute bottom-3 left-3 text-[#999]/10 blur-[1px] translate-y-[2px] scale-y-[-1] select-none pointer-events-none mono text-[9px] leading-tight"
@@ -285,8 +241,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
                 {daily.id.replace(/_/g, ' ').toUpperCase()}
               </div>
             </motion.div>
-          </motion.div>
-        )}
+        </div>
 
         {/* Scanline effect */}
         <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-30 transition-opacity">
@@ -294,17 +249,10 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY 
             backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px)',
           }} />
         </div>
-      </motion.div>
+      </div>
 
       {/* Distortion shadow */}
-      <motion.div
-        className="absolute inset-0 -z-10 bg-[#000] opacity-0 group-hover:opacity-20 blur-xl"
-        style={{
-          scale: isHovered ? 1.2 : 1,
-          x: isHovered ? shadowX : 0,
-          y: isHovered ? shadowY : 0,
-        }}
-      />
+      <div className="absolute inset-0 -z-10 bg-[#000] opacity-0 group-hover:opacity-20 group-hover:scale-125 blur-xl transition-all duration-300" />
     </motion.div>
   )
 }

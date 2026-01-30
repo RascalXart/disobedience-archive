@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import type { DailyArtwork } from '@/types'
 import { DailyArtworkModal } from './DailyArtworkModal'
 import { getAllDailies, resolveDailyMediaUrl } from '@/lib/data'
@@ -14,7 +14,46 @@ interface ArchiveArtworkCardProps {
 export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
+  const [shouldLoad, setShouldLoad] = useState(false)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
   const allDailies = getAllDailies()
+
+  // Intersection observer for viewport visibility - only load when visible
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const isIntersecting = entry.isIntersecting
+          setIsVisible(isIntersecting)
+          
+          // Only load media when actually visible
+          if (isIntersecting && !shouldLoad) {
+            setShouldLoad(true)
+          }
+          
+          // Pause/play video based on visibility
+          if (videoRef.current) {
+            if (isIntersecting) {
+              videoRef.current.play().catch(() => {
+                // Ignore autoplay errors
+              })
+            } else {
+              videoRef.current.pause()
+            }
+          }
+        })
+      },
+      { rootMargin: '200px', threshold: 0.01 }
+    )
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current)
+    }
+
+    return () => observer.disconnect()
+  }, [shouldLoad])
 
   // Standardized size - consistent width
   const sizeClass = 'w-full'
@@ -32,8 +71,9 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
   return (
     <>
       <motion.div
+        ref={cardRef}
         initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        animate={{ opacity: isVisible ? 1 : 0.3, y: isVisible ? 0 : 20 }}
         transition={{ 
           delay: index * 0.02,
           duration: 0.6,
@@ -52,24 +92,36 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
           {/* Image container - standardized square aspect ratio */}
           <div className="relative overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors aspect-square">
             {daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov') ? (
-              <video
-                src={resolveDailyMediaUrl(daily.imageUrl)}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                muted
-                loop
-                playsInline
-              />
+              shouldLoad ? (
+                <video
+                  ref={videoRef}
+                  src={resolveDailyMediaUrl(daily.imageUrl)}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                  autoPlay={isVisible}
+                  muted
+                  loop
+                  playsInline
+                  preload="none"
+                />
+              ) : (
+                <div className="w-full h-full bg-[#111]" />
+              )
             ) : (
-              <img
-                src={resolveDailyMediaUrl(daily.imageUrl)}
-                alt={daily.id}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                onError={(e) => {
-                  console.error('Image failed to load:', resolveDailyMediaUrl(daily.imageUrl), e)
-                  const target = e.target as HTMLImageElement
-                  target.style.display = 'none'
-                }}
-              />
+              shouldLoad ? (
+                <img
+                  src={resolveDailyMediaUrl(daily.imageUrl)}
+                  alt={daily.id}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                  loading="eager"
+                  onError={(e) => {
+                    console.error('Image failed to load:', resolveDailyMediaUrl(daily.imageUrl), e)
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full bg-[#111]" />
+              )
             )}
             <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
             

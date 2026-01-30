@@ -110,8 +110,8 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
           onClick={(e) => e.stopPropagation()}
         >
           <div className="grid md:grid-cols-2 gap-8 p-6 md:p-8">
-            {/* Media */}
-            <div className="relative aspect-square bg-[#111]">
+            {/* Media - optimized for smooth playback */}
+            <div className="relative aspect-square bg-[#111]" style={{ willChange: 'contents' }}>
               {isVideo ? (
                 <video
                   key={currentDaily.id}
@@ -120,7 +120,9 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                   loop
                   muted
                   playsInline
+                  preload="auto"
                   className="w-full h-full object-contain"
+                  style={{ willChange: 'transform' }}
                 />
               ) : (
                 <img
@@ -128,6 +130,12 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                   src={resolveDailyMediaUrl(currentDaily.imageUrl)}
                   alt={currentDaily.id}
                   className="w-full h-full object-contain"
+                  loading="eager"
+                  decoding="sync"
+                  style={{ 
+                    willChange: 'transform',
+                    imageRendering: currentDaily.imageUrl.endsWith('.gif') ? 'auto' : 'auto',
+                  }}
                   onError={(e) => {
                     console.error('Image failed to load:', resolveDailyMediaUrl(currentDaily.imageUrl), e)
                     const target = e.target as HTMLImageElement
