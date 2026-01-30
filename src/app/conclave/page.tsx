@@ -76,6 +76,9 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
 
   // Handle image error - try next gateway/path
   const handleError = useCallback(() => {
+    // Only handle errors if mounted and should be loading
+    if (!mounted || !shouldLoad) return
+    
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
@@ -103,7 +106,7 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     // All options exhausted
     setHasError(true)
     setIsLoading(false)
-  }, [pathIndex, pathVariations.length, gatewayIndex])
+  }, [pathIndex, pathVariations.length, gatewayIndex, mounted, shouldLoad])
 
   // Mark as mounted after hydration to prevent mismatches
   useEffect(() => {
@@ -195,6 +198,17 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     }
   }, [loading, shouldLoad, fetchPriority, mounted])
   
+  const handleLoad = useCallback(() => {
+    // Only handle load if mounted and should be loading
+    if (!mounted || !shouldLoad) return
+    
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+    setIsLoading(false)
+  }, [mounted, shouldLoad])
+
   // Early return for R2/direct URLs AFTER all hooks
   if (isR2OrDirect) {
     return (
@@ -209,14 +223,6 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
         />
       </div>
     )
-  }
-
-  const handleLoad = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-    setIsLoading(false)
   }
 
   if (hasError) {
@@ -255,16 +261,15 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
         className={className}
         loading={loading}
         decoding="async"
-        onError={mounted && shouldLoad ? handleError : undefined}
-        onLoad={mounted && shouldLoad ? handleLoad : undefined}
+        onError={handleError}
+        onLoad={handleLoad}
         style={{
           opacity: (mounted && shouldLoad && !isLoading && currentSrc) ? 1 : 0,
           transition: 'opacity 0.3s ease-in',
           position: 'relative',
           zIndex: 0,
         }}
-        fetchPriority={mounted && shouldLoad ? fetchPriority : undefined}
-        suppressHydrationWarning
+        fetchPriority={fetchPriority}
       />
     </div>
   )
