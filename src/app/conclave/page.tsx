@@ -59,12 +59,9 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
   const [pathIndex, setPathIndex] = useState(0)
   const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  // For eager images, always load immediately - don't wait for intersection observer
-  // For lazy images, start as false and let Intersection Observer handle it
-  const [shouldLoad, setShouldLoad] = useState(() => {
-    if (typeof window === 'undefined') return false // SSR: always false to prevent hydration mismatch
-    return loading === 'eager' || fetchPriority === 'high'
-  })
+  const [mounted, setMounted] = useState(false)
+  // Always start as false to ensure server/client match - set to true in useEffect
+  const [shouldLoad, setShouldLoad] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
   const imgRef = useRef<HTMLImageElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -108,6 +105,15 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     setIsLoading(false)
   }, [pathIndex, pathVariations.length, gatewayIndex])
 
+  // Mark as mounted after hydration to prevent mismatches
+  useEffect(() => {
+    setMounted(true)
+    // For eager/high priority images, load immediately after mount
+    if (loading === 'eager' || fetchPriority === 'high') {
+      setShouldLoad(true)
+    }
+  }, [loading, fetchPriority])
+
   // Reset when src changes
   useEffect(() => {
     setGatewayIndex(0)
@@ -132,18 +138,17 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     }
   }, [currentSrc, shouldLoad, handleError, isR2OrDirect])
   
-  // Intersection Observer for lazy loading - client-side only to prevent hydration issues
+  // Intersection Observer for lazy loading - only after mount to prevent hydration issues
   useEffect(() => {
-    // Eager or high priority images load immediately
+    // Only run after component is mounted
+    if (!mounted) return
+    
+    // Eager or high priority images already handled in mount effect
     if (loading === 'eager' || fetchPriority === 'high') {
-      setShouldLoad(true)
       return
     }
     
     if (shouldLoad) return
-    
-    // Only run on client
-    if (typeof window === 'undefined') return
     
     let observer: IntersectionObserver | null = null
     
@@ -188,7 +193,7 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
         observer.disconnect()
       }
     }
-  }, [loading, shouldLoad, fetchPriority])
+  }, [loading, shouldLoad, fetchPriority, mounted])
   
   // Early return for R2/direct URLs AFTER all hooks
   if (isR2OrDirect) {
@@ -222,8 +227,8 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     )
   }
 
-  // Don't render image until shouldLoad is true (prevents hydration mismatch)
-  if (!shouldLoad && loading !== 'eager' && fetchPriority !== 'high') {
+  // Don't render image until mounted and shouldLoad is true (prevents hydration mismatch)
+  if (!mounted || (!shouldLoad && loading !== 'eager' && fetchPriority !== 'high')) {
     return (
       <div ref={containerRef} className="w-full h-full relative bg-[#111]" />
     )
