@@ -222,32 +222,9 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     setIsLoading(false)
   }, [mounted, shouldLoad])
 
-  // Early return for R2/direct URLs AFTER all hooks
-  if (isR2OrDirect) {
-    return (
-      <div className="w-full h-full relative">
-        <img
-          src={src}
-          alt={alt}
-          className={className}
-          loading={loading}
-          decoding="async"
-          style={{ opacity: 1, transition: 'opacity 0.2s ease-in' }}
-        />
-      </div>
-    )
-  }
-
-  if (hasError) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-[#111]">
-        <span className="mono text-xs text-[#666]">NO IMAGE</span>
-      </div>
-    )
-  }
-
   // Always render identical structure - use useEffect to update after mount
   // This ensures server and client initial render match exactly
+  // MUST BE BEFORE ANY EARLY RETURNS
   useEffect(() => {
     if (!mounted || !containerRef.current) return
     
