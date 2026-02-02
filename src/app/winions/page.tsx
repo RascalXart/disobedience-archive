@@ -424,6 +424,19 @@ export default function WinionsPage() {
   const [visibleCount, setVisibleCount] = useState(50) // Start with 50 images per page
   const [isShuffled, setIsShuffled] = useState(false)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  
+  // Start with sidebar collapsed on mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        setIsMobileSidebarOpen(false)
+      }
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
   
   // Shuffle or sort NFTs
   const allNFTs = useMemo(() => {
@@ -622,31 +635,50 @@ export default function WinionsPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pt-24">
-      <div className="flex h-[calc(100vh-6rem)]">
+      <div className="flex h-[calc(100vh-6rem)] relative">
+        {/* Mobile backdrop overlay */}
+        {isMobileSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-[#0a0a0a]/80 z-30 md:hidden"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+        )}
+        
         {/* Left Sidebar - Filters */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5 }}
-          className="w-80 border-r border-[#222] overflow-y-auto bg-[#0a0a0a]"
+          className={`fixed md:relative inset-y-0 left-0 z-40 md:z-auto w-80 border-r border-[#222] overflow-y-auto bg-[#0a0a0a] transform transition-transform duration-300 pt-24 md:pt-0 ${
+            isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+          }`}
         >
-          <div className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a] z-10 border-b border-[#222] pb-6">
-            <div>
-              <motion.h1
-                className="font-grotesk text-3xl md:text-4xl font-light mb-4"
-                style={{
-                  textShadow: '0 0 20px rgba(0, 255, 0, 0.3), 2px 0 0 rgba(255, 0, 0, 0.2)',
-                  filter: 'contrast(1.2)',
-                }}
-              >
-                WINIØNS
-              </motion.h1>
+          <div           className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a] z-10 border-b border-[#222] pb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <motion.h1
+                  className="font-grotesk text-3xl md:text-4xl font-light mb-4"
+                  style={{
+                    textShadow: '0 0 20px rgba(0, 255, 0, 0.3), 2px 0 0 rgba(255, 0, 0, 0.2)',
+                    filter: 'contrast(1.2)',
+                  }}
+                >
+                  WINIØNS
+                </motion.h1>
               
-              <div className="mono text-xs text-[#888] space-y-1">
-                <p>{allNFTs.length} {allNFTs.length === 1 ? 'TOKEN' : 'TOKENS'}</p>
-                <p className="text-[10px] text-[#555]">Contract: 0x4ad94fb8b87a1ad3f7d52a406c64b56db3af0733</p>
-                <p className="text-[10px] text-[#555]">Chain: Ethereum</p>
+                <div className="mono text-xs text-[#888] space-y-1">
+                  <p>{allNFTs.length} {allNFTs.length === 1 ? 'TOKEN' : 'TOKENS'}</p>
+                  <p className="text-[10px] text-[#555]">Contract: 0x4ad94fb8b87a1ad3f7d52a406c64b56db3af0733</p>
+                  <p className="text-[10px] text-[#555]">Chain: Ethereum</p>
+                </div>
               </div>
+              {/* Mobile close button */}
+              <button
+                onClick={() => setIsMobileSidebarOpen(false)}
+                className="md:hidden mono text-xs text-[#666] hover:text-white"
+              >
+                ✕
+              </button>
             </div>
 
             <div className="flex items-center justify-between">
@@ -806,8 +838,23 @@ export default function WinionsPage() {
         </motion.div>
 
         {/* Right Side - NFT Grid */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto w-full">
           <div className="p-6">
+            {/* Mobile filter toggle button */}
+            <div className="md:hidden mb-4 flex items-center justify-between">
+              <button
+                onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+                className="mono text-xs px-4 py-2 border border-[#222] hover:border-[#333] bg-[#111] text-[#888] hover:text-white transition-colors"
+              >
+                {isMobileSidebarOpen ? '✕ CLOSE FILTERS' : '☰ FILTERS'}
+              </button>
+              {selectedTraits.size > 0 && (
+                <div className="mono text-xs text-[#666]">
+                  {filteredNFTs.length} {filteredNFTs.length === 1 ? 'RESULT' : 'RESULTS'}
+                </div>
+              )}
+            </div>
+            
             {filteredNFTs.length === 0 ? (
               <div className="text-center py-20">
                 <p className="mono text-sm text-[#666]">NO TOKENS MATCH SELECTED TRAITS</p>
