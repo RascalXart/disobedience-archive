@@ -61,4 +61,3 @@ export interface Collection {
   description?: string; // Optional collection description
   tokens: CollectionNFT[];
 }
-

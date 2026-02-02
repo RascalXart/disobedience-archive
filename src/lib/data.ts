@@ -163,3 +163,26 @@ export function getCollectionNFTByTokenId(tokenId: string): CollectionNFT | unde
   return collection?.tokens.find((nft) => nft.tokenId === tokenId);
 }
 
+// WINIONS collection data
+let winionsData: Collection | null = null;
+
+export function getWinionsCollection(): Collection | null {
+  if (winionsData) {
+    return winionsData;
+  }
+
+  try {
+    // Dynamic import to handle missing file gracefully
+    const data = require('@/data/winions.json');
+    winionsData = data as Collection;
+    return winionsData;
+  } catch (error) {
+    // WINIONS data not found - that's okay
+    return null;
+  }
+}
+
+export function getAllWinionsNFTs(): CollectionNFT[] {
+  const collection = getWinionsCollection();
+  return collection?.tokens || [];
+}
