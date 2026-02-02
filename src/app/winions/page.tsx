@@ -7,7 +7,7 @@ import { resolveIpfsUrl } from '@/lib/ipfs'
 import type { CollectionNFT, NFTAttribute } from '@/types'
 
 // IPFS Gateways - same as conclave page
-const IPFS_GATEWAYS = ['https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://ipfs.filebase.io/ipfs/']
+const IPFS_GATEWAYS = ['https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://cf-ipfs.com/ipfs/', 'https://ipfs.filebase.io/ipfs/', 'https://gateway.pinata.cloud/ipfs/']
 
 // Generate path variations to try when original fails
 function generateIpfsPathVariations(originalUrl: string): string[] {
@@ -21,9 +21,22 @@ function generateIpfsPathVariations(originalUrl: string): string[] {
   
   const variations: string[] = [cidAndPath] // Always try original first
   
-  // If path exists, try CID root as fallback
+  // If path exists, try common variations
   if (originalPath) {
+    // Try CID root (common fallback)
     variations.push(cid)
+    
+    // Try with common path prefixes
+    const pathParts = originalPath.split('/')
+    if (pathParts.length > 1) {
+      // Try without last segment (e.g., /media -> /)
+      variations.push(`${cid}/${pathParts.slice(0, -1).join('/')}`)
+    }
+    
+    // Try with 'media' prefix if not already present
+    if (!originalPath.includes('media')) {
+      variations.push(`${cid}/media/${originalPath}`)
+    }
   }
   
   return Array.from(new Set(variations))
@@ -72,7 +85,7 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
       setTimeout(() => {
         setPathIndex(pathIndex + 1)
         setIsLoading(true)
-      }, 300)
+      }, 500)
       return
     }
     
@@ -82,7 +95,7 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
         setGatewayIndex(gatewayIndex + 1)
         setPathIndex(0)
         setIsLoading(true)
-      }, 500)
+      }, 800)
       return
     }
     
@@ -92,6 +105,8 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
 
   useEffect(() => {
     setMounted(true)
+    // Always load for static images (no lazy loading needed for small thumbnails)
+    setShouldLoad(true)
   }, [])
 
   useEffect(() => {
@@ -109,7 +124,7 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
       if (imgRef.current && !imgRef.current.complete) {
         handleError()
       }
-    }, 4000)
+    }, 6000) // 6 second timeout per attempt
 
     return () => {
       clearTimeout(timeout)
@@ -245,6 +260,7 @@ export default function WinionsPage() {
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
   const [selectedTraits, setSelectedTraits] = useState<Set<string>>(new Set())
   const [collapsedTraits, setCollapsedTraits] = useState<Set<string>>(new Set())
+  const [visibleCount, setVisibleCount] = useState(30) // Start with 30 images to avoid overwhelming
   
   // Extract all unique traits with counts
   const allTraits = useMemo(() => {
@@ -282,22 +298,44 @@ export default function WinionsPage() {
   }, [allNFTs])
   
   // Filter NFTs based on selected traits
+  // Logic: OR within same category, AND across different categories
   const filteredNFTs = useMemo(() => {
     if (selectedTraits.size === 0) {
       return allNFTs
     }
     
+    // Group selected traits by category
+    const traitsByCategory = new Map<string, Set<string>>()
+    selectedTraits.forEach(traitKey => {
+      const [traitType] = traitKey.split(':')
+      if (!traitsByCategory.has(traitType)) {
+        traitsByCategory.set(traitType, new Set())
+      }
+      traitsByCategory.get(traitType)!.add(traitKey)
+    })
+    
     return allNFTs.filter(nft => {
-      // Check if NFT has ALL selected traits
+      // Build NFT's trait keys
       const nftTraitKeys = new Set(
         nft.attributes.map(attr => 
           `${attr.trait_type || 'Unknown'}:${attr.value}`
         )
       )
       
-      // NFT must have all selected traits
-      for (const selectedKey of selectedTraits) {
-        if (!nftTraitKeys.has(selectedKey)) {
+      // For each category with selected traits, NFT must have at least ONE trait from that category (OR logic)
+      // Across different categories, NFT must match ALL categories (AND logic)
+      for (const [category, traitKeys] of traitsByCategory) {
+        // Check if NFT has at least one trait from this category
+        let hasTraitFromCategory = false
+        for (const traitKey of traitKeys) {
+          if (nftTraitKeys.has(traitKey)) {
+            hasTraitFromCategory = true
+            break
+          }
+        }
+        
+        // If NFT doesn't have any trait from this category, it fails the filter
+        if (!hasTraitFromCategory) {
           return false
         }
       }
@@ -467,7 +505,7 @@ export default function WinionsPage() {
 
             {/* Glitch realm - Above single categories */}
             {glitchRealm ? (() => {
-              const [traitType, traits] = glitchRealm
+              const [traitType, traits] = glitchRealm as [string, TraitFilter[]]
               const isCollapsed = collapsedTraits.has(traitType)
               return (
                 <div key="glitch-realm" className="border-b border-[#222] pb-4 pt-4 border-t border-[#222]">
@@ -558,8 +596,9 @@ export default function WinionsPage() {
                 <p className="mono text-sm text-[#666]">NO TOKENS MATCH SELECTED TRAITS</p>
               </div>
             ) : (
-              <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-3">
-                {filteredNFTs.map((nft, index) => (
+              <>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                  {filteredNFTs.slice(0, visibleCount).map((nft, index) => (
                   <motion.div
                     key={nft.tokenId}
                     initial={{ opacity: 0, y: 20 }}
@@ -588,8 +627,19 @@ export default function WinionsPage() {
                       </div>
                     </div>
                   </motion.div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                {filteredNFTs.length > visibleCount && (
+                  <div className="mt-8 text-center">
+                    <button
+                      onClick={() => setVisibleCount(prev => Math.min(prev + 30, filteredNFTs.length))}
+                      className="mono text-xs px-6 py-3 border border-[#222] hover:border-[#333] transition-colors bg-[#111] text-[#888] hover:text-white"
+                    >
+                      LOAD MORE ({filteredNFTs.length - visibleCount} REMAINING)
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>

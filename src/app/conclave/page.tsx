@@ -20,8 +20,8 @@ const PINATA_DEDICATED = PINATA_GATEWAY_TOKEN
 // Removed gateways with CORS issues (Pinata, NFT.Storage, gateway.ipfs.io)
 // Using only gateways that work reliably
 const IPFS_GATEWAYS = PINATA_DEDICATED
-  ? [PINATA_DEDICATED, 'https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://ipfs.filebase.io/ipfs/']
-  : ['https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://ipfs.filebase.io/ipfs/']
+  ? [PINATA_DEDICATED, 'https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://cf-ipfs.com/ipfs/', 'https://ipfs.filebase.io/ipfs/', 'https://gateway.pinata.cloud/ipfs/']
+  : ['https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://cf-ipfs.com/ipfs/', 'https://ipfs.filebase.io/ipfs/', 'https://gateway.pinata.cloud/ipfs/']
 
 // Generate path variations to try when original fails
 function generateIpfsPathVariations(originalUrl: string): string[] {
@@ -35,9 +35,22 @@ function generateIpfsPathVariations(originalUrl: string): string[] {
   
   const variations: string[] = [cidAndPath] // Always try original first
   
-  // If path exists, try CID root as fallback
+  // If path exists, try common variations
   if (originalPath) {
+    // Try CID root (common fallback)
     variations.push(cid)
+    
+    // Try with common path prefixes
+    const pathParts = originalPath.split('/')
+    if (pathParts.length > 1) {
+      // Try without last segment (e.g., /media -> /)
+      variations.push(`${cid}/${pathParts.slice(0, -1).join('/')}`)
+    }
+    
+    // Try with 'media' prefix if not already present
+    if (!originalPath.includes('media')) {
+      variations.push(`${cid}/media/${originalPath}`)
+    }
   }
   
   return Array.from(new Set(variations))
@@ -89,7 +102,7 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
       setTimeout(() => {
         setPathIndex(pathIndex + 1)
         setIsLoading(true)
-      }, 300)
+      }, 500)
       return
     }
     
@@ -99,7 +112,7 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
         setGatewayIndex(gatewayIndex + 1)
         setPathIndex(0)
         setIsLoading(true)
-      }, 500)
+      }, 800)
       return
     }
     
@@ -134,7 +147,7 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
       if (imgRef.current && !imgRef.current.complete) {
         handleError()
       }
-    }, 4000) // 4 second timeout per attempt
+    }, 6000) // 6 second timeout per attempt
 
     return () => {
       clearTimeout(timeout)
@@ -300,6 +313,7 @@ export default function ConclavePage() {
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
+  const [visibleCount, setVisibleCount] = useState(30) // Start with 30 images to avoid overwhelming
   
   // Memoize allNFTs to prevent dependency issues
   const allNFTs = useMemo(() => [...specialNFTs, ...regularNFTs], [specialNFTs, regularNFTs])
@@ -605,7 +619,7 @@ export default function ConclavePage() {
                 [ALL_TOKENS]
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {regularNFTs.map((nft, index) => (
+                {regularNFTs.slice(0, visibleCount).map((nft, index) => (
                   <motion.div
                     key={nft.tokenId}
                     initial={{ opacity: 0, y: 20 }}
@@ -638,6 +652,16 @@ export default function ConclavePage() {
                   </motion.div>
                 ))}
               </div>
+              {regularNFTs.length > visibleCount && (
+                <div className="mt-8 text-center">
+                  <button
+                    onClick={() => setVisibleCount(prev => Math.min(prev + 30, regularNFTs.length))}
+                    className="mono text-xs px-6 py-3 border border-[#222] hover:border-[#333] transition-colors bg-[#111] text-[#888] hover:text-white"
+                  >
+                    LOAD MORE ({regularNFTs.length - visibleCount} REMAINING)
+                  </button>
+                </div>
+              )}
             </>
           ) : null}
         </motion.div>
