@@ -697,6 +697,12 @@ export default function WinionsPage() {
               Winiøns are mischievøus digital beings from a glitch realm: chaotic, cøllectible creatures that swarm wallets, bring luck, and feed on static, spreading digital mischief across art and code. To own one is to bring good fortune to your wallet. The luck is multiplicative, the more you own, the more the luck (and the mischeif) compounds.
             </span>
           </div>
+          
+          <div className="mono text-xs text-[#888] space-y-1 mt-6">
+            <p>{allNFTs.length} {allNFTs.length === 1 ? 'TOKEN' : 'TOKENS'}</p>
+            <p className="text-[10px] text-[#555]">Contract: 0x4ad94fb8b87a1ad3f7d52a406c64b56db3af0733</p>
+            <p className="text-[10px] text-[#555]">Chain: Ethereum</p>
+          </div>
         </motion.div>
       </div>
       
@@ -716,16 +722,11 @@ export default function WinionsPage() {
           }`}
         >
           <div className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a] z-10 border-b border-[#222] pb-6">
-            <div className="flex items-center justify-between">
-              <div className="mono text-xs text-[#888] space-y-1">
-                <p>{allNFTs.length} {allNFTs.length === 1 ? 'TOKEN' : 'TOKENS'}</p>
-                <p className="text-[10px] text-[#555]">Contract: 0x4ad94fb8b87a1ad3f7d52a406c64b56db3af0733</p>
-                <p className="text-[10px] text-[#555]">Chain: Ethereum</p>
-              </div>
-              {/* Mobile close button - more obvious */}
+            {/* Mobile close button - positioned to never be cut off */}
+            <div className="md:hidden flex justify-end mb-4 pr-2">
               <button
                 onClick={() => setIsMobileSidebarOpen(false)}
-                className="md:hidden mono text-sm px-4 py-2 border border-[#333] hover:border-[#555] bg-[#111] text-white hover:bg-[#1a1a1a] transition-colors"
+                className="mono text-sm px-4 py-2 border border-[#333] hover:border-[#555] bg-[#111] text-white hover:bg-[#1a1a1a] transition-colors"
               >
                 ✕ CLOSE
               </button>
