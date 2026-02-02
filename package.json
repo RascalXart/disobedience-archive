@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "lsof -ti:3001 | xargs kill -9 2>/dev/null || true && next dev -p 3001",
     "dev:r2": "lsof -ti:3001 | xargs kill -9 2>/dev/null || true && next dev -p 3001",
-    "build": "NODE_ENV=production node scripts/prebuild-clean.js && next build && bash scripts/auto-restart-dev.sh",
+    "build": "NODE_ENV=production node scripts/prebuild-clean.js && next build && (if [ -z \"$CI\" ] && command -v lsof >/dev/null 2>&1; then bash scripts/auto-restart-dev.sh; fi)",
     "start": "next start -p 3001",
     "lint": "next lint",
     "generate-dailies": "node scripts/generate-dailies.js",

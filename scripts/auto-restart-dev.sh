@@ -2,6 +2,16 @@
 # Automatically restart dev server after code changes
 # This script is called automatically after builds
 
+# Skip in CI environments
+if [ -n "$CI" ] || [ -n "$CF_PAGES" ]; then
+  exit 0
+fi
+
+# Check if lsof is available (not available in all environments)
+if ! command -v lsof >/dev/null 2>&1; then
+  exit 0
+fi
+
 set -e
 
 cd "$(dirname "$0")/.."
