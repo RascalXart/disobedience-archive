@@ -6,8 +6,16 @@ import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
 import type { CollectionNFT, NFTAttribute } from '@/types'
 
-// IPFS Gateways - same as conclave page
-const IPFS_GATEWAYS = ['https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://cf-ipfs.com/ipfs/', 'https://ipfs.filebase.io/ipfs/', 'https://gateway.pinata.cloud/ipfs/']
+// Primary gateway: ipfs.filebase.io
+// Fallback gateways for SSL errors
+const PRIMARY_GATEWAY = 'https://ipfs.filebase.io/ipfs/'
+const FALLBACK_GATEWAYS = [
+  'https://cf-ipfs.com/ipfs/',
+  'https://ipfs.io/ipfs/',
+  'https://gateway.pinata.cloud/ipfs/',
+]
+
+const IPFS_GATEWAYS = [PRIMARY_GATEWAY, ...FALLBACK_GATEWAYS]
 
 // Generate path variations to try when original fails
 function generateIpfsPathVariations(originalUrl: string): string[] {
@@ -52,7 +60,6 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
   
   const [gatewayIndex, setGatewayIndex] = useState(0)
   const [pathIndex, setPathIndex] = useState(0)
-  const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [shouldLoad, setShouldLoad] = useState(false)
@@ -72,12 +79,55 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
     return url
   }, [gatewayIndex, pathIndex, pathVariations, shouldLoad])
 
-  const handleError = useCallback(() => {
+  // Extract IPFS hash and path from a failed URL
+  const extractIpfsHash = useCallback((failedUrl: string): { cid: string; path: string } | null => {
+    const match = failedUrl.match(/\/ipfs\/([^?]+)/)
+    if (!match) return null
+    
+    const cidAndPath = match[1]
+    const parts = cidAndPath.split('/')
+    const cid = parts[0]
+    const path = parts.slice(1).join('/')
+    
+    return { cid, path }
+  }, [])
+
+  const handleError = useCallback((e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
     if (!mounted || !shouldLoad) return
     
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
+    }
+
+    // If current gateway is filebase.io and it failed, try fallback gateways
+    const currentGateway = IPFS_GATEWAYS[gatewayIndex]
+    if (currentGateway === PRIMARY_GATEWAY && e?.currentTarget?.src) {
+      const hashInfo = extractIpfsHash(e.currentTarget.src)
+      if (hashInfo) {
+        // Try first fallback gateway that hasn't been tried yet
+        for (const fallbackGateway of FALLBACK_GATEWAYS) {
+          // Skip if this gateway was already tried (check if src contains it)
+          if (e.currentTarget.src.includes(fallbackGateway)) continue
+          
+          const fallbackUrl = `${fallbackGateway}${hashInfo.cid}${hashInfo.path ? '/' + hashInfo.path : ''}`
+          
+          // Find the gateway index in IPFS_GATEWAYS
+          const newGatewayIndex = IPFS_GATEWAYS.findIndex(g => g === fallbackGateway)
+          if (newGatewayIndex >= 0) {
+            setTimeout(() => {
+              setGatewayIndex(newGatewayIndex)
+              setPathIndex(0)
+              setIsLoading(true)
+              // Update the image src directly
+              if (imgRef.current) {
+                imgRef.current.src = fallbackUrl
+              }
+            }, 300)
+            return
+          }
+        }
+      }
     }
 
     // Try next path variation first
@@ -99,20 +149,29 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
       return
     }
     
-    setHasError(true)
-    setIsLoading(false)
-  }, [pathIndex, pathVariations.length, gatewayIndex, mounted, shouldLoad])
+    // Never give up - cycle back to start and keep trying
+    // Reset to first gateway and first path, then retry
+    setTimeout(() => {
+      setGatewayIndex(0)
+      setPathIndex(0)
+      setIsLoading(true)
+      // Update the image src to retry
+      if (imgRef.current && currentSrc) {
+        const firstGateway = IPFS_GATEWAYS[0]
+        const firstPath = pathVariations[0] || ''
+        imgRef.current.src = `${firstGateway}${firstPath}`
+      }
+    }, 2000) // Wait 2 seconds before retrying from the beginning
+  }, [pathIndex, pathVariations.length, gatewayIndex, mounted, shouldLoad, extractIpfsHash, currentSrc, pathVariations])
 
   useEffect(() => {
     setMounted(true)
-    // Always load for static images (no lazy loading needed for small thumbnails)
-    setShouldLoad(true)
+    // Don't auto-load - use Intersection Observer for lazy loading only
   }, [])
 
   useEffect(() => {
     setGatewayIndex(0)
     setPathIndex(0)
-    setHasError(false)
     setIsLoading(true)
   }, [src])
 
@@ -122,7 +181,11 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
     setIsLoading(true)
     const timeout = setTimeout(() => {
       if (imgRef.current && !imgRef.current.complete) {
-        handleError()
+        // Create a synthetic event for timeout errors
+        const syntheticEvent = {
+          currentTarget: imgRef.current,
+        } as React.SyntheticEvent<HTMLImageElement, Event>
+        handleError(syntheticEvent)
       }
     }, 6000) // 6 second timeout per attempt
 
@@ -131,25 +194,30 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
     }
   }, [currentSrc, shouldLoad, handleError])
   
-  // Intersection Observer for lazy loading
+  // Intersection Observer for lazy loading - only load images in or near viewport
   useEffect(() => {
     if (!mounted) return
     if (shouldLoad) return
+    if (!containerRef.current) return
     
     let observer: IntersectionObserver | null = null
     
     const checkAndObserve = () => {
       if (!containerRef.current) return
+      if (shouldLoad) return
       
+      // Check if already in viewport (with small margin)
       const rect = containerRef.current.getBoundingClientRect()
-      if (rect.top < window.innerHeight + 200 && rect.bottom > -200) {
+      const isInViewport = rect.top < window.innerHeight + 50 && rect.bottom > -50
+      if (isInViewport) {
         setShouldLoad(true)
         return
       }
       
+      // Set up observer for images not yet in viewport
       observer = new IntersectionObserver(
         (entries) => {
-          if (entries[0]?.isIntersecting) {
+          if (entries[0]?.isIntersecting && !shouldLoad) {
             setShouldLoad(true)
             if (observer) {
               observer.disconnect()
@@ -157,7 +225,10 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
             }
           }
         },
-        { rootMargin: '200px', threshold: 0.01 }
+        { 
+          rootMargin: '50px', // Only start loading 50px before entering viewport
+          threshold: 0.01 
+        }
       )
 
       if (containerRef.current) {
@@ -165,7 +236,7 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
       }
     }
     
-    checkAndObserve()
+    // Small delay to ensure DOM is ready
     const timer = setTimeout(checkAndObserve, 100)
     
     return () => {
@@ -208,13 +279,8 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
     }
   }, [mounted, shouldLoad, currentSrc, isLoading])
 
-  if (hasError) {
-    return (
-      <div className="w-full h-full flex items-center justify-center bg-[#111]">
-        <span className="mono text-[8px] text-[#666]">NO IMAGE</span>
-      </div>
-    )
-  }
+  // Never show "NO IMAGE" - keep retrying indefinitely
+  // hasError is no longer used, we just keep trying
 
   return (
     <div ref={containerRef} className="w-full h-full relative">
@@ -233,7 +299,7 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
         className={className}
         loading="lazy"
         decoding="async"
-        onError={handleError}
+        onError={(e) => handleError(e)}
         onLoad={handleLoad}
         style={{
           opacity: 0,
@@ -256,11 +322,35 @@ interface TraitFilter {
 }
 
 export default function WinionsPage() {
-  const allNFTs = getAllWinionsNFTs()
+  const allNFTsRaw = getAllWinionsNFTs()
+  // Sort by tokenId initially
+  const sortedNFTs = useMemo(() => {
+    return [...allNFTsRaw].sort((a, b) => {
+      const idA = parseInt(a.tokenId) || 0
+      const idB = parseInt(b.tokenId) || 0
+      return idA - idB
+    })
+  }, [allNFTsRaw])
+  
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
   const [selectedTraits, setSelectedTraits] = useState<Set<string>>(new Set())
   const [collapsedTraits, setCollapsedTraits] = useState<Set<string>>(new Set())
-  const [visibleCount, setVisibleCount] = useState(30) // Start with 30 images to avoid overwhelming
+  const [visibleCount, setVisibleCount] = useState(50) // Start with 50 images per page
+  const [isShuffled, setIsShuffled] = useState(false)
+  
+  // Shuffle or sort NFTs
+  const allNFTs = useMemo(() => {
+    if (isShuffled) {
+      // Fisher-Yates shuffle
+      const shuffled = [...sortedNFTs]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      return shuffled
+    }
+    return sortedNFTs
+  }, [sortedNFTs, isShuffled])
   
   // Extract all unique traits with counts
   const allTraits = useMemo(() => {
@@ -444,14 +534,22 @@ export default function WinionsPage() {
               <div className="mono text-xs text-[#666] tracking-wider">
                 [FILTERS]
               </div>
-              {selectedTraits.size > 0 && (
+              <div className="flex items-center gap-3">
                 <button
-                  onClick={clearFilters}
-                  className="mono text-[10px] text-[#888] hover:text-white transition-colors underline"
+                  onClick={() => setIsShuffled(!isShuffled)}
+                  className="mono text-[10px] px-2 py-1 border border-[#333] hover:border-[#555] text-[#888] hover:text-white transition-colors"
                 >
-                  CLEAR ({selectedTraits.size})
+                  {isShuffled ? '⇄ SHUFFLED' : '⇄ SHUFFLE'}
                 </button>
-              )}
+                {selectedTraits.size > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="mono text-[10px] text-[#888] hover:text-white transition-colors underline"
+                  >
+                    CLEAR ({selectedTraits.size})
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="mono text-xs text-[#666] tracking-wider border-t border-[#222] pt-4">
@@ -615,9 +713,7 @@ export default function WinionsPage() {
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="mono text-[8px] text-[#666]">NO IMAGE</span>
-                        </div>
+                        <div className="w-full h-full bg-[#111]" />
                       )}
                       <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
                     </div>
@@ -632,7 +728,7 @@ export default function WinionsPage() {
                 {filteredNFTs.length > visibleCount && (
                   <div className="mt-8 text-center">
                     <button
-                      onClick={() => setVisibleCount(prev => Math.min(prev + 30, filteredNFTs.length))}
+                      onClick={() => setVisibleCount(prev => Math.min(prev + 50, filteredNFTs.length))}
                       className="mono text-xs px-6 py-3 border border-[#222] hover:border-[#333] transition-colors bg-[#111] text-[#888] hover:text-white"
                     >
                       LOAD MORE ({filteredNFTs.length - visibleCount} REMAINING)
@@ -676,9 +772,7 @@ export default function WinionsPage() {
                     className="w-full h-full object-contain"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="mono text-xs text-[#666]">NO IMAGE</span>
-                  </div>
+                  <div className="w-full h-full bg-[#111]" />
                 )}
               </div>
 

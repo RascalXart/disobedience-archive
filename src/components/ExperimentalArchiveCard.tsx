@@ -33,9 +33,11 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
     return () => clearInterval(interval)
   }, [isVisible])
 
-  // Intersection observer for visibility - only load images/videos when visible
+  // Intersection observer for visibility - only load images/videos when in viewport
   const videoRef = useRef<HTMLVideoElement>(null)
+  const imgRef = useRef<HTMLImageElement>(null)
   const [shouldLoad, setShouldLoad] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
   
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -44,8 +46,9 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
           const isIntersecting = entry.isIntersecting
           setIsVisible(isIntersecting)
           
-          // Only load media when actually visible (or about to be)
-          if (isIntersecting && !shouldLoad) {
+          // Only start loading when in viewport (or about to be)
+          // Once loaded, keep it loaded (don't unload)
+          if (isIntersecting && !shouldLoad && !hasLoaded) {
             setShouldLoad(true)
           }
           
@@ -61,7 +64,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
           }
         })
       },
-      { rootMargin: '200px', threshold: 0.01 } // Start loading 200px before entering viewport
+      { rootMargin: '50px', threshold: 0.01 } // Start loading 50px before entering viewport (reduced for better prioritization)
     )
 
     if (cardRef.current) {
@@ -69,7 +72,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
     }
 
     return () => observer.disconnect()
-  }, [shouldLoad])
+  }, [shouldLoad, hasLoaded])
 
 
   const isVideo = daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')
@@ -141,17 +144,21 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
           )
         ) : (
           <div className="w-full h-full relative">
-            {isVisible ? (
+            {shouldLoad || hasLoaded ? (
               <img
+                ref={imgRef}
                 src={mediaUrl}
                 alt={daily.id}
                 className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.02] group-hover:brightness-110"
-                loading="lazy"
+                loading="eager"
                 decoding="async"
                 style={{
                   willChange: isModalOpen ? 'auto' : 'transform',
                   opacity: isModalOpen ? 0.3 : 1,
                   filter: isModalOpen ? 'blur(2px)' : 'none',
+                }}
+                onLoad={() => {
+                  setHasLoaded(true)
                 }}
                 onError={(e) => {
                   console.error('Image failed to load:', mediaUrl, e)

@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3001",
-    "dev:r2": "next dev -p 3001",
-    "build": "NODE_ENV=production node scripts/prebuild-clean.js && next build",
+    "dev": "lsof -ti:3001 | xargs kill -9 2>/dev/null || true && next dev -p 3001",
+    "dev:r2": "lsof -ti:3001 | xargs kill -9 2>/dev/null || true && next dev -p 3001",
+    "build": "NODE_ENV=production node scripts/prebuild-clean.js && next build && bash scripts/auto-restart-dev.sh",
     "start": "next start -p 3001",
     "lint": "next lint",
     "generate-dailies": "node scripts/generate-dailies.js",
-    "fetch-collection": "node scripts/fetch-collection.js"
+    "fetch-collection": "node scripts/fetch-collection.js",
+    "verify-dev": "bash scripts/verify-dev-server.sh",
+    "post-change": "bash scripts/post-change-check.sh"
   },
   "dependencies": {
     "ethers": "^6.16.0",

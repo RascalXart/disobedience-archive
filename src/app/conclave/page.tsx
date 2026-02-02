@@ -19,9 +19,18 @@ const PINATA_DEDICATED = PINATA_GATEWAY_TOKEN
 // Prioritize reliable IPFS gateways
 // Removed gateways with CORS issues (Pinata, NFT.Storage, gateway.ipfs.io)
 // Using only gateways that work reliably
+// Primary gateway: ipfs.filebase.io
+// Fallback gateways for SSL errors
+const PRIMARY_GATEWAY = 'https://ipfs.filebase.io/ipfs/'
+const FALLBACK_GATEWAYS = [
+  'https://cf-ipfs.com/ipfs/',
+  'https://ipfs.io/ipfs/',
+  'https://gateway.pinata.cloud/ipfs/',
+]
+
 const IPFS_GATEWAYS = PINATA_DEDICATED
-  ? [PINATA_DEDICATED, 'https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://cf-ipfs.com/ipfs/', 'https://ipfs.filebase.io/ipfs/', 'https://gateway.pinata.cloud/ipfs/']
-  : ['https://ipfs.io/ipfs/', 'https://dweb.link/ipfs/', 'https://cf-ipfs.com/ipfs/', 'https://ipfs.filebase.io/ipfs/', 'https://gateway.pinata.cloud/ipfs/']
+  ? [PINATA_DEDICATED, PRIMARY_GATEWAY, ...FALLBACK_GATEWAYS]
+  : [PRIMARY_GATEWAY, ...FALLBACK_GATEWAYS]
 
 // Generate path variations to try when original fails
 function generateIpfsPathVariations(originalUrl: string): string[] {
@@ -70,7 +79,6 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
   
   const [gatewayIndex, setGatewayIndex] = useState(0)
   const [pathIndex, setPathIndex] = useState(0)
-  const [hasError, setHasError] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   // Always start as false to ensure server/client match - set to true in useEffect
@@ -87,14 +95,57 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     return `${gateway}${path}`
   }, [gatewayIndex, pathIndex, pathVariations, shouldLoad, isR2OrDirect])
 
-  // Handle image error - try next gateway/path
-  const handleError = useCallback(() => {
+  // Extract IPFS hash and path from a failed URL
+  const extractIpfsHash = useCallback((failedUrl: string): { cid: string; path: string } | null => {
+    const match = failedUrl.match(/\/ipfs\/([^?]+)/)
+    if (!match) return null
+    
+    const cidAndPath = match[1]
+    const parts = cidAndPath.split('/')
+    const cid = parts[0]
+    const path = parts.slice(1).join('/')
+    
+    return { cid, path }
+  }, [])
+
+  // Handle image error - retry with fallback gateways if filebase.io fails
+  const handleError = useCallback((e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
     // Only handle errors if mounted and should be loading
     if (!mounted || !shouldLoad) return
     
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
+    }
+
+    // If current gateway is filebase.io and it failed, try fallback gateways
+    const currentGateway = IPFS_GATEWAYS[gatewayIndex]
+    if (currentGateway === PRIMARY_GATEWAY && e?.currentTarget?.src) {
+      const hashInfo = extractIpfsHash(e.currentTarget.src)
+      if (hashInfo) {
+        // Try first fallback gateway that hasn't been tried yet
+        for (const fallbackGateway of FALLBACK_GATEWAYS) {
+          // Skip if this gateway was already tried (check if src contains it)
+          if (e.currentTarget.src.includes(fallbackGateway)) continue
+          
+          const fallbackUrl = `${fallbackGateway}${hashInfo.cid}${hashInfo.path ? '/' + hashInfo.path : ''}`
+          
+          // Find the gateway index in IPFS_GATEWAYS
+          const newGatewayIndex = IPFS_GATEWAYS.findIndex(g => g === fallbackGateway)
+          if (newGatewayIndex >= 0) {
+            setTimeout(() => {
+              setGatewayIndex(newGatewayIndex)
+              setPathIndex(0)
+              setIsLoading(true)
+              // Update the image src directly
+              if (imgRef.current) {
+                imgRef.current.src = fallbackUrl
+              }
+            }, 300)
+            return
+          }
+        }
+      }
     }
 
     // Try next path variation first
@@ -116,10 +167,20 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
       return
     }
     
-    // All options exhausted
-    setHasError(true)
-    setIsLoading(false)
-  }, [pathIndex, pathVariations.length, gatewayIndex, mounted, shouldLoad])
+    // Never give up - cycle back to start and keep trying
+    // Reset to first gateway and first path, then retry
+    setTimeout(() => {
+      setGatewayIndex(0)
+      setPathIndex(0)
+      setIsLoading(true)
+      // Update the image src to retry
+      if (imgRef.current && pathVariations.length > 0) {
+        const firstGateway = IPFS_GATEWAYS[0]
+        const firstPath = pathVariations[0]
+        imgRef.current.src = `${firstGateway}${firstPath}`
+      }
+    }, 2000) // Wait 2 seconds before retrying from the beginning
+  }, [pathIndex, pathVariations.length, gatewayIndex, mounted, shouldLoad, extractIpfsHash, pathVariations])
 
   // Mark as mounted after hydration to prevent mismatches
   useEffect(() => {
@@ -134,7 +195,6 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
   useEffect(() => {
     setGatewayIndex(0)
     setPathIndex(0)
-    setHasError(false)
     setIsLoading(true)
   }, [src])
 
@@ -145,7 +205,11 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
     setIsLoading(true)
     const timeout = setTimeout(() => {
       if (imgRef.current && !imgRef.current.complete) {
-        handleError()
+        // Create a synthetic event for timeout errors
+        const syntheticEvent = {
+          currentTarget: imgRef.current,
+        } as React.SyntheticEvent<HTMLImageElement, Event>
+        handleError(syntheticEvent)
       }
     }, 6000) // 6 second timeout per attempt
 
@@ -267,7 +331,7 @@ function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: strin
         className={className}
         loading={loading}
         decoding="async"
-        onError={handleError}
+        onError={(e) => handleError(e)}
         onLoad={handleLoad}
         style={{
           opacity: 0,
@@ -291,9 +355,33 @@ export default function ConclavePage() {
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
   const [visibleCount, setVisibleCount] = useState(30) // Start with 30 images to avoid overwhelming
+  const [isShuffled, setIsShuffled] = useState(false)
+  
+  // Sort regular NFTs by tokenId initially
+  const sortedRegularNFTs = useMemo(() => {
+    return [...regularNFTs].sort((a, b) => {
+      const idA = parseInt(a.tokenId) || 0
+      const idB = parseInt(b.tokenId) || 0
+      return idA - idB
+    })
+  }, [regularNFTs])
+  
+  // Shuffle or sort regular NFTs
+  const displayRegularNFTs = useMemo(() => {
+    if (isShuffled) {
+      // Fisher-Yates shuffle
+      const shuffled = [...sortedRegularNFTs]
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+      }
+      return shuffled
+    }
+    return sortedRegularNFTs
+  }, [sortedRegularNFTs, isShuffled])
   
   // Memoize allNFTs to prevent dependency issues
-  const allNFTs = useMemo(() => [...specialNFTs, ...regularNFTs], [specialNFTs, regularNFTs])
+  const allNFTs = useMemo(() => [...specialNFTs, ...displayRegularNFTs], [specialNFTs, displayRegularNFTs])
   
   const popeDoom = useMemo(() => 
     specialNFTs.find(nft => 
@@ -503,9 +591,7 @@ export default function ConclavePage() {
                         fetchPriority="high"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="mono text-xs text-[#666]">NO IMAGE</span>
-                      </div>
+                      <div className="w-full h-full bg-[#111]" />
                     )}
                   </div>
                   
@@ -552,9 +638,7 @@ export default function ConclavePage() {
                         fetchPriority="high"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <span className="mono text-xs text-[#666]">NO IMAGE</span>
-                      </div>
+                      <div className="w-full h-full bg-[#111]" />
                     )}
                   </div>
                   
@@ -586,17 +670,23 @@ export default function ConclavePage() {
           </div>
 
           {/* All Tokens Grid */}
-          {regularNFTs.length === 0 && specialNFTs.length === 0 ? (
+          {displayRegularNFTs.length === 0 && specialNFTs.length === 0 ? (
             <div className="text-center py-20">
               <p className="mono text-sm text-[#666]">NO TOKENS FOUND</p>
             </div>
-          ) : regularNFTs.length > 0 ? (
+          ) : displayRegularNFTs.length > 0 ? (
             <>
-              <div className="mono text-xs text-[#666] mb-6 tracking-wider border-b border-[#222] pb-2">
-                [ALL_TOKENS]
+              <div className="mono text-xs text-[#666] mb-6 tracking-wider border-b border-[#222] pb-2 flex items-center justify-between">
+                <span>[ALL_TOKENS]</span>
+                <button
+                  onClick={() => setIsShuffled(!isShuffled)}
+                  className="mono text-[10px] px-3 py-1 border border-[#333] hover:border-[#555] text-[#888] hover:text-white transition-colors"
+                >
+                  {isShuffled ? '⇄ SHUFFLED' : '⇄ SHUFFLE'}
+                </button>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {regularNFTs.slice(0, visibleCount).map((nft, index) => (
+                {displayRegularNFTs.slice(0, visibleCount).map((nft, index) => (
                   <motion.div
                     key={nft.tokenId}
                     initial={{ opacity: 0, y: 20 }}
@@ -614,9 +704,7 @@ export default function ConclavePage() {
                           loading="lazy"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <span className="mono text-xs text-[#666]">NO IMAGE</span>
-                        </div>
+                        <div className="w-full h-full bg-[#111]" />
                       )}
                       <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
                     </div>
@@ -629,13 +717,13 @@ export default function ConclavePage() {
                   </motion.div>
                 ))}
               </div>
-              {regularNFTs.length > visibleCount && (
+              {displayRegularNFTs.length > visibleCount && (
                 <div className="mt-8 text-center">
                   <button
-                    onClick={() => setVisibleCount(prev => Math.min(prev + 30, regularNFTs.length))}
+                    onClick={() => setVisibleCount(prev => Math.min(prev + 30, displayRegularNFTs.length))}
                     className="mono text-xs px-6 py-3 border border-[#222] hover:border-[#333] transition-colors bg-[#111] text-[#888] hover:text-white"
                   >
-                    LOAD MORE ({regularNFTs.length - visibleCount} REMAINING)
+                    LOAD MORE ({displayRegularNFTs.length - visibleCount} REMAINING)
                   </button>
                 </div>
               )}
@@ -676,9 +764,7 @@ export default function ConclavePage() {
                     loading="eager"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="mono text-xs text-[#666]">NO IMAGE</span>
-                  </div>
+                  <div className="w-full h-full bg-[#111]" />
                 )}
               </div>
 
