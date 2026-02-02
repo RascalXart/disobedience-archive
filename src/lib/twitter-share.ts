@@ -46,12 +46,7 @@ export function generateTwitterShareUrl(data: ShareData): string {
     tweetText += `\n\nOwned by ${data.ensName}`
   }
   
-  // Include image URL in tweet if provided (Twitter will create a preview card)
-  if (data.imageUrl) {
-    tweetText += `\n\n${data.imageUrl}`
-  }
-  
-  // Add URL if provided
+  // Add URL if provided (Twitter Cards will handle image previews via Open Graph meta tags)
   const url = data.url || (typeof window !== 'undefined' ? window.location.href : '')
   
   // Encode the tweet text
