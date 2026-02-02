@@ -424,13 +424,23 @@ export default function WinionsPage() {
   const [visibleCount, setVisibleCount] = useState(50) // Start with 50 images per page
   const [isShuffled, setIsShuffled] = useState(false)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+  // Start with sidebar collapsed on mobile - check on mount
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768 // true on desktop, false on mobile
+    }
+    return false // SSR default
+  })
   
-  // Start with sidebar collapsed on mobile
+  // Update on resize
   useEffect(() => {
     const checkMobile = () => {
-      if (typeof window !== 'undefined' && window.innerWidth < 768) {
-        setIsMobileSidebarOpen(false)
+      if (typeof window !== 'undefined') {
+        if (window.innerWidth < 768) {
+          setIsMobileSidebarOpen(false)
+        } else {
+          setIsMobileSidebarOpen(true)
+        }
       }
     }
     checkMobile()
@@ -645,10 +655,7 @@ export default function WinionsPage() {
         )}
         
         {/* Left Sidebar - Filters */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.5 }}
+        <div
           className={`fixed md:relative inset-y-0 left-0 z-40 md:z-auto w-80 border-r border-[#222] overflow-y-auto bg-[#0a0a0a] transform transition-transform duration-300 pt-24 md:pt-0 ${
             isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
           }`}
@@ -835,16 +842,16 @@ export default function WinionsPage() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
 
         {/* Right Side - NFT Grid */}
         <div className="flex-1 overflow-y-auto w-full">
           <div className="p-6">
-            {/* Mobile filter toggle button */}
-            <div className="md:hidden mb-4 flex items-center justify-between">
+            {/* Mobile filter toggle button - always visible on mobile */}
+            <div className="md:hidden mb-4 flex items-center justify-between sticky top-0 z-20 bg-[#0a0a0a] pb-4 pt-2 -mt-2 -mx-6 px-6 border-b border-[#222]">
               <button
                 onClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
-                className="mono text-xs px-4 py-2 border border-[#222] hover:border-[#333] bg-[#111] text-[#888] hover:text-white transition-colors"
+                className="mono text-xs px-4 py-2 border border-[#222] hover:border-[#333] bg-[#111] text-white hover:bg-[#1a1a1a] transition-colors"
               >
                 {isMobileSidebarOpen ? '✕ CLOSE FILTERS' : '☰ FILTERS'}
               </button>
