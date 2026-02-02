@@ -337,6 +337,7 @@ export default function WinionsPage() {
   const [collapsedTraits, setCollapsedTraits] = useState<Set<string>>(new Set())
   const [visibleCount, setVisibleCount] = useState(50) // Start with 50 images per page
   const [isShuffled, setIsShuffled] = useState(false)
+  const [ensNames, setEnsNames] = useState<Record<string, string>>({})
   
   // Shuffle or sort NFTs
   const allNFTs = useMemo(() => {
@@ -438,6 +439,38 @@ export default function WinionsPage() {
     if (!selectedTokenId) return null
     return allNFTs.find((nft) => nft.tokenId === selectedTokenId) || null
   }, [selectedTokenId, allNFTs])
+
+  // Resolve ENS names for selected NFT
+  useEffect(() => {
+    if (!selectedNFT?.owner) return
+    if (ensNames[selectedNFT.owner]) return
+    
+    const resolveENS = async (address: string) => {
+      try {
+        const response = await fetch(`https://api.ensideas.com/ens/resolve/${address}`)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.name) {
+            setEnsNames(prev => ({ ...prev, [address]: data.name }))
+            return
+          }
+        }
+      } catch (e) {
+        try {
+          const { ethers } = await import('ethers')
+          const provider = new ethers.JsonRpcProvider('https://eth.llamarpc.com')
+          const name = await provider.lookupAddress(address)
+          if (name) {
+            setEnsNames(prev => ({ ...prev, [address]: name }))
+          }
+        } catch (err) {
+          // ENS resolution failed
+        }
+      }
+    }
+    
+    resolveENS(selectedNFT.owner)
+  }, [selectedNFT, ensNames])
   
   const toggleTrait = (traitKey: string) => {
     setSelectedTraits(prev => {
@@ -781,6 +814,20 @@ export default function WinionsPage() {
                   <h2 className="font-grotesk text-3xl md:text-4xl font-light mb-2">{selectedNFT.name}</h2>
                   <div className="mono text-xs text-[#666]">Token #{selectedNFT.tokenId}</div>
                 </div>
+
+                {selectedNFT.owner && (
+                  <div className="mono text-xs text-[#888]">
+                    OWNED BY{' '}
+                    <a
+                      href={`https://opensea.io/${ensNames[selectedNFT.owner]?.replace('.eth', '') || selectedNFT.owner}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-white hover:text-[#888] transition-colors underline"
+                    >
+                      {ensNames[selectedNFT.owner] || `${selectedNFT.owner.slice(0, 6)}...${selectedNFT.owner.slice(-4)}`}
+                    </a>
+                  </div>
+                )}
 
                 {selectedNFT.description && (
                   <div className="mono text-sm text-[#888] leading-relaxed whitespace-pre-line">

@@ -530,7 +530,7 @@ export default function ConclavePage() {
                 }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                CONCLAVE
+                CØNCLAVE
               </motion.span>
             </motion.h1>
             
