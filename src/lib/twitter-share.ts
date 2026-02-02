@@ -46,8 +46,8 @@ export function generateTwitterShareUrl(data: ShareData): string {
     tweetText += `\n\nOwned by ${data.ensName}`
   }
   
-  // Use image URL if provided, otherwise fall back to page URL
-  // Twitter will display the image when the image URL is used
+  // Always use image URL as the link - this is what Twitter will display
+  // If no image URL provided, use page URL as fallback
   const url = data.imageUrl || data.url || (typeof window !== 'undefined' ? window.location.href : '')
   
   // Encode the tweet text

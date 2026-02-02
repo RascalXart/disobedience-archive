@@ -778,8 +778,7 @@ export default function ConclavePage() {
                     ensName: selectedNFT.owner ? (ensNames[selectedNFT.owner] || null) : null,
                     tokenId: selectedNFT.tokenId,
                     collection: 'CØNCLAVE',
-                    imageUrl: selectedNFT.imageUrl || undefined,
-                    url: typeof window !== 'undefined' ? window.location.href : '',
+                    imageUrl: selectedNFT.imageUrl ? resolveIpfsUrl(selectedNFT.imageUrl) || selectedNFT.imageUrl : undefined,
                   })}
                   target="_blank"
                   rel="noopener noreferrer"
