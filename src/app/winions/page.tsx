@@ -467,7 +467,7 @@ export default function WinionsPage() {
 
             {/* Glitch realm - Above single categories */}
             {glitchRealm && (() => {
-              const [traitType, traits] = glitchRealm
+              const [traitType, traits] = glitchRealm as [string, TraitFilter[]]
               const isCollapsed = collapsedTraits.has(traitType)
               return (
                 <div className="border-b border-[#222] pb-4 pt-4 border-t border-[#222]">
