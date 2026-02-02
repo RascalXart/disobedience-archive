@@ -717,11 +717,11 @@ export default function WinionsPage() {
         
         {/* Left Sidebar - Filters */}
         <div
-          className={`fixed md:relative inset-y-0 left-0 z-40 md:z-auto w-80 border-r border-[#222] overflow-y-auto bg-[#0a0a0a]/95 md:bg-[#0a0a0a] backdrop-blur-sm transform transition-transform duration-300 pt-24 md:pt-0 ${
+          className={`fixed md:relative inset-y-0 left-0 z-40 md:z-auto w-80 border-r border-[#222] overflow-y-auto bg-[#0a0a0a]/95 backdrop-blur-sm transform transition-transform duration-300 pt-24 md:pt-0 ${
             isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
           }`}
         >
-          <div className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a]/95 md:bg-[#0a0a0a] backdrop-blur-sm z-10 border-b border-[#222] pb-6">
+          <div className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-sm z-10 border-b border-[#222] pb-6">
             {/* Mobile close button - positioned to never be cut off */}
             <div className="md:hidden flex justify-end mb-4 pr-2">
               <button
