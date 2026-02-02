@@ -779,6 +779,8 @@ export default function ConclavePage() {
                     tokenId: selectedNFT.tokenId,
                     collection: 'CØNCLAVE',
                     imageUrl: selectedNFT.imageUrl ? resolveIpfsUrl(selectedNFT.imageUrl) || selectedNFT.imageUrl : undefined,
+                    shareType: 'conclave',
+                    shareId: selectedNFT.tokenId,
                   })}
                   target="_blank"
                   rel="noopener noreferrer"

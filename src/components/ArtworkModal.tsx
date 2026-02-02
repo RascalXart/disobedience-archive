@@ -70,6 +70,8 @@ export function ArtworkModal({ artwork, onClose }: ArtworkModalProps) {
                   date: artwork.date,
                   tokenId: artwork.tokenId || undefined,
                   imageUrl: artwork.imageUrl,
+                  shareType: 'artwork',
+                  shareId: artwork.id,
                 })}
                 target="_blank"
                 rel="noopener noreferrer"

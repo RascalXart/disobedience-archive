@@ -19,6 +19,8 @@ interface ShareData {
   tokenId?: string
   collection?: string
   imageUrl?: string
+  shareType?: 'daily' | 'artwork' | 'conclave' | 'winion'
+  shareId?: string
 }
 
 /**
@@ -46,9 +48,19 @@ export function generateTwitterShareUrl(data: ShareData): string {
     tweetText += `\n\nOwned by ${data.ensName}`
   }
   
-  // Always use image URL as the link - this is what Twitter will display
-  // If no image URL provided, use page URL as fallback
-  const url = data.imageUrl || data.url || (typeof window !== 'undefined' ? window.location.href : '')
+  // Use share page URL if available (has Open Graph meta tags for Twitter Cards)
+  // Otherwise fall back to image URL or page URL
+  let url = ''
+  if (data.shareType && data.shareId && typeof window !== 'undefined') {
+    // Use share page with proper Open Graph tags
+    url = `${window.location.origin}/share/${data.shareType}/${data.shareId}`
+  } else if (data.imageUrl) {
+    // Fallback to direct image URL
+    url = data.imageUrl
+  } else {
+    // Last resort: page URL
+    url = data.url || (typeof window !== 'undefined' ? window.location.href : '')
+  }
   
   // Encode the tweet text
   const encodedText = encodeURIComponent(tweetText)

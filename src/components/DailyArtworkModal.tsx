@@ -153,6 +153,8 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                   title: currentDaily.id.replace(/_/g, ' ').toUpperCase(),
                   date: currentDaily.savedDate,
                   imageUrl: resolveDailyMediaUrl(currentDaily.imageUrl),
+                  shareType: 'daily',
+                  shareId: currentDaily.id,
                 })}
                 target="_blank"
                 rel="noopener noreferrer"
