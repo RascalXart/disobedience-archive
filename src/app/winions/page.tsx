@@ -964,18 +964,19 @@ export default function WinionsPage() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0a]/95 backdrop-blur-sm overflow-y-auto"
           onClick={() => setSelectedTokenId(null)}
         >
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="relative max-w-4xl w-full bg-[#111] border border-[#222] p-8 my-8 max-h-[90vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="relative max-w-4xl w-full my-8">
             <button
               onClick={() => setSelectedTokenId(null)}
-              className="absolute -top-3 right-4 mono text-xs text-[#666] hover:text-white transition-colors z-10 bg-[#111] px-2 py-1 border border-[#222]"
+              className="absolute -top-10 right-0 mono text-xs text-[#666] hover:text-white transition-colors z-10 bg-[#111] px-2 py-1 border border-[#222]"
             >
               [CLOSE]
             </button>
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="relative w-full bg-[#111] border border-[#222] p-8 max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
 
             <div className="grid md:grid-cols-2 gap-8">
               <div className="flex flex-col min-w-0 flex-shrink-0">
@@ -1050,7 +1051,8 @@ export default function WinionsPage() {
                 )}
               </div>
             </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </motion.div>
       )}
     </div>
