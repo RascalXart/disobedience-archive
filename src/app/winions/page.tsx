@@ -645,7 +645,62 @@ export default function WinionsPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pt-24">
-      <div className="flex h-[calc(100vh-6rem)] relative">
+      {/* Header Section */}
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="max-w-7xl mx-auto mb-8"
+        >
+          <motion.h1
+            className="font-grotesk text-5xl md:text-7xl font-light mb-6"
+            style={{
+              textShadow: '0 0 20px rgba(0, 255, 0, 0.3), 2px 0 0 rgba(255, 0, 0, 0.2)',
+              filter: 'contrast(1.2)',
+            }}
+          >
+            <motion.span
+              animate={{
+                textShadow: [
+                  '0 0 20px rgba(0, 255, 0, 0.3), 2px 0 0 rgba(255, 0, 0, 0.2)',
+                  '0 0 25px rgba(0, 255, 0, 0.4), -2px 0 0 rgba(0, 0, 255, 0.3)',
+                  '0 0 20px rgba(0, 255, 0, 0.3), 2px 0 0 rgba(255, 0, 0, 0.2)',
+                ],
+              }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              WINIØNS
+            </motion.span>
+          </motion.h1>
+          
+          <div 
+            className="mono text-sm text-[#888] mb-6 leading-relaxed max-w-3xl flicker corrupt-text relative"
+            style={{
+              animation: 'flicker 1.5s ease-in-out infinite, corruptText 3s ease-in-out infinite',
+              textShadow: `
+                0 0 4px rgba(0, 255, 0, 0.6),
+                2px 0 0 rgba(255, 0, 0, 0.5),
+                -2px 0 0 rgba(0, 0, 255, 0.5),
+                0 2px 0 rgba(255, 255, 0, 0.4),
+                1px 1px 2px rgba(255, 0, 255, 0.3)
+              `,
+              filter: 'contrast(1.3) brightness(1.1)',
+            }}
+          >
+            <span style={{ 
+              position: 'relative',
+              display: 'inline-block',
+              animation: 'textGlitch 2s ease-in-out infinite',
+              transform: 'translateZ(0)',
+            }}>
+              Winiøns are mischievøus digital beings from a glitch realm: chaotic, cøllectible creatures that swarm wallets, bring luck, and feed on static, spreading digital mischief across art and code. To own one is to bring good fortune to your wallet. The luck is multiplicative, the more you own, the more the luck (and the mischeif) compounds.
+            </span>
+          </div>
+        </motion.div>
+      </div>
+      
+      <div className="flex h-[calc(100vh-6rem-12rem)] md:h-[calc(100vh-6rem-8rem)] relative">
         {/* Mobile backdrop overlay */}
         {isMobileSidebarOpen && (
           <div
@@ -660,31 +715,19 @@ export default function WinionsPage() {
             isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
           }`}
         >
-          <div           className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a] z-10 border-b border-[#222] pb-6">
+          <div className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a] z-10 border-b border-[#222] pb-6">
             <div className="flex items-center justify-between">
-              <div>
-                <motion.h1
-                  className="font-grotesk text-3xl md:text-4xl font-light mb-4"
-                  style={{
-                    textShadow: '0 0 20px rgba(0, 255, 0, 0.3), 2px 0 0 rgba(255, 0, 0, 0.2)',
-                    filter: 'contrast(1.2)',
-                  }}
-                >
-                  WINIØNS
-                </motion.h1>
-              
-                <div className="mono text-xs text-[#888] space-y-1">
-                  <p>{allNFTs.length} {allNFTs.length === 1 ? 'TOKEN' : 'TOKENS'}</p>
-                  <p className="text-[10px] text-[#555]">Contract: 0x4ad94fb8b87a1ad3f7d52a406c64b56db3af0733</p>
-                  <p className="text-[10px] text-[#555]">Chain: Ethereum</p>
-                </div>
+              <div className="mono text-xs text-[#888] space-y-1">
+                <p>{allNFTs.length} {allNFTs.length === 1 ? 'TOKEN' : 'TOKENS'}</p>
+                <p className="text-[10px] text-[#555]">Contract: 0x4ad94fb8b87a1ad3f7d52a406c64b56db3af0733</p>
+                <p className="text-[10px] text-[#555]">Chain: Ethereum</p>
               </div>
-              {/* Mobile close button */}
+              {/* Mobile close button - more obvious */}
               <button
                 onClick={() => setIsMobileSidebarOpen(false)}
-                className="md:hidden mono text-xs text-[#666] hover:text-white"
+                className="md:hidden mono text-sm px-4 py-2 border border-[#333] hover:border-[#555] bg-[#111] text-white hover:bg-[#1a1a1a] transition-colors"
               >
-                ✕
+                ✕ CLOSE
               </button>
             </div>
 
