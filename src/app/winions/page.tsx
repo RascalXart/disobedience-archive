@@ -972,7 +972,7 @@ export default function WinionsPage() {
           >
             <button
               onClick={() => setSelectedTokenId(null)}
-              className="sticky top-4 float-right mono text-xs text-[#666] hover:text-white transition-colors z-10 bg-[#111] px-2 py-1"
+              className="absolute top-4 right-4 mono text-xs text-[#666] hover:text-white transition-colors z-10 bg-[#111] px-2 py-1"
             >
               [CLOSE]
             </button>
