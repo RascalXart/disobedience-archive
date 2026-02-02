@@ -967,7 +967,7 @@ export default function WinionsPage() {
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="relative max-w-4xl w-full bg-[#111] border border-[#222] p-8 my-8"
+            className="relative max-w-4xl w-full bg-[#111] border border-[#222] p-8 my-8 max-h-[90vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -978,8 +978,8 @@ export default function WinionsPage() {
             </button>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="flex flex-col">
-                <div className="relative aspect-square bg-[#0a0a0a]">
+              <div className="flex flex-col min-w-0 flex-shrink-0">
+                <div className="relative aspect-square bg-[#0a0a0a] w-full flex-shrink-0">
                   {selectedNFT.imageUrl ? (
                     <StaticWinionImage
                       src={selectedNFT.imageUrl}
@@ -1009,7 +1009,7 @@ export default function WinionsPage() {
                 </a>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-6 min-w-0">
                 <div>
                   <h2 className="font-grotesk text-3xl md:text-4xl font-light mb-2">{selectedNFT.name}</h2>
                   <div className="mono text-xs text-[#666]">Token #{selectedNFT.tokenId}</div>
