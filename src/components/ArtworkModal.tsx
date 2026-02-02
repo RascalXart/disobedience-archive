@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
 import { useEffect } from 'react'
 import type { Artwork } from '@/types'
+import { generateTwitterShareUrl } from '@/lib/twitter-share'
 
 interface ArtworkModalProps {
   artwork: Artwork
@@ -51,14 +52,32 @@ export function ArtworkModal({ artwork, onClose }: ArtworkModalProps) {
           </button>
 
           <div className="grid md:grid-cols-2 gap-8 p-8">
-            <div className="relative aspect-square bg-[#111] border border-[#222]">
-              <Image
-                src={artwork.imageUrl}
-                alt={artwork.title}
-                fill
-                className="object-contain"
-                sizes="(max-width: 768px) 100vw, 50vw"
-              />
+            <div className="flex flex-col">
+              <div className="relative aspect-square bg-[#111] border border-[#222]">
+                <Image
+                  src={artwork.imageUrl}
+                  alt={artwork.title}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                />
+              </div>
+              
+              {/* Twitter Share Button */}
+              <a
+                href={generateTwitterShareUrl({
+                  title: artwork.title,
+                  date: artwork.date,
+                  tokenId: artwork.tokenId || undefined,
+                  imageUrl: artwork.imageUrl,
+                  url: typeof window !== 'undefined' ? window.location.href : '',
+                })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 px-2 py-1 text-center font-grotesk font-light bg-[#111] text-[#999] border border-[#222] hover:border-[#333] hover:text-white transition-colors mono text-[9px]"
+              >
+                SHARE TO TWITTER
+              </a>
             </div>
 
             <div className="flex flex-col">

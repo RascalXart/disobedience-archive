@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllCollectionNFTs, getCollection, getSpecialCollectionNFTs, getRegularCollectionNFTs } from '@/lib/data'
 import { resolveIpfsUrl, getFallbackIpfsUrl } from '@/lib/ipfs'
+import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import Link from 'next/link'
 
 // IPFS Gateways - prioritize dedicated gateway if available
@@ -23,7 +24,7 @@ const PINATA_DEDICATED = PINATA_GATEWAY_TOKEN
 // Fallback gateways for SSL errors
 const PRIMARY_GATEWAY = 'https://ipfs.filebase.io/ipfs/'
 const FALLBACK_GATEWAYS = [
-  'https://cf-ipfs.com/ipfs/',
+  'https://cloudflare-ipfs.com/ipfs/',
   'https://ipfs.io/ipfs/',
   'https://gateway.pinata.cloud/ipfs/',
 ]
@@ -755,17 +756,37 @@ export default function ConclavePage() {
             </button>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="relative aspect-square bg-[#0a0a0a]">
-                {selectedNFT.imageUrl ? (
-                  <IpfsImage
-                    src={selectedNFT.imageUrl}
-                    alt={selectedNFT.name}
-                    className="w-full h-full object-contain"
-                    loading="eager"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-[#111]" />
-                )}
+              <div className="flex flex-col">
+                <div className="relative aspect-square bg-[#0a0a0a]">
+                  {selectedNFT.imageUrl ? (
+                    <IpfsImage
+                      src={selectedNFT.imageUrl}
+                      alt={selectedNFT.name}
+                      className="w-full h-full object-contain"
+                      loading="eager"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#111]" />
+                  )}
+                </div>
+                
+                {/* Twitter Share Button */}
+                <a
+                  href={generateTwitterShareUrl({
+                    title: selectedNFT.name,
+                    date: new Date(), // NFTs don't have dates, use current date
+                    ensName: selectedNFT.owner ? (ensNames[selectedNFT.owner] || null) : null,
+                    tokenId: selectedNFT.tokenId,
+                    collection: 'CØNCLAVE',
+                    imageUrl: selectedNFT.imageUrl || undefined,
+                    url: typeof window !== 'undefined' ? window.location.href : '',
+                  })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 px-2 py-1 text-center font-grotesk font-light bg-[#111] text-[#999] border border-[#222] hover:border-[#333] hover:text-white transition-colors mono text-[9px]"
+                >
+                  SHARE TO TWITTER
+                </a>
               </div>
 
               <div className="space-y-6">

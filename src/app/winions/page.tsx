@@ -4,13 +4,14 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
+import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import type { CollectionNFT, NFTAttribute } from '@/types'
 
 // Primary gateway: ipfs.filebase.io
 // Fallback gateways for SSL errors
 const PRIMARY_GATEWAY = 'https://ipfs.filebase.io/ipfs/'
 const FALLBACK_GATEWAYS = [
-  'https://cf-ipfs.com/ipfs/',
+  'https://cloudflare-ipfs.com/ipfs/',
   'https://ipfs.io/ipfs/',
   'https://gateway.pinata.cloud/ipfs/',
 ]
@@ -63,9 +64,31 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
   const [isLoading, setIsLoading] = useState(true)
   const [mounted, setMounted] = useState(false)
   const [shouldLoad, setShouldLoad] = useState(false)
+  const [isVisible, setIsVisible] = useState(false)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const imgRef = useRef<HTMLImageElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
+  const observerRef = useRef<IntersectionObserver | null>(null)
+  
+  // Cleanup function to cancel all pending operations
+  const cancelAllLoads = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+      retryTimeoutRef.current = null
+    }
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+      observerRef.current = null
+    }
+    setShouldLoad(false)
+    setIsVisible(false)
+    setIsLoading(false)
+  }, [])
   
   // Build current URL - convert GIF to static if needed
   const currentSrc = useMemo(() => {
@@ -93,7 +116,21 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
   }, [])
 
   const handleError = useCallback((e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    if (!mounted || !shouldLoad) return
+    // Only retry if image is still visible and should be loading
+    if (!mounted || !shouldLoad || !isVisible) {
+      cancelAllLoads()
+      return
+    }
+    
+    // Check if still in viewport before retrying
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect()
+      const stillInViewport = rect.top < window.innerHeight + 100 && rect.bottom > -100
+      if (!stillInViewport) {
+        cancelAllLoads()
+        return
+      }
+    }
     
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
@@ -115,7 +152,12 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
           // Find the gateway index in IPFS_GATEWAYS
           const newGatewayIndex = IPFS_GATEWAYS.findIndex(g => g === fallbackGateway)
           if (newGatewayIndex >= 0) {
-            setTimeout(() => {
+            retryTimeoutRef.current = setTimeout(() => {
+              // Check again if still visible before retrying
+              if (!isVisible || !shouldLoad) {
+                cancelAllLoads()
+                return
+              }
               setGatewayIndex(newGatewayIndex)
               setPathIndex(0)
               setIsLoading(true)
@@ -132,7 +174,12 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
 
     // Try next path variation first
     if (pathIndex + 1 < pathVariations.length) {
-      setTimeout(() => {
+      retryTimeoutRef.current = setTimeout(() => {
+        // Check again if still visible before retrying
+        if (!isVisible || !shouldLoad) {
+          cancelAllLoads()
+          return
+        }
         setPathIndex(pathIndex + 1)
         setIsLoading(true)
       }, 500)
@@ -141,7 +188,12 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
     
     // Try next gateway
     if (gatewayIndex + 1 < IPFS_GATEWAYS.length) {
-      setTimeout(() => {
+      retryTimeoutRef.current = setTimeout(() => {
+        // Check again if still visible before retrying
+        if (!isVisible || !shouldLoad) {
+          cancelAllLoads()
+          return
+        }
         setGatewayIndex(gatewayIndex + 1)
         setPathIndex(0)
         setIsLoading(true)
@@ -149,37 +201,50 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
       return
     }
     
-    // Never give up - cycle back to start and keep trying
-    // Reset to first gateway and first path, then retry
-    setTimeout(() => {
+    // Never give up - cycle back to start and keep trying (only if still visible)
+    retryTimeoutRef.current = setTimeout(() => {
+      // Check again if still visible before retrying
+      if (!isVisible || !shouldLoad) {
+        cancelAllLoads()
+        return
+      }
       setGatewayIndex(0)
       setPathIndex(0)
       setIsLoading(true)
       // Update the image src to retry
-      if (imgRef.current && currentSrc) {
+      if (imgRef.current && pathVariations.length > 0) {
         const firstGateway = IPFS_GATEWAYS[0]
         const firstPath = pathVariations[0] || ''
         imgRef.current.src = `${firstGateway}${firstPath}`
       }
     }, 2000) // Wait 2 seconds before retrying from the beginning
-  }, [pathIndex, pathVariations.length, gatewayIndex, mounted, shouldLoad, extractIpfsHash, currentSrc, pathVariations])
+  }, [pathIndex, pathVariations.length, gatewayIndex, mounted, shouldLoad, isVisible, extractIpfsHash, pathVariations, cancelAllLoads])
 
   useEffect(() => {
     setMounted(true)
     // Don't auto-load - use Intersection Observer for lazy loading only
   }, [])
 
+  // Reset everything when src changes (e.g., filter/shuffle changes)
   useEffect(() => {
+    cancelAllLoads()
     setGatewayIndex(0)
     setPathIndex(0)
     setIsLoading(true)
-  }, [src])
+    setShouldLoad(false)
+    setIsVisible(false)
+  }, [src, cancelAllLoads])
 
   useEffect(() => {
-    if (!shouldLoad || !currentSrc) return
+    if (!shouldLoad || !currentSrc || !isVisible) return
     
     setIsLoading(true)
-    const timeout = setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
+      // Check if still visible before timing out
+      if (!isVisible || !shouldLoad) {
+        cancelAllLoads()
+        return
+      }
       if (imgRef.current && !imgRef.current.complete) {
         // Create a synthetic event for timeout errors
         const syntheticEvent = {
@@ -190,62 +255,83 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
     }, 6000) // 6 second timeout per attempt
 
     return () => {
-      clearTimeout(timeout)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+        timeoutRef.current = null
+      }
     }
-  }, [currentSrc, shouldLoad, handleError])
+  }, [currentSrc, shouldLoad, isVisible, handleError, cancelAllLoads])
   
-  // Intersection Observer for lazy loading - only load images in or near viewport
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cancelAllLoads()
+    }
+  }, [cancelAllLoads])
+  
+  // Intersection Observer for lazy loading - only load images in viewport, cancel when they leave
   useEffect(() => {
     if (!mounted) return
-    if (shouldLoad) return
     if (!containerRef.current) return
     
-    let observer: IntersectionObserver | null = null
-    
-    const checkAndObserve = () => {
-      if (!containerRef.current) return
-      if (shouldLoad) return
-      
-      // Check if already in viewport (with small margin)
-      const rect = containerRef.current.getBoundingClientRect()
-      const isInViewport = rect.top < window.innerHeight + 50 && rect.bottom > -50
-      if (isInViewport) {
-        setShouldLoad(true)
-        return
-      }
-      
-      // Set up observer for images not yet in viewport
-      observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0]?.isIntersecting && !shouldLoad) {
-            setShouldLoad(true)
-            if (observer) {
-              observer.disconnect()
-              observer = null
-            }
-          }
-        },
-        { 
-          rootMargin: '50px', // Only start loading 50px before entering viewport
-          threshold: 0.01 
-        }
-      )
-
-      if (containerRef.current) {
-        observer.observe(containerRef.current)
-      }
+    // Clean up any existing observer
+    if (observerRef.current) {
+      observerRef.current.disconnect()
+      observerRef.current = null
     }
     
-    // Small delay to ensure DOM is ready
-    const timer = setTimeout(checkAndObserve, 100)
+    // Check if already in viewport
+    const checkViewport = () => {
+      if (!containerRef.current) return false
+      const rect = containerRef.current.getBoundingClientRect()
+      // Only load if actually visible or very close (small margin)
+      return rect.top < window.innerHeight + 100 && rect.bottom > -100
+    }
+    
+    const isInViewport = checkViewport()
+    setIsVisible(isInViewport)
+    
+    if (isInViewport && !shouldLoad) {
+      setShouldLoad(true)
+    } else if (!isInViewport && shouldLoad) {
+      // Image left viewport - cancel all loading
+      cancelAllLoads()
+    }
+    
+    // Set up observer to watch for visibility changes
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0]
+        if (!entry) return
+        
+        const nowVisible = entry.isIntersecting
+        setIsVisible(nowVisible)
+        
+        if (nowVisible && !shouldLoad) {
+          // Entered viewport - start loading
+          setShouldLoad(true)
+        } else if (!nowVisible && shouldLoad) {
+          // Left viewport - cancel all loading
+          cancelAllLoads()
+        }
+      },
+      { 
+        rootMargin: '100px', // Small margin for preloading
+        threshold: 0.01 
+      }
+    )
+
+    if (containerRef.current) {
+      observerRef.current.observe(containerRef.current)
+    }
     
     return () => {
-      clearTimeout(timer)
-      if (observer) {
-        observer.disconnect()
+      if (observerRef.current) {
+        observerRef.current.disconnect()
+        observerRef.current = null
       }
     }
-  }, [shouldLoad, mounted])
+  }, [mounted, shouldLoad, cancelAllLoads])
   
   const handleLoad = useCallback(() => {
     if (!mounted || !shouldLoad) return
@@ -729,9 +815,13 @@ export default function WinionsPage() {
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {filteredNFTs.slice(0, visibleCount).map((nft, index) => (
+                  {filteredNFTs.slice(0, visibleCount).map((nft, index) => {
+                    // Create a key that changes when shuffle/filters change to force component reset
+                    const filterKey = Array.from(selectedTraits).sort().join(',')
+                    const uniqueKey = `${nft.tokenId}-${isShuffled ? 'shuffled' : 'sorted'}-${filterKey}-${index}`
+                    return (
                   <motion.div
-                    key={nft.tokenId}
+                    key={uniqueKey}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.01 }}
@@ -741,6 +831,7 @@ export default function WinionsPage() {
                     <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
                       {nft.imageUrl ? (
                         <StaticWinionImage
+                          key={uniqueKey}
                           src={nft.imageUrl}
                           alt={nft.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
@@ -756,7 +847,8 @@ export default function WinionsPage() {
                       </div>
                     </div>
                   </motion.div>
-                  ))}
+                    )
+                  })}
                 </div>
                 {filteredNFTs.length > visibleCount && (
                   <div className="mt-8 text-center">
@@ -797,16 +889,36 @@ export default function WinionsPage() {
             </button>
 
             <div className="grid md:grid-cols-2 gap-8">
-              <div className="relative aspect-square bg-[#0a0a0a]">
-                {selectedNFT.imageUrl ? (
-                  <StaticWinionImage
-                    src={selectedNFT.imageUrl}
-                    alt={selectedNFT.name}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-[#111]" />
-                )}
+              <div className="flex flex-col">
+                <div className="relative aspect-square bg-[#0a0a0a]">
+                  {selectedNFT.imageUrl ? (
+                    <StaticWinionImage
+                      src={selectedNFT.imageUrl}
+                      alt={selectedNFT.name}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-[#111]" />
+                  )}
+                </div>
+                
+                {/* Twitter Share Button */}
+                <a
+                  href={generateTwitterShareUrl({
+                    title: selectedNFT.name,
+                    date: new Date(), // NFTs don't have dates, use current date
+                    ensName: selectedNFT.owner ? (ensNames[selectedNFT.owner] || null) : null,
+                    tokenId: selectedNFT.tokenId,
+                    collection: 'WINIØNS',
+                    imageUrl: selectedNFT.imageUrl || undefined,
+                    url: typeof window !== 'undefined' ? window.location.href : '',
+                  })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-2 px-2 py-1 text-center font-grotesk font-light bg-[#111] text-[#999] border border-[#222] hover:border-[#333] hover:text-white transition-colors mono text-[9px]"
+                >
+                  SHARE TO TWITTER
+                </a>
               </div>
 
               <div className="space-y-6">

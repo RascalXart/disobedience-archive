@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import type { DailyArtwork } from '@/types'
 import { resolveDailyMediaUrl } from '@/lib/data'
+import { generateTwitterShareUrl } from '@/lib/twitter-share'
 
 interface DailyArtworkModalProps {
   daily: DailyArtwork
@@ -111,38 +112,55 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
         >
           <div className="grid md:grid-cols-2 gap-8 p-6 md:p-8">
             {/* Media - optimized for smooth playback */}
-            <div className="relative aspect-square bg-[#111]" style={{ willChange: 'contents' }}>
-              {isVideo ? (
-                <video
-                  key={currentDaily.id}
-                  src={resolveDailyMediaUrl(currentDaily.imageUrl)}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  className="w-full h-full object-contain"
-                  style={{ willChange: 'transform' }}
-                />
-              ) : (
-                <img
-                  key={currentDaily.id}
-                  src={resolveDailyMediaUrl(currentDaily.imageUrl)}
-                  alt={currentDaily.id}
-                  className="w-full h-full object-contain"
-                  loading="eager"
-                  decoding="sync"
-                  style={{ 
-                    willChange: 'transform',
-                    imageRendering: currentDaily.imageUrl.endsWith('.gif') ? 'auto' : 'auto',
-                  }}
-                  onError={(e) => {
-                    console.error('Image failed to load:', resolveDailyMediaUrl(currentDaily.imageUrl), e)
-                    const target = e.target as HTMLImageElement
-                    target.style.display = 'none'
-                  }}
-                />
-              )}
+            <div className="flex flex-col">
+              <div className="relative aspect-square bg-[#111]" style={{ willChange: 'contents' }}>
+                {isVideo ? (
+                  <video
+                    key={currentDaily.id}
+                    src={resolveDailyMediaUrl(currentDaily.imageUrl)}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    className="w-full h-full object-contain"
+                    style={{ willChange: 'transform' }}
+                  />
+                ) : (
+                  <img
+                    key={currentDaily.id}
+                    src={resolveDailyMediaUrl(currentDaily.imageUrl)}
+                    alt={currentDaily.id}
+                    className="w-full h-full object-contain"
+                    loading="eager"
+                    decoding="sync"
+                    style={{ 
+                      willChange: 'transform',
+                      imageRendering: currentDaily.imageUrl.endsWith('.gif') ? 'auto' : 'auto',
+                    }}
+                    onError={(e) => {
+                      console.error('Image failed to load:', resolveDailyMediaUrl(currentDaily.imageUrl), e)
+                      const target = e.target as HTMLImageElement
+                      target.style.display = 'none'
+                    }}
+                  />
+                )}
+              </div>
+              
+              {/* Twitter Share Button */}
+              <a
+                href={generateTwitterShareUrl({
+                  title: currentDaily.id.replace(/_/g, ' ').toUpperCase(),
+                  date: currentDaily.savedDate,
+                  imageUrl: resolveDailyMediaUrl(currentDaily.imageUrl),
+                  url: typeof window !== 'undefined' ? window.location.href : '',
+                })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 px-2 py-1 text-center font-grotesk font-light bg-[#111] text-[#999] border border-[#222] hover:border-[#333] hover:text-white transition-colors mono text-[9px]"
+              >
+                SHARE TO TWITTER
+              </a>
             </div>
 
             {/* Metadata */}
