@@ -466,11 +466,11 @@ export default function WinionsPage() {
             })}
 
             {/* Glitch realm - Above single categories */}
-            {glitchRealm && (() => {
-              const [traitType, traits] = glitchRealm as [string, TraitFilter[]]
+            {glitchRealm ? (() => {
+              const [traitType, traits] = glitchRealm
               const isCollapsed = collapsedTraits.has(traitType)
               return (
-                <div className="border-b border-[#222] pb-4 pt-4 border-t border-[#222]">
+                <div key="glitch-realm" className="border-b border-[#222] pb-4 pt-4 border-t border-[#222]">
                   <button
                     onClick={() => toggleCollapse(traitType)}
                     className="w-full flex items-center justify-between mb-3 group"
@@ -506,7 +506,7 @@ export default function WinionsPage() {
                   )}
                 </div>
               )
-            })()}
+            })() : null}
 
             {/* Single-attribute categories - Collapsible (at bottom) */}
             {singleAttributeTraits.length > 0 && (
