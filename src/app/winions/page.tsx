@@ -753,10 +753,6 @@ export default function WinionsPage() {
                 )}
               </div>
             </div>
-
-            <div className="mono text-xs text-[#666] tracking-wider border-t border-[#222] pt-4">
-              [{filteredNFTs.length} {filteredNFTs.length === 1 ? 'RESULT' : 'RESULTS'}]
-            </div>
           </div>
 
           {/* Trait Filters */}
@@ -899,11 +895,6 @@ export default function WinionsPage() {
               >
                 {isMobileSidebarOpen ? '✕ CLOSE FILTERS' : '☰ FILTERS'}
               </button>
-              {selectedTraits.size > 0 && (
-                <div className="mono text-xs text-[#666]">
-                  {filteredNFTs.length} {filteredNFTs.length === 1 ? 'RESULT' : 'RESULTS'}
-                </div>
-              )}
             </div>
             
             {filteredNFTs.length === 0 ? (
