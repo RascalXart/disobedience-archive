@@ -118,24 +118,24 @@ export function DriftingArchiveItem({ daily, index, size, onOpenModal }: Driftin
       <div className={`relative overflow-hidden bg-[#111] ${sizeHeights[size]}`}>
         {isVideo ? (
           shouldLoad ? (
-            <video
+          <video
               ref={videoRef}
               src={mediaUrl}
-              className="w-full h-full object-cover"
+            className="w-full h-full object-cover"
               autoPlay={isVisible}
-              muted
-              loop
-              playsInline
-              preload="none"
-            />
-          ) : (
+            muted
+            loop
+            playsInline
+            preload="none"
+          />
+        ) : (
             <div className="w-full h-full bg-[#111]" />
           )
         ) : (
           shouldLoad ? (
             <img
               src={mediaUrl}
-              alt={daily.id}
+            alt={daily.id}
               className="w-full h-full object-cover"
               loading="eager"
               onError={(e) => {
@@ -151,22 +151,22 @@ export function DriftingArchiveItem({ daily, index, size, onOpenModal }: Driftin
 
         {/* Hover overlay with chromatic aberration effect */}
         {isVisible && (
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            animate={isHovered ? {
-              opacity: [0, 0.1, 0],
-              filter: prefersReducedMotion ? 'none' : [
-                'brightness(1)',
-                'brightness(1.1) contrast(1.05)',
-                'brightness(1)',
-              ],
-            } : {}}
-            transition={{ duration: 0.3 }}
-            style={{
-              background: prefersReducedMotion ? 'none' : 'linear-gradient(90deg, transparent 0%, rgba(255,0,0,0.1) 50%, transparent 100%)',
-              mixBlendMode: 'screen',
-            }}
-          />
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          animate={isHovered ? {
+            opacity: [0, 0.1, 0],
+            filter: prefersReducedMotion ? 'none' : [
+              'brightness(1)',
+              'brightness(1.1) contrast(1.05)',
+              'brightness(1)',
+            ],
+          } : {}}
+          transition={{ duration: 0.3 }}
+          style={{
+            background: prefersReducedMotion ? 'none' : 'linear-gradient(90deg, transparent 0%, rgba(255,0,0,0.1) 50%, transparent 100%)',
+            mixBlendMode: 'screen',
+          }}
+        />
         )}
 
         {/* Label reveal with glitch effect */}

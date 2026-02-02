@@ -72,21 +72,21 @@ export function CompactArchiveCard({ daily, index, onClick }: CompactArchiveCard
         <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-all duration-500">
           {daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov') ? (
             shouldLoad ? (
-              <motion.video
+            <motion.video
                 ref={videoRef}
                 src={resolveDailyMediaUrl(daily.imageUrl)}
-                className="w-full h-full object-contain"
+              className="w-full h-full object-contain"
                 autoPlay={isVisible}
-                muted
-                loop
-                playsInline
+              muted
+              loop
+              playsInline
                 preload="none"
                 animate={isVisible ? {
-                  scale: isHovered ? 1.02 : 1,
-                  filter: isHovered ? 'brightness(1.1)' : 'brightness(1)',
+                scale: isHovered ? 1.02 : 1,
+                filter: isHovered ? 'brightness(1.1)' : 'brightness(1)',
                 } : {}}
-                transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-              />
+              transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+            />
             ) : (
               <div className="w-full h-full bg-[#111]" />
             )
@@ -102,16 +102,16 @@ export function CompactArchiveCard({ daily, index, onClick }: CompactArchiveCard
               {shouldLoad ? (
                 <img
                   src={resolveDailyMediaUrl(daily.imageUrl)}
-                  alt={daily.id}
+                alt={daily.id}
                   className="w-full h-full object-contain"
                   loading="eager"
-                  decoding="async"
+                decoding="async"
                   onError={(e) => {
                     console.error('Image failed to load:', resolveDailyMediaUrl(daily.imageUrl), e)
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
                   }}
-                />
+              />
               ) : (
                 <div className="w-full h-full bg-[#111]" />
               )}
@@ -165,18 +165,18 @@ export function CompactArchiveCard({ daily, index, onClick }: CompactArchiveCard
 
         {/* Subtle drift animation container */}
         {isVisible && (
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            animate={isHovered ? {
-              x: [0, 0.3, -0.2, 0.2, -0.1, 0],
-              y: [0, -0.2, 0.3, -0.1, 0.2, 0],
-            } : {}}
-            transition={{
-              duration: 4,
-              ease: "easeInOut",
-              repeat: Infinity,
-            }}
-          />
+        <motion.div
+          className="absolute inset-0 pointer-events-none"
+          animate={isHovered ? {
+            x: [0, 0.3, -0.2, 0.2, -0.1, 0],
+            y: [0, -0.2, 0.3, -0.1, 0.2, 0],
+          } : {}}
+          transition={{
+            duration: 4,
+            ease: "easeInOut",
+            repeat: Infinity,
+          }}
+        />
         )}
       </motion.div>
   )

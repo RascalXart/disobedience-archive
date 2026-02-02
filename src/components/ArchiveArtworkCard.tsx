@@ -93,16 +93,16 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
           <div className="relative overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors aspect-square">
             {daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov') ? (
               shouldLoad ? (
-                <video
+              <video
                   ref={videoRef}
                   src={resolveDailyMediaUrl(daily.imageUrl)}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                   autoPlay={isVisible}
-                  muted
-                  loop
-                  playsInline
+                muted
+                loop
+                playsInline
                   preload="none"
-                />
+              />
               ) : (
                 <div className="w-full h-full bg-[#111]" />
               )
@@ -110,7 +110,7 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
               shouldLoad ? (
                 <img
                   src={resolveDailyMediaUrl(daily.imageUrl)}
-                  alt={daily.id}
+                alt={daily.id}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
                   loading="eager"
                   onError={(e) => {
@@ -118,7 +118,7 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
                     const target = e.target as HTMLImageElement
                     target.style.display = 'none'
                   }}
-                />
+              />
               ) : (
                 <div className="w-full h-full bg-[#111]" />
               )

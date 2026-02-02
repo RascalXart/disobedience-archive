@@ -911,8 +911,6 @@ export default function WinionsPage() {
                     tokenId: selectedNFT.tokenId,
                     collection: 'WINIØNS',
                     imageUrl: selectedNFT.imageUrl ? resolveIpfsUrl(selectedNFT.imageUrl) || selectedNFT.imageUrl : undefined,
-                    shareType: 'winion',
-                    shareId: selectedNFT.tokenId,
                   })}
                   target="_blank"
                   rel="noopener noreferrer"
