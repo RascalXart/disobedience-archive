@@ -9,7 +9,6 @@
 const IPFS_GATEWAYS = [
   'https://ipfs.io/ipfs/', // Public IPFS - most reliable
   'https://dweb.link/ipfs/', // Protocol Labs - good fallback
-  'https://cf-ipfs.com/ipfs/', // Cloudflare IPFS - very reliable
   'https://ipfs.filebase.io/ipfs/', // Filebase - reliable
   'https://gateway.pinata.cloud/ipfs/', // Pinata public gateway - good fallback
 ]

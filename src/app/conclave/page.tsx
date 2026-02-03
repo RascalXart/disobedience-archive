@@ -24,9 +24,9 @@ const PINATA_DEDICATED = PINATA_GATEWAY_TOKEN
 // Fallback gateways for SSL errors
 const PRIMARY_GATEWAY = 'https://ipfs.filebase.io/ipfs/'
 const FALLBACK_GATEWAYS = [
-  'https://cf-ipfs.com/ipfs/', // Cloudflare IPFS - correct domain
-  'https://ipfs.io/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/',
+  'https://ipfs.io/ipfs/', // Public IPFS - most reliable
+  'https://gateway.pinata.cloud/ipfs/', // Pinata public gateway
+  'https://dweb.link/ipfs/', // Protocol Labs - good fallback
 ]
 
 const IPFS_GATEWAYS = PINATA_DEDICATED
