@@ -424,15 +424,10 @@ export default function WinionsPage() {
   const [visibleCount, setVisibleCount] = useState(50) // Start with 50 images per page
   const [isShuffled, setIsShuffled] = useState(false)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
-  // Start with sidebar collapsed on mobile - check on mount
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth >= 768 // true on desktop, false on mobile
-    }
-    return false // SSR default
-  })
+  // Start with sidebar collapsed on mobile - always false initially to match SSR
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   
-  // Update on resize
+  // Set initial state and update on resize (after mount to avoid hydration mismatch)
   useEffect(() => {
     const checkMobile = () => {
       if (typeof window !== 'undefined') {
@@ -443,6 +438,7 @@ export default function WinionsPage() {
         }
       }
     }
+    // Set initial state after mount
     checkMobile()
     window.addEventListener('resize', checkMobile)
     return () => window.removeEventListener('resize', checkMobile)
@@ -673,13 +669,13 @@ export default function WinionsPage() {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pt-24">
-      {/* Header Section */}
-      <div className="container mx-auto px-4 py-8 md:py-12">
+      {/* Header Section - scrollable */}
+      <div className="container mx-auto px-4 py-6 md:py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="max-w-7xl mx-auto mb-8"
+          className="max-w-7xl mx-auto mb-6"
         >
           <motion.h1
             className="font-grotesk text-5xl md:text-7xl font-light mb-6"
@@ -734,7 +730,8 @@ export default function WinionsPage() {
         </motion.div>
       </div>
       
-      <div className="flex h-[calc(100vh-6rem-12rem)] md:h-[calc(100vh-6rem-8rem)] relative">
+      {/* Main Content - Filters and Grid */}
+      <div className="flex min-h-[calc(100vh-6rem)] relative">
         {/* Mobile backdrop overlay */}
         {isMobileSidebarOpen && (
           <div
@@ -743,13 +740,14 @@ export default function WinionsPage() {
           />
         )}
         
-        {/* Left Sidebar - Filters */}
+        {/* Left Sidebar - Filters (sticky on desktop, scrollable independently) */}
         <div
-          className={`fixed md:relative inset-y-0 left-0 z-40 md:z-auto w-80 border-r border-[#222] overflow-y-auto bg-[#0a0a0a]/95 backdrop-blur-sm transform transition-transform duration-300 pt-24 md:pt-0 ${
+          className={`fixed md:sticky inset-y-0 left-0 top-24 z-40 md:z-auto w-80 border-r border-[#222] bg-[#0a0a0a]/95 backdrop-blur-sm transform transition-transform duration-300 h-[calc(100vh-6rem)] flex flex-col ${
             isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
           }`}
         >
-          <div className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-sm z-10 border-b border-[#222] pb-6">
+          {/* Sticky header */}
+          <div className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-sm z-10 border-b border-[#222] pb-6 flex-shrink-0">
             {/* Mobile close button - positioned to never be cut off */}
             <div className="md:hidden flex justify-end mb-4 pr-2">
               <button
@@ -783,8 +781,9 @@ export default function WinionsPage() {
             </div>
           </div>
 
-          {/* Trait Filters */}
-          <div className="p-6 space-y-4">
+          {/* Scrollable filters content */}
+          <div className="overflow-y-auto flex-1">
+            <div className="p-6 space-y-4">
             {/* Multi-attribute categories - Collapsible (at top) */}
             {multiAttributeTraits.map(([traitType, traits]) => {
               const isCollapsed = collapsedTraits.has(traitType)
@@ -909,6 +908,7 @@ export default function WinionsPage() {
                 })}
               </div>
             )}
+            </div>
           </div>
         </div>
 
