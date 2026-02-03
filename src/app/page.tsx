@@ -18,11 +18,18 @@ export default function HomePage() {
   const availableDailies = allDailies.filter(d => d.status === 'available')
   const isModalOpen = selectedDaily !== null
 
-  // Mouse tracking for global effects
+  // Mouse tracking for global effects - throttled for performance
   useEffect(() => {
+    let lastUpdate = 0
+    const throttleDelay = 50 // Update max 20 times per second instead of every move
+    
     const handleMouseMove = (e: MouseEvent) => {
-      setMouseX(e.clientX)
-      setMouseY(e.clientY)
+      const now = Date.now()
+      if (now - lastUpdate >= throttleDelay) {
+        setMouseX(e.clientX)
+        setMouseY(e.clientY)
+        lastUpdate = now
+      }
     }
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
@@ -45,60 +52,61 @@ export default function HomePage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Initialize ScrollReveal - only once, don't reset on mouse moves
+  // Native Intersection Observer for scroll animations (replaces ScrollReveal)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // Dynamically import ScrollReveal to avoid SSR issues
-      import('scrollreveal').then((ScrollReveal) => {
-        // Small delay to ensure DOM is ready
-        const timer = setTimeout(() => {
-          const sr = ScrollReveal.default({
-            origin: 'bottom',
-            distance: '50px',
-            duration: 1200,
-            delay: 0,
-            easing: 'cubic-bezier(0.5, 0, 0, 1)',
-            reset: false, // Don't reset animations
-            mobile: true,
-            viewFactor: 0.15, // Trigger when 15% of element is visible
-            scale: 1,
-            useDelay: 'always', // Always use delay, don't skip
-          })
+    if (typeof window === 'undefined') return
 
-          // Reveal archive cards with satisfying staggered animation
-          const cards = document.querySelectorAll('[data-scroll-reveal="card"]')
-          cards.forEach((card, index) => {
-            sr.reveal(card as HTMLElement, {
-              delay: (index % 6) * 60, // Stagger by 60ms per card, reset every 6
-              distance: '50px',
-              scale: 0.9,
-              opacity: 0,
-              easing: 'cubic-bezier(0.5, 0, 0, 1)',
-              duration: 1000,
-              reset: false, // Never reset this animation
-            })
-          })
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !entry.target.hasAttribute('data-revealed')) {
+            entry.target.setAttribute('data-revealed', 'true')
+            
+            // Cast to HTMLElement for style access
+            const element = entry.target as HTMLElement
+            
+            // Get animation type
+            const type = element.getAttribute('data-scroll-reveal')
+            const index = parseInt(element.getAttribute('data-index') || '0')
+            
+            if (type === 'card') {
+              // Staggered card animation
+              const delay = (index % 6) * 60
+              element.style.opacity = '0'
+              element.style.transform = 'translateY(50px) scale(0.9)'
+              element.style.transition = `opacity 1s cubic-bezier(0.5, 0, 0, 1) ${delay}ms, transform 1s cubic-bezier(0.5, 0, 0, 1) ${delay}ms`
+              
+              requestAnimationFrame(() => {
+                element.style.opacity = '1'
+                element.style.transform = 'translateY(0) scale(1)'
+              })
+            } else if (type === 'month') {
+              // Month header animation
+              const delay = index * 100
+              element.style.opacity = '0'
+              element.style.transform = 'translateY(40px)'
+              element.style.transition = `opacity 0.8s ease-out ${delay}ms, transform 0.8s ease-out ${delay}ms`
+              
+              requestAnimationFrame(() => {
+                element.style.opacity = '1'
+                element.style.transform = 'translateY(0)'
+              })
+            }
+          }
+        })
+      },
+      {
+        threshold: 0.15, // Trigger when 15% visible
+        rootMargin: '0px',
+      }
+    )
 
-          // Reveal month headers
-          const monthHeaders = document.querySelectorAll('[data-scroll-reveal="month"]')
-          monthHeaders.forEach((header, index) => {
-            sr.reveal(header as HTMLElement, {
-              delay: index * 100,
-              distance: '40px',
-              opacity: 0,
-              duration: 800,
-              easing: 'ease-out',
-              reset: false, // Never reset this animation
-            })
-          })
-        }, 100)
+    // Observe all elements with data-scroll-reveal
+    const elements = document.querySelectorAll('[data-scroll-reveal]')
+    elements.forEach((el) => observer.observe(el))
 
-        return () => {
-          clearTimeout(timer)
-        }
-      }).catch((err) => {
-        console.error('Failed to load ScrollReveal:', err)
-      })
+    return () => {
+      observer.disconnect()
     }
   }, [sortedDailies, isReversed]) // Re-run when dailies change
 
@@ -282,6 +290,7 @@ export default function HomePage() {
                     x: globalGlitch ? [-1, 1, 0] : 0,
                   }}
                   data-scroll-reveal="month"
+                  data-index={monthIndex}
                 >
                   <div className="flex items-baseline gap-3 relative">
                     {/* Text reflection layers */}
@@ -319,7 +328,7 @@ export default function HomePage() {
                   {dailies.map((daily, index) => {
                     const globalIndex = sortedDailies.findIndex(d => d.id === daily.id)
                     return (
-                              <div key={daily.id} data-scroll-reveal="card">
+                              <div key={daily.id} data-scroll-reveal="card" data-index={globalIndex}>
                                 <ExperimentalArchiveCard
                                   daily={daily}
                                   index={globalIndex}

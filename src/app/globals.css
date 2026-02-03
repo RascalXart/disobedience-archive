@@ -128,7 +128,7 @@ img::before {
   animation: dataCorruption 6s ease-in-out infinite;
 }
 
-/* Scanline effect - always scrolling */
+/* Scanline effect - optimized to single scanline for better performance */
 @keyframes scanline {
   0% {
     transform: translateY(-100%);
@@ -158,28 +158,7 @@ img::before {
   transform: translateZ(0);
 }
 
-/* Multiple scanlines for depth */
-.scanline::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: rgba(0, 255, 0, 0.10);
-  animation: scanline 4s linear infinite;
-}
-
-.scanline::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 1px;
-  background: rgba(255, 0, 0, 0.10);
-  animation: scanline 8s linear infinite reverse;
-}
+/* Removed multiple scanlines for better performance - single scanline is sufficient */
 
 /* Gentle drift animation */
 @keyframes drift {
@@ -388,7 +367,7 @@ img::before {
   animation: rgbSplit 3s ease-in-out infinite;
 }
 
-/* VHS-style overlay - removed green tint */
+/* VHS-style overlay - optimized with smaller pattern */
 .vhs-overlay {
   position: fixed;
   top: 0;
@@ -398,13 +377,15 @@ img::before {
   pointer-events: none;
   z-index: 10001;
   opacity: 0.08;
-  background: repeating-linear-gradient(
+  /* Use smaller repeating pattern (8px instead of 4px) for better performance */
+  background-image: repeating-linear-gradient(
     0deg,
     transparent,
-    transparent 2px,
-    rgba(255, 255, 255, 0.08) 2px,
-    rgba(255, 255, 255, 0.08) 4px
+    transparent 4px,
+    rgba(255, 255, 255, 0.08) 4px,
+    rgba(255, 255, 255, 0.08) 8px
   );
+  background-size: 100% 8px; /* Smaller pattern size */
   mix-blend-mode: screen;
   animation: vhsFlicker 12s ease-in-out infinite;
   will-change: opacity;

@@ -497,7 +497,27 @@ export default function WinionsPage() {
     return Array.from(grouped.entries()).sort((a, b) => a[0].localeCompare(b[0]))
   }, [allNFTs])
   
-  // Filter NFTs based on selected traits
+  // Pre-index NFT traits for O(1) lookups (performance optimization)
+  const nftTraitIndex = useMemo(() => {
+    const traitIndex = new Map<string, Map<string, Set<number>>>() // traitType -> value -> Set of NFT indices
+    allNFTs.forEach((nft, nftIndex) => {
+      nft.attributes.forEach(attr => {
+        const traitType = attr.trait_type || 'Unknown'
+        const value = String(attr.value)
+        if (!traitIndex.has(traitType)) {
+          traitIndex.set(traitType, new Map())
+        }
+        const valueMap = traitIndex.get(traitType)!
+        if (!valueMap.has(value)) {
+          valueMap.set(value, new Set())
+        }
+        valueMap.get(value)!.add(nftIndex)
+      })
+    })
+    return traitIndex
+  }, [allNFTs])
+
+  // Filter NFTs based on selected traits - optimized with pre-indexing
   // Logic: OR within same category, AND across different categories
   const filteredNFTs = useMemo(() => {
     if (selectedTraits.size === 0) {
@@ -507,42 +527,50 @@ export default function WinionsPage() {
     // Group selected traits by category
     const traitsByCategory = new Map<string, Set<string>>()
     selectedTraits.forEach(traitKey => {
-      const [traitType] = traitKey.split(':')
+      const [traitType, value] = traitKey.split(':')
       if (!traitsByCategory.has(traitType)) {
         traitsByCategory.set(traitType, new Set())
       }
-      traitsByCategory.get(traitType)!.add(traitKey)
+      traitsByCategory.get(traitType)!.add(value)
     })
     
-    return allNFTs.filter(nft => {
-      // Build NFT's trait keys
-      const nftTraitKeys = new Set(
-        nft.attributes.map(attr => 
-          `${attr.trait_type || 'Unknown'}:${attr.value}`
-        )
-      )
+    // Find all NFT indices that match at least one trait from each category
+    let matchingIndices: Set<number> | null = null
+    
+    for (const [category, values] of traitsByCategory) {
+      const categoryIndices = new Set<number>()
+      const categoryMap = nftTraitIndex.get(category)
       
-      // For each category with selected traits, NFT must have at least ONE trait from that category (OR logic)
-      // Across different categories, NFT must match ALL categories (AND logic)
-      for (const [category, traitKeys] of traitsByCategory) {
-        // Check if NFT has at least one trait from this category
-        let hasTraitFromCategory = false
-        for (const traitKey of traitKeys) {
-          if (nftTraitKeys.has(traitKey)) {
-            hasTraitFromCategory = true
-            break
-          }
-        }
-        
-        // If NFT doesn't have any trait from this category, it fails the filter
-        if (!hasTraitFromCategory) {
-          return false
+      if (!categoryMap) {
+        // No NFTs have this category, so no matches
+        return []
+      }
+      
+      // Collect all NFT indices that have any of the selected values in this category
+      for (const value of values) {
+        const valueIndices = categoryMap.get(value)
+        if (valueIndices) {
+          valueIndices.forEach((idx: number) => categoryIndices.add(idx))
         }
       }
       
-      return true
-    })
-  }, [allNFTs, selectedTraits])
+      // Intersect with previous categories (AND logic across categories)
+      if (matchingIndices === null) {
+        matchingIndices = new Set<number>(categoryIndices)
+      } else {
+        // Keep only indices that are in both sets
+        matchingIndices = new Set<number>([...matchingIndices].filter((idx: number) => categoryIndices.has(idx)))
+      }
+      
+      // Early exit if no matches
+      if (matchingIndices.size === 0) {
+        return []
+      }
+    }
+    
+    // Return NFTs at matching indices
+    return matchingIndices ? Array.from(matchingIndices).map((idx: number) => allNFTs[idx]) : []
+  }, [allNFTs, selectedTraits, nftTraitIndex])
   
   const selectedNFT = useMemo(() => {
     if (!selectedTokenId) return null
