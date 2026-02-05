@@ -52,11 +52,13 @@ export function generateTwitterShareUrl(data: ShareData): string {
   if (!url && data.tokenId && data.collection) {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.art')
     const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
+    // Ensure proper path construction - avoid double slashes
+    const cleanBasePath = basePath ? (basePath.startsWith('/') ? basePath : `/${basePath}`).replace(/\/+$/, '') : ''
     
     if (data.collection === 'WINIØNS') {
-      url = `${baseUrl}${basePath}/winions/share/${data.tokenId}`
+      url = `${baseUrl}${cleanBasePath}/winions/share/${data.tokenId}`
     } else if (data.collection === 'CØNCLAVE') {
-      url = `${baseUrl}${basePath}/conclave/share/${data.tokenId}`
+      url = `${baseUrl}${cleanBasePath}/conclave/share/${data.tokenId}`
     }
   }
   

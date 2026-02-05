@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
+import { proxyImageForTwitter } from '@/lib/image-proxy'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 
@@ -31,14 +32,9 @@ export async function generateMetadata({ params }: WinionSharePageProps): Promis
   // Use environment variable or default for site URL
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.art'
   
-  // For Twitter/Open Graph, use a proxy service that Twitter can reliably access
-  // Cloudflare Images or a similar service would be ideal, but for now we'll use
-  // the IPFS gateway URL and hope Twitter can access it
-  // If this doesn't work, we'll need to set up a Cloudflare Worker proxy
-  const imageUrl = rawImageUrl
-  
-  // Alternative: Use a proxy service like Cloudinary or Imgix if available
-  // const imageUrl = rawImageUrl ? `https://res.cloudinary.com/YOUR_CLOUD_NAME/image/fetch/${encodeURIComponent(rawImageUrl)}` : undefined
+  // For Twitter/Open Graph, proxy the IPFS image through a service Twitter can access
+  // This ensures Twitter's crawler can fetch the image
+  const imageUrl = rawImageUrl ? proxyImageForTwitter(rawImageUrl) : undefined
 
   // Use tokenId to construct display name so it matches the URL
   const displayName = `Winiøn #${tokenId}`
@@ -50,7 +46,7 @@ export async function generateMetadata({ params }: WinionSharePageProps): Promis
       title: displayName,
       description: nft.description || `${displayName} from the WINIØNS collection`,
       type: 'website',
-      url: `${siteUrl}/winions/share/${tokenId}`,
+      url: `${siteUrl.replace(/\/+$/, '')}/winions/share/${tokenId}`,
       images: imageUrl
         ? [
             {

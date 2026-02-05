@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { getAllCollectionNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
+import { proxyImageForTwitter } from '@/lib/image-proxy'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 
@@ -27,9 +28,12 @@ export async function generateMetadata({ params }: ConclaveSharePageProps): Prom
     }
   }
 
-  const imageUrl = nft.imageUrl ? resolveIpfsUrl(nft.imageUrl) || nft.imageUrl : undefined
+  const rawImageUrl = nft.imageUrl ? resolveIpfsUrl(nft.imageUrl) || nft.imageUrl : undefined
   // Use environment variable or default for site URL
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.art'
+  
+  // For Twitter/Open Graph, proxy the IPFS image through a service Twitter can access
+  const imageUrl = rawImageUrl ? proxyImageForTwitter(rawImageUrl) : undefined
 
   return {
     title: `${nft.name} | CØNCLAVE`,
@@ -38,7 +42,7 @@ export async function generateMetadata({ params }: ConclaveSharePageProps): Prom
       title: nft.name,
       description: nft.description || `${nft.name} from the CØNCLAVE collection`,
       type: 'website',
-      url: `${siteUrl}/conclave/share/${tokenId}`,
+      url: `${siteUrl.replace(/\/+$/, '')}/conclave/share/${tokenId}`,
       images: imageUrl
         ? [
             {
