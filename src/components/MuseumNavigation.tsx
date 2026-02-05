@@ -12,6 +12,7 @@ export function MuseumNavigation() {
     { href: '/conclave', label: 'CØNCLAVE', code: 'NFT' },
     { href: '/winions', label: 'WINIØNS', code: 'WIN' },
     { href: '/timeline', label: 'TIMELINE', code: 'TIME' },
+    { href: '/leaderboard', label: 'LEADERBOARD', code: 'LEAD' },
   ]
 
   return (
