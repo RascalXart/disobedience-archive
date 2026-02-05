@@ -1041,7 +1041,6 @@ export default function WinionsPage() {
               <div className="space-y-6 min-w-0">
                 <div>
                   <h2 className="font-grotesk text-3xl md:text-4xl font-light mb-2">{selectedNFT.name}</h2>
-                  <div className="mono text-xs text-[#666]">Token #{selectedNFT.tokenId}</div>
                 </div>
 
                 {selectedNFT.owner && (
@@ -1055,12 +1054,6 @@ export default function WinionsPage() {
                     >
                       {ensNames[selectedNFT.owner] || `${selectedNFT.owner.slice(0, 6)}...${selectedNFT.owner.slice(-4)}`}
                     </a>
-                  </div>
-                )}
-
-                {selectedNFT.description && (
-                  <div className="mono text-sm text-[#888] leading-relaxed whitespace-pre-line">
-                    {selectedNFT.description}
                   </div>
                 )}
 
