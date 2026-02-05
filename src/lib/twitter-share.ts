@@ -46,9 +46,24 @@ export function generateTwitterShareUrl(data: ShareData): string {
     tweetText += `\n\nOwned by ${data.ensName}`
   }
   
-  // Always use image URL as the link - this is what Twitter will display
-  // If no image URL provided, use page URL as fallback
-  const url = data.imageUrl || data.url || (typeof window !== 'undefined' ? window.location.href : '')
+  // For winions and conclave, use share page URL so Twitter can fetch Open Graph meta tags
+  // This allows the GIF to appear in the tweet preview
+  let url = data.url
+  if (!url && data.tokenId && data.collection) {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.art')
+    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
+    
+    if (data.collection === 'WINIØNS') {
+      url = `${baseUrl}${basePath}/winions/share/${data.tokenId}`
+    } else if (data.collection === 'CØNCLAVE') {
+      url = `${baseUrl}${basePath}/conclave/share/${data.tokenId}`
+    }
+  }
+  
+  // Fallback to image URL or current page URL
+  if (!url) {
+    url = data.imageUrl || (typeof window !== 'undefined' ? window.location.href : '')
+  }
   
   // Encode the tweet text
   const encodedText = encodeURIComponent(tweetText)
