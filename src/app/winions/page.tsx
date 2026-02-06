@@ -9,12 +9,12 @@ import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
 import type { CollectionNFT, NFTAttribute } from '@/types'
 
-// Use ipfs.io first; filebase.io often returns ERR_SSL_PROTOCOL_ERROR in browsers
+// Gateways that work in browser (no filebase - it throws ERR_SSL_PROTOCOL_ERROR)
 const PRIMARY_GATEWAY = 'https://ipfs.io/ipfs/'
 const FALLBACK_GATEWAYS = [
   'https://dweb.link/ipfs/',
   'https://gateway.pinata.cloud/ipfs/',
-  'https://ipfs.filebase.io/ipfs/',
+  'https://cloudflare-ipfs.com/ipfs/',
 ]
 
 const IPFS_GATEWAYS = [PRIMARY_GATEWAY, ...FALLBACK_GATEWAYS]
@@ -52,7 +52,7 @@ function generateIpfsPathVariations(originalUrl: string): string[] {
   return Array.from(new Set(variations))
 }
 
-// Static image component - extracts first frame from GIF or uses static image
+// Static image component - load when in viewport (Intersection Observer), fallback gateways on error
 function StaticWinionImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const originalResolved = resolveIpfsUrl(src) || src
   const pathVariations = useMemo(() => {
@@ -72,7 +72,6 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const observerRef = useRef<IntersectionObserver | null>(null)
   
-  // Cleanup function to cancel all pending operations
   const cancelAllLoads = useCallback(() => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
@@ -270,62 +269,39 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
     }
   }, [cancelAllLoads])
   
-  // Intersection Observer for lazy loading - only load images in viewport, cancel when they leave
+  // Intersection Observer: load only when in or near viewport (browser handles connection limits)
   useEffect(() => {
     if (!mounted) return
     if (!containerRef.current) return
     
-    // Clean up any existing observer
     if (observerRef.current) {
       observerRef.current.disconnect()
       observerRef.current = null
     }
     
-    // Check if already in viewport
     const checkViewport = () => {
       if (!containerRef.current) return false
       const rect = containerRef.current.getBoundingClientRect()
-      // Only load if actually visible or very close (small margin)
-      return rect.top < window.innerHeight + 100 && rect.bottom > -100
+      return rect.top < window.innerHeight + 300 && rect.bottom > -300
     }
     
     const isInViewport = checkViewport()
     setIsVisible(isInViewport)
+    if (isInViewport && !shouldLoad) setShouldLoad(true)
+    if (!isInViewport && shouldLoad) cancelAllLoads()
     
-    if (isInViewport && !shouldLoad) {
-      setShouldLoad(true)
-    } else if (!isInViewport && shouldLoad) {
-      // Image left viewport - cancel all loading
-      cancelAllLoads()
-    }
-    
-    // Set up observer to watch for visibility changes
     observerRef.current = new IntersectionObserver(
       (entries) => {
         const entry = entries[0]
         if (!entry) return
-        
         const nowVisible = entry.isIntersecting
         setIsVisible(nowVisible)
-        
-        if (nowVisible && !shouldLoad) {
-          // Entered viewport - start loading
-          setShouldLoad(true)
-        } else if (!nowVisible && shouldLoad) {
-          // Left viewport - cancel all loading
-          cancelAllLoads()
-        }
+        if (nowVisible && !shouldLoad) setShouldLoad(true)
+        if (!nowVisible && shouldLoad) cancelAllLoads()
       },
-      { 
-        rootMargin: '100px', // Small margin for preloading
-        threshold: 0.01 
-      }
+      { rootMargin: '300px', threshold: 0.01 }
     )
-
-    if (containerRef.current) {
-      observerRef.current.observe(containerRef.current)
-    }
-    
+    observerRef.current.observe(containerRef.current)
     return () => {
       if (observerRef.current) {
         observerRef.current.disconnect()
@@ -336,7 +312,6 @@ function StaticWinionImage({ src, alt, className }: { src: string; alt: string; 
   
   const handleLoad = useCallback(() => {
     if (!mounted || !shouldLoad) return
-    
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
       timeoutRef.current = null
@@ -986,7 +961,7 @@ export default function WinionsPage() {
             ) : (
               <>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                  {filteredNFTs.slice(0, visibleCount).map((nft, index) => {
+                    {filteredNFTs.slice(0, visibleCount).map((nft, index) => {
                     // Create a key that changes when shuffle/filters change to force component reset
                     const filterKey = Array.from(selectedTraits).sort().join(',')
                     const uniqueKey = `${nft.tokenId}-${isShuffled ? 'shuffled' : 'sorted'}-${filterKey}-${index}`

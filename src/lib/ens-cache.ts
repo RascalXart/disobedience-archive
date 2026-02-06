@@ -68,20 +68,23 @@ export async function resolveENSCached(address: string): Promise<string | null> 
       }
     }
   } catch {
-    // try RPC fallback
+    // ignore; never use RPC from browser (CORS blocks eth.llamarpc.com etc.)
   }
 
-  try {
-    const { ethers } = await import('ethers')
-    const { DEFAULT_ETHEREUM_RPC_URL } = await import('@/lib/ethers-provider')
-    const provider = new ethers.JsonRpcProvider(DEFAULT_ETHEREUM_RPC_URL)
-    const name = await provider.lookupAddress(address)
-    if (name) {
-      setCached(address, name)
-      return name
+  // RPC fallback only on server (SSR/API) to avoid CORS in browser
+  if (typeof window === 'undefined') {
+    try {
+      const { ethers } = await import('ethers')
+      const { DEFAULT_ETHEREUM_RPC_URL } = await import('@/lib/ethers-provider')
+      const provider = new ethers.JsonRpcProvider(DEFAULT_ETHEREUM_RPC_URL)
+      const name = await provider.lookupAddress(address)
+      if (name) {
+        setCached(address, name)
+        return name
+      }
+    } catch {
+      // ignore
     }
-  } catch {
-    // ignore
   }
 
   return null
