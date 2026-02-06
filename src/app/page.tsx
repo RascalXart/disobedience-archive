@@ -14,7 +14,17 @@ export default function HomePage() {
   const [mouseX, setMouseX] = useState(0)
   const [mouseY, setMouseY] = useState(0)
   const [globalGlitch, setGlobalGlitch] = useState(false)
+  const [titleText, setTitleText] = useState<'RASCAL' | 'RVSCVNX'>('RASCAL')
+  const [titleGlitching, setTitleGlitching] = useState(false)
+  const [glitchLetterIndex, setGlitchLetterIndex] = useState<number | null>(null)
+  const [glitchLetterIndex2, setGlitchLetterIndex2] = useState<number | null>(null)
+  const [glitchLetterSub1, setGlitchLetterSub1] = useState<string | null>(null)
+  const [glitchLetterSub2, setGlitchLetterSub2] = useState<string | null>(null)
+  const [subtitlePhrase, setSubtitlePhrase] = useState<string | null>(null)
+  const [subtitleVisibleLength, setSubtitleVisibleLength] = useState(0)
   const allDailies = getAllDailies()
+
+  const TYPED_PHRASES = ['DISOBEDIENCE_ARCHIVE', 'ETERNAL_MUSE', 'CØNCLAVE_001.exe', 'WINIØNS']
   const availableDailies = allDailies.filter(d => d.status === 'available')
   const isModalOpen = selectedDaily !== null
 
@@ -39,6 +49,129 @@ export default function HomePage() {
   const sortedDailies = useMemo(() => {
     return isReversed ? [...allDailies].reverse() : allDailies
   }, [allDailies, isReversed])
+
+  // Pick substitute for a letter: S -> $, A -> Λ or ∧ (inverted wedge)
+  const pickLetterSub = (char: string) => {
+    if (char === 'S' && Math.random() > 0.5) return '$'
+    if (char === 'A' && Math.random() > 0.5) return Math.random() > 0.5 ? 'Λ' : '∧'
+    return null
+  }
+
+  // RASCAL <-> RVSCVNX title glitch: all timing 0-based random, RVSCVNX hold 0–800ms
+  const runTitleGlitch = () => {
+    const len = 6
+    const pickTwo = () => {
+      const a = Math.floor(Math.random() * len)
+      let b = Math.floor(Math.random() * len)
+      while (b === a) b = Math.floor(Math.random() * len)
+      return [a, b]
+    }
+    const glitchDur = Math.random() * 280
+    const switchDelay = Math.random() * 800
+    const letter1Delay = Math.random() * 60
+    const letter2Delay = letter1Delay + Math.random() * 80
+    const [i1, i2] = pickTwo()
+    const text1 = 'RVSCVNX'
+
+    setTitleGlitching(true)
+    setTitleText('RVSCVNX')
+    setGlitchLetterIndex(null)
+    setGlitchLetterIndex2(null)
+    setGlitchLetterSub1(null)
+    setGlitchLetterSub2(null)
+    const t1a = setTimeout(() => {
+      setGlitchLetterIndex(i1)
+      setGlitchLetterSub1(pickLetterSub(text1[i1]))
+    }, letter1Delay)
+    const t1b = setTimeout(() => {
+      setGlitchLetterIndex2(i2)
+      setGlitchLetterSub2(pickLetterSub(text1[i2]))
+    }, letter2Delay)
+    const t1c = setTimeout(() => {
+      setTitleGlitching(false)
+      setGlitchLetterIndex(null)
+      setGlitchLetterIndex2(null)
+      setGlitchLetterSub1(null)
+      setGlitchLetterSub2(null)
+    }, glitchDur)
+    const t2 = setTimeout(() => {
+      const glitchDur2 = Math.random() * 280
+      const letter1Delay2 = Math.random() * 60
+      const letter2Delay2 = letter1Delay2 + Math.random() * 80
+      const [j1, j2] = pickTwo()
+      const text2 = 'RASCAL'
+      setTitleGlitching(true)
+      setTitleText('RASCAL')
+      setGlitchLetterIndex(null)
+      setGlitchLetterIndex2(null)
+      setGlitchLetterSub1(null)
+      setGlitchLetterSub2(null)
+      const t2a = setTimeout(() => {
+        setGlitchLetterIndex(j1)
+        setGlitchLetterSub1(pickLetterSub(text2[j1]))
+      }, letter1Delay2)
+      const t2b = setTimeout(() => {
+        setGlitchLetterIndex2(j2)
+        setGlitchLetterSub2(pickLetterSub(text2[j2]))
+      }, letter2Delay2)
+      const t2c = setTimeout(() => {
+        setTitleGlitching(false)
+        setGlitchLetterIndex(null)
+        setGlitchLetterIndex2(null)
+        setGlitchLetterSub1(null)
+        setGlitchLetterSub2(null)
+      }, glitchDur2)
+      return () => { clearTimeout(t2a); clearTimeout(t2b); clearTimeout(t2c) }
+    }, switchDelay)
+    return () => { clearTimeout(t1a); clearTimeout(t1b); clearTimeout(t1c); clearTimeout(t2) }
+  }
+  useEffect(() => {
+    const ref = { current: null as ReturnType<typeof setTimeout> | null }
+    const scheduleNext = () => {
+      if (ref.current) clearTimeout(ref.current)
+      ref.current = setTimeout(() => {
+        if (Math.random() > 0.1) runTitleGlitch()
+        scheduleNext()
+      }, Math.random() * 5000)
+    }
+    ref.current = setTimeout(() => { runTitleGlitch(); scheduleNext() }, Math.random() * 1200)
+    return () => { if (ref.current) clearTimeout(ref.current) }
+  }, [])
+
+  // Typed subtitle after title: random phrase, typewriter, different each time
+  useEffect(() => {
+    let typingId: ReturnType<typeof setInterval> | null = null
+    let holdId: ReturnType<typeof setTimeout> | null = null
+    let nextId: ReturnType<typeof setTimeout> | null = null
+
+    const startPhrase = () => {
+      const phrase = TYPED_PHRASES[Math.floor(Math.random() * TYPED_PHRASES.length)]
+      setSubtitlePhrase(phrase)
+      setSubtitleVisibleLength(0)
+      const speed = 35 + Math.random() * 45
+      let len = 0
+      typingId = setInterval(() => {
+        len += 1
+        setSubtitleVisibleLength(len)
+        if (len >= phrase.length) {
+          if (typingId) clearInterval(typingId)
+          typingId = null
+          holdId = setTimeout(() => {
+            setSubtitlePhrase(null)
+            setSubtitleVisibleLength(0)
+            nextId = setTimeout(startPhrase, Math.random() * 4000)
+          }, 600 + Math.random() * 2200)
+        }
+      }, speed)
+    }
+
+    nextId = setTimeout(startPhrase, Math.random() * 3000)
+    return () => {
+      if (typingId) clearInterval(typingId)
+      if (holdId) clearTimeout(holdId)
+      if (nextId) clearTimeout(nextId)
+    }
+  }, [])
 
   // Random global glitch effects
   useEffect(() => {
@@ -171,32 +304,64 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 1 }}
-            className="text-5xl md:text-7xl font-grotesk font-light mb-4 tracking-tighter leading-none relative rgb-split"
+            className={`text-5xl md:text-7xl font-grotesk font-light mb-4 tracking-tighter leading-none relative rgb-split ${titleGlitching ? 'title-glitch-transition' : ''}`}
           >
             {/* Multi-layer reflection effect */}
             <span className="absolute left-0 top-0 text-[#666]/10 blur-[3px] translate-y-[4px] scale-y-[-1] select-none pointer-events-none">
-              RASCAL
+              {titleText}
             </span>
             <span className="absolute left-0 top-0 text-red-500/20 blur-[2px] -translate-x-[2px] select-none pointer-events-none">
-              RASCAL
+              {titleText}
             </span>
             <span className="absolute left-0 top-0 text-green-500/20 blur-[2px] translate-x-[2px] select-none pointer-events-none">
-              RASCAL
+              {titleText}
             </span>
             <span className="absolute left-0 top-0 text-blue-500/20 blur-[2px] translate-y-[1px] select-none pointer-events-none">
-              RASCAL
+              {titleText}
             </span>
-            <motion.span
-              className="inline-block relative"
-              animate={{
-                textShadow: globalGlitch 
-                  ? ['0 0 10px rgba(255,0,0,0.5), 0 0 20px rgba(0,255,0,0.3)', '0 0 5px rgba(0,0,255,0.5), 0 0 15px rgba(255,0,0,0.3)', '0 0 10px rgba(255,0,0,0.5), 0 0 20px rgba(0,255,0,0.3)']
-                  : '0 0 20px rgba(255,255,255,0.1)',
-              }}
-              transition={{ duration: 0.3 }}
-            >
-              RASCAL
-            </motion.span>
+            <span className="inline-block relative">
+              <motion.span
+                className="inline-block relative"
+                animate={{
+                  textShadow: globalGlitch 
+                    ? ['0 0 10px rgba(255,0,0,0.5), 0 0 20px rgba(0,255,0,0.3)', '0 0 5px rgba(0,0,255,0.5), 0 0 15px rgba(255,0,0,0.3)', '0 0 10px rgba(255,0,0,0.5), 0 0 20px rgba(0,255,0,0.3)']
+                    : '0 0 20px rgba(255,255,255,0.1)',
+                }}
+                transition={{ duration: 0.3 }}
+              >
+                {titleText.split('').map((char, i) => {
+                  const isGlitchLetter = titleGlitching && glitchLetterIndex === i
+                  const isGlitchLetter2 = titleGlitching && glitchLetterIndex2 === i
+                  const displayChar =
+                    (isGlitchLetter && glitchLetterSub1) ? glitchLetterSub1 :
+                    (isGlitchLetter2 && glitchLetterSub2) ? glitchLetterSub2 : char
+                  return (
+                    <span
+                      key={`${titleText}-${i}`}
+                      className={
+                        isGlitchLetter ? 'title-glitch-letter' :
+                        isGlitchLetter2 ? 'title-glitch-letter-2' : ''
+                      }
+                    >
+                      {displayChar}
+                    </span>
+                  )
+                })}
+              </motion.span>
+              {subtitlePhrase && (
+                <span
+                  className="absolute left-full bottom-0 ml-2 leading-none text-xs text-[#666] tracking-[0.3em] uppercase whitespace-nowrap"
+                  style={{ fontFamily: "'JetBrains Mono', 'Courier New', monospace", fontWeight: 400, animation: 'none', textShadow: 'none', transform: 'translateY(-0.8em)' }}
+                >
+                  <span className={`inline-block ${titleGlitching ? 'title-glitch-transition' : ''}`}>
+                    /{subtitlePhrase.slice(0, subtitleVisibleLength).toUpperCase()}
+                    {subtitleVisibleLength < subtitlePhrase.length && (
+                      <span className="inline-block w-0.5 h-3 align-middle bg-[#555] ml-0.5 animate-pulse" style={{ animationDuration: '0.6s' }} />
+                    )}
+                  </span>
+                </span>
+              )}
+            </span>
           </motion.h1>
 
           <motion.p
