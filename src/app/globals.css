@@ -40,7 +40,7 @@ img::before {
   z-index: -1;
 }
 
-/* Grain overlay removed - now using canvas-based AnimatedNoise component */
+/* Grain: AnimatedNoise component in layout (matches production origin/main) */
 
 /* Monospace for terminal/placard elements */
 .mono {
@@ -367,6 +367,53 @@ img::before {
   animation: rgbSplit 3s ease-in-out infinite;
 }
 
+/* One-shot glitch when title text switches (RASCAL <-> RVSCVNX): jitter + chromatic. */
+@keyframes titleGlitchTransition {
+  0% { transform: translate(0, 0); filter: hue-rotate(0deg) contrast(1); }
+  10% { transform: translate(-3px, 2px); filter: hue-rotate(0deg) contrast(1); }
+  20% { transform: translate(4px, -2px); filter: hue-rotate(90deg) contrast(1.4); }
+  35% { transform: translate(-2px, -3px); filter: hue-rotate(-30deg) contrast(1.2); }
+  50% { transform: translate(3px, 1px); filter: hue-rotate(180deg) contrast(1.3); }
+  65% { transform: translate(-4px, 2px); filter: hue-rotate(60deg) contrast(1.1); }
+  80% { transform: translate(2px, -1px); filter: hue-rotate(-90deg) contrast(1.2); }
+  100% { transform: translate(0, 0); filter: hue-rotate(0deg) contrast(1); }
+}
+
+.title-glitch-transition {
+  animation: titleGlitchTransition 0.2s steps(5, end) infinite;
+  will-change: transform, filter;
+}
+
+/* Single letter glitch: mono font, terminal color, $ for S sometimes */
+@keyframes titleGlitchLetter {
+  0%, 100% { color: #0ff; transform: translate(0, 0); opacity: 1; }
+  33% { color: #f0f; transform: translate(-1px, 1px); opacity: 0.9; }
+  66% { color: #0f0; transform: translate(1px, -1px); opacity: 1; }
+}
+
+.title-glitch-letter {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  color: #0ff;
+  text-shadow: 0 0 6px currentColor;
+  animation: titleGlitchLetter 0.16s steps(2, end);
+  display: inline-block;
+}
+
+/* Second glitch letter: different font treatment (narrow/condensed feel, italic) */
+@keyframes titleGlitchLetter2 {
+  0%, 100% { color: #f80; transform: scaleX(1) skewX(0deg); opacity: 1; }
+  50% { color: #0ff; transform: scaleX(0.92) skewX(-4deg); opacity: 0.95; }
+}
+
+.title-glitch-letter-2 {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-style: italic;
+  color: #f80;
+  text-shadow: 0 0 4px currentColor;
+  animation: titleGlitchLetter2 0.16s steps(2, end);
+  display: inline-block;
+}
+
 /* VHS-style overlay - optimized with smaller pattern */
 .vhs-overlay {
   position: fixed;
@@ -504,53 +551,6 @@ img::before {
   animation: modalJitter 0.8s ease-out;
   will-change: transform, filter;
   transform: translateZ(0);
-}
-
-/* One-shot glitch when title text switches (RASCAL <-> RVSCVNX): jitter + chromatic. */
-@keyframes titleGlitchTransition {
-  0% { transform: translate(0, 0); filter: hue-rotate(0deg) contrast(1); }
-  10% { transform: translate(-3px, 2px); filter: hue-rotate(0deg) contrast(1); }
-  20% { transform: translate(4px, -2px); filter: hue-rotate(90deg) contrast(1.4); }
-  35% { transform: translate(-2px, -3px); filter: hue-rotate(-30deg) contrast(1.2); }
-  50% { transform: translate(3px, 1px); filter: hue-rotate(180deg) contrast(1.3); }
-  65% { transform: translate(-4px, 2px); filter: hue-rotate(60deg) contrast(1.1); }
-  80% { transform: translate(2px, -1px); filter: hue-rotate(-90deg) contrast(1.2); }
-  100% { transform: translate(0, 0); filter: hue-rotate(0deg) contrast(1); }
-}
-
-.title-glitch-transition {
-  animation: titleGlitchTransition 0.2s steps(5, end);
-  will-change: transform, filter;
-}
-
-/* Single letter glitch: mono font, terminal color, $ for S sometimes */
-@keyframes titleGlitchLetter {
-  0%, 100% { color: #0ff; transform: translate(0, 0); opacity: 1; }
-  33% { color: #f0f; transform: translate(-1px, 1px); opacity: 0.9; }
-  66% { color: #0f0; transform: translate(1px, -1px); opacity: 1; }
-}
-
-.title-glitch-letter {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  color: #0ff;
-  text-shadow: 0 0 6px currentColor;
-  animation: titleGlitchLetter 0.16s steps(2, end);
-  display: inline-block;
-}
-
-/* Second glitch letter: different font treatment (narrow/condensed feel, italic) */
-@keyframes titleGlitchLetter2 {
-  0%, 100% { color: #f80; transform: scaleX(1) skewX(0deg); opacity: 1; }
-  50% { color: #0ff; transform: scaleX(0.92) skewX(-4deg); opacity: 0.95; }
-}
-
-.title-glitch-letter-2 {
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
-  font-style: italic;
-  color: #f80;
-  text-shadow: 0 0 4px currentColor;
-  animation: titleGlitchLetter2 0.16s steps(2, end);
-  display: inline-block;
 }
 
 /* Text glitch on hover */
