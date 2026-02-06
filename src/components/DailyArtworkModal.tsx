@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import type { DailyArtwork } from '@/types'
 import { resolveDailyMediaUrl } from '@/lib/data'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
+import { ModalNavArrows } from '@/components/ModalNavArrows'
 
 interface DailyArtworkModalProps {
   daily: DailyArtwork
@@ -18,20 +19,6 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
   )
   const [currentDaily, setCurrentDaily] = useState(daily)
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowLeft') navigatePrevious()
-      if (e.key === 'ArrowRight') navigateNext()
-    }
-    document.addEventListener('keydown', handleEscape)
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.removeEventListener('keydown', handleEscape)
-      document.body.style.overflow = 'unset'
-    }
-  }, [currentIndex])
 
   const navigatePrevious = () => {
     if (currentIndex > 0) {
@@ -49,6 +36,20 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
     }
   }
 
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+      if (e.key === 'ArrowLeft') { e.preventDefault(); navigatePrevious() }
+      if (e.key === 'ArrowRight') { e.preventDefault(); navigateNext() }
+    }
+    document.addEventListener('keydown', handleKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', handleKey)
+      document.body.style.overflow = 'unset'
+    }
+  }, [currentIndex, onClose])
+
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose()
   }
@@ -64,32 +65,12 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
         className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0a]"
         onClick={handleBackdropClick}
       >
-        {/* Navigation arrows */}
-        {currentIndex > 0 && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              navigatePrevious()
-            }}
-            className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-[#111] hover:bg-[#1a1a1a] border border-[#222] mono text-xs text-[#666] hover:text-white transition-all z-10"
-            aria-label="Previous artwork"
-          >
-            ←
-          </button>
-        )}
-
-        {currentIndex < allDailies.length - 1 && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation()
-              navigateNext()
-            }}
-            className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center bg-[#111] hover:bg-[#1a1a1a] border border-[#222] mono text-xs text-[#666] hover:text-white transition-all z-10"
-            aria-label="Next artwork"
-          >
-            →
-          </button>
-        )}
+        <ModalNavArrows
+          hasPrev={currentIndex > 0}
+          hasNext={currentIndex < allDailies.length - 1}
+          onPrev={navigatePrevious}
+          onNext={navigateNext}
+        />
 
         {/* Close button */}
         <button

@@ -5,15 +5,16 @@ import { motion } from 'framer-motion'
 import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
+import { DEFAULT_ETHEREUM_RPC_URL } from '@/lib/ethers-provider'
+import { ModalNavArrows } from '@/components/ModalNavArrows'
 import type { CollectionNFT, NFTAttribute } from '@/types'
 
-// Primary gateway: ipfs.filebase.io
-// Fallback gateways for SSL errors
-const PRIMARY_GATEWAY = 'https://ipfs.filebase.io/ipfs/'
+// Use ipfs.io first; filebase.io often returns ERR_SSL_PROTOCOL_ERROR in browsers
+const PRIMARY_GATEWAY = 'https://ipfs.io/ipfs/'
 const FALLBACK_GATEWAYS = [
-  'https://ipfs.io/ipfs/', // Public IPFS - most reliable
-  'https://gateway.pinata.cloud/ipfs/', // Pinata public gateway
-  'https://dweb.link/ipfs/', // Protocol Labs - good fallback
+  'https://dweb.link/ipfs/',
+  'https://gateway.pinata.cloud/ipfs/',
+  'https://ipfs.filebase.io/ipfs/',
 ]
 
 const IPFS_GATEWAYS = [PRIMARY_GATEWAY, ...FALLBACK_GATEWAYS]
@@ -591,7 +592,7 @@ export default function WinionsPage() {
       } catch (e) {
         try {
           const { ethers } = await import('ethers')
-          const provider = new ethers.JsonRpcProvider('https://eth.llamarpc.com')
+          const provider = new ethers.JsonRpcProvider(DEFAULT_ETHEREUM_RPC_URL)
           const name = await provider.lookupAddress(address)
           if (name) {
             setEnsNames(prev => ({ ...prev, [address]: name }))
@@ -620,6 +621,39 @@ export default function WinionsPage() {
   const clearFilters = () => {
     setSelectedTraits(new Set())
   }
+
+  // Arrow left/right to switch between pieces when modal is open
+  useEffect(() => {
+    if (!selectedNFT) return
+    const list = filteredNFTs
+    if (list.length === 0) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      e.preventDefault()
+      const idx = list.findIndex((nft) => nft.tokenId === selectedNFT.tokenId)
+      if (e.key === 'ArrowLeft') {
+        if (idx > 0) setSelectedTokenId(list[idx - 1].tokenId)
+        else if (idx < 0) setSelectedTokenId(list[list.length - 1].tokenId) // current not in filter: wrap to last
+      } else {
+        if (idx >= 0 && idx < list.length - 1) setSelectedTokenId(list[idx + 1].tokenId)
+        else if (idx < 0) setSelectedTokenId(list[0].tokenId) // current not in filter: go to first
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedNFT, filteredNFTs])
+
+  const modalNav = useMemo(() => {
+    if (!selectedNFT || filteredNFTs.length === 0) return null
+    const list = filteredNFTs
+    const idx = list.findIndex((nft) => nft.tokenId === selectedNFT.tokenId)
+    return {
+      hasPrev: idx > 0 || idx < 0,
+      hasNext: (idx >= 0 && idx < list.length - 1) || idx < 0,
+      prevTokenId: idx > 0 ? list[idx - 1].tokenId : idx < 0 ? list[list.length - 1].tokenId : null,
+      nextTokenId: (idx >= 0 && idx < list.length - 1) ? list[idx + 1].tokenId : idx < 0 ? list[0].tokenId : null,
+    }
+  }, [selectedNFT, filteredNFTs])
   
   const toggleCollapse = (traitType: string) => {
     setCollapsedTraits(prev => {
@@ -992,6 +1026,12 @@ export default function WinionsPage() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0a]/95 backdrop-blur-sm overflow-y-auto"
           onClick={() => setSelectedTokenId(null)}
         >
+          <ModalNavArrows
+            hasPrev={!!modalNav?.hasPrev}
+            hasNext={!!modalNav?.hasNext}
+            onPrev={() => modalNav?.prevTokenId && setSelectedTokenId(modalNav.prevTokenId)}
+            onNext={() => modalNav?.nextTokenId && setSelectedTokenId(modalNav.nextTokenId)}
+          />
           <div className="relative max-w-4xl w-full my-8">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}

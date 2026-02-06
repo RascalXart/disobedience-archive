@@ -5,6 +5,8 @@ import { motion } from 'framer-motion'
 import { getAllCollectionNFTs, getCollection, getSpecialCollectionNFTs, getRegularCollectionNFTs } from '@/lib/data'
 import { resolveIpfsUrl, getFallbackIpfsUrl } from '@/lib/ipfs'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
+import { DEFAULT_ETHEREUM_RPC_URL } from '@/lib/ethers-provider'
+import { ModalNavArrows } from '@/components/ModalNavArrows'
 import Link from 'next/link'
 
 // IPFS Gateways - prioritize dedicated gateway if available
@@ -17,16 +19,12 @@ const PINATA_DEDICATED = PINATA_GATEWAY_TOKEN
   ? `https://${PINATA_GATEWAY_TOKEN}.mypinata.cloud/ipfs/`
   : null
 
-// Prioritize reliable IPFS gateways
-// Removed gateways with CORS issues (Pinata, NFT.Storage, gateway.ipfs.io)
-// Using only gateways that work reliably
-// Primary gateway: ipfs.filebase.io
-// Fallback gateways for SSL errors
-const PRIMARY_GATEWAY = 'https://ipfs.filebase.io/ipfs/'
+// Use ipfs.io first; filebase.io often returns ERR_SSL_PROTOCOL_ERROR in browsers
+const PRIMARY_GATEWAY = 'https://ipfs.io/ipfs/'
 const FALLBACK_GATEWAYS = [
-  'https://ipfs.io/ipfs/', // Public IPFS - most reliable
-  'https://gateway.pinata.cloud/ipfs/', // Pinata public gateway
-  'https://dweb.link/ipfs/', // Protocol Labs - good fallback
+  'https://dweb.link/ipfs/',
+  'https://gateway.pinata.cloud/ipfs/',
+  'https://ipfs.filebase.io/ipfs/',
 ]
 
 const IPFS_GATEWAYS = PINATA_DEDICATED
@@ -420,7 +418,7 @@ export default function ConclavePage() {
       } catch (e) {
         try {
           const { ethers } = await import('ethers')
-          const provider = new ethers.JsonRpcProvider('https://eth.llamarpc.com')
+          const provider = new ethers.JsonRpcProvider(DEFAULT_ETHEREUM_RPC_URL)
           const name = await provider.lookupAddress(address)
           if (name) {
             setEnsNames(prev => ({ ...prev, [address]: name }))
@@ -489,7 +487,7 @@ export default function ConclavePage() {
       } catch (e) {
         try {
           const { ethers } = await import('ethers')
-          const provider = new ethers.JsonRpcProvider('https://eth.llamarpc.com')
+          const provider = new ethers.JsonRpcProvider(DEFAULT_ETHEREUM_RPC_URL)
           const name = await provider.lookupAddress(address)
           if (name) {
             setEnsNames(prev => ({ ...prev, [address]: name }))
@@ -502,6 +500,38 @@ export default function ConclavePage() {
     
     resolveENS(selectedNFT.owner)
   }, [selectedNFT, ensNames])
+
+  // Arrow left/right to switch between pieces when modal is open
+  useEffect(() => {
+    if (!selectedNFT) return
+    const list = allNFTs
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return
+      const idx = list.findIndex((nft) => nft.tokenId === selectedNFT.tokenId)
+      if (idx < 0) return
+      if (e.key === 'ArrowLeft' && idx > 0) {
+        e.preventDefault()
+        setSelectedTokenId(list[idx - 1].tokenId)
+      } else if (e.key === 'ArrowRight' && idx < list.length - 1) {
+        e.preventDefault()
+        setSelectedTokenId(list[idx + 1].tokenId)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [selectedNFT, allNFTs])
+
+  const modalNav = useMemo(() => {
+    if (!selectedNFT || allNFTs.length === 0) return null
+    const idx = allNFTs.findIndex((nft) => nft.tokenId === selectedNFT.tokenId)
+    if (idx < 0) return null
+    return {
+      hasPrev: idx > 0,
+      hasNext: idx < allNFTs.length - 1,
+      prevTokenId: idx > 0 ? allNFTs[idx - 1].tokenId : null,
+      nextTokenId: idx < allNFTs.length - 1 ? allNFTs[idx + 1].tokenId : null,
+    }
+  }, [selectedNFT, allNFTs])
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white pt-24">
@@ -742,6 +772,12 @@ export default function ConclavePage() {
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0a]/95 backdrop-blur-sm overflow-y-auto"
           onClick={() => setSelectedTokenId(null)}
         >
+          <ModalNavArrows
+            hasPrev={!!modalNav?.hasPrev}
+            hasNext={!!modalNav?.hasNext}
+            onPrev={() => modalNav?.prevTokenId && setSelectedTokenId(modalNav.prevTokenId)}
+            onNext={() => modalNav?.nextTokenId && setSelectedTokenId(modalNav.nextTokenId)}
+          />
           <div className="relative max-w-4xl w-full my-8">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
