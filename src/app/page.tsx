@@ -18,8 +18,13 @@ export default function HomePage() {
   const [titleGlitching, setTitleGlitching] = useState(false)
   const [glitchLetterIndex, setGlitchLetterIndex] = useState<number | null>(null)
   const [glitchLetterIndex2, setGlitchLetterIndex2] = useState<number | null>(null)
+  const [glitchLetterIndex3, setGlitchLetterIndex3] = useState<number | null>(null)
+  const [glitchLetterIndex4, setGlitchLetterIndex4] = useState<number | null>(null)
   const [glitchLetterSub1, setGlitchLetterSub1] = useState<string | null>(null)
   const [glitchLetterSub2, setGlitchLetterSub2] = useState<string | null>(null)
+  const [glitchLetterSub3, setGlitchLetterSub3] = useState<string | null>(null)
+  const [glitchLetterSub4, setGlitchLetterSub4] = useState<string | null>(null)
+  const [glitchFontMap, setGlitchFontMap] = useState<Record<number, string>>({})
   const [subtitlePhrase, setSubtitlePhrase] = useState<string | null>(null)
   const [subtitleVisibleLength, setSubtitleVisibleLength] = useState(0)
   const allDailies = getAllDailies()
@@ -50,91 +55,146 @@ export default function HomePage() {
     return isReversed ? [...allDailies].reverse() : allDailies
   }, [allDailies, isReversed])
 
-  // Pick substitute for a letter: S -> $, A -> Λ or ∧ (inverted wedge)
+  // Symbol substitutions: push symbols often (S→$, A→Λ/∧, R→Я, C→©, L→£, N→И, V→√)
   const pickLetterSub = (char: string) => {
-    if (char === 'S' && Math.random() > 0.5) return '$'
-    if (char === 'A' && Math.random() > 0.5) return Math.random() > 0.5 ? 'Λ' : '∧'
+    const r = Math.random()
+    if (char === 'S' && r > 0.2) return '$'
+    if (char === 'A' && r > 0.2) return r > 0.6 ? 'Λ' : '∧'
+    if (char === 'R' && r > 0.55) return 'Я'
+    if (char === 'C' && r > 0.6) return '©'
+    if (char === 'L' && r > 0.65) return '£'
+    if (char === 'N' && r > 0.65) return 'И'
+    if (char === 'V' && r > 0.7) return '√'
     return null
   }
 
-  // RASCAL <-> RVSCVNX title glitch: all timing 0-based random, RVSCVNX hold 0–800ms
+  const FONT_GLITCH_CLASSES = ['title-glitch-font-mono', 'title-glitch-font-italic', 'title-glitch-font-narrow'] as const
+
+  const clearGlitchLetters = () => {
+    setTitleGlitching(false)
+    setGlitchLetterIndex(null)
+    setGlitchLetterIndex2(null)
+    setGlitchLetterIndex3(null)
+    setGlitchLetterIndex4(null)
+    setGlitchLetterSub1(null)
+    setGlitchLetterSub2(null)
+    setGlitchLetterSub3(null)
+    setGlitchLetterSub4(null)
+    setGlitchFontMap({})
+  }
+
+  // RASCAL <-> RVSCVNX: 2–4 letters glitch with symbols + font chaos, fast and chaotic
   const runTitleGlitch = () => {
     const len = 6
-    const pickTwo = () => {
-      const a = Math.floor(Math.random() * len)
-      let b = Math.floor(Math.random() * len)
-      while (b === a) b = Math.floor(Math.random() * len)
-      return [a, b]
+    const pickDistinct = (n: number) => {
+      const out: number[] = []
+      while (out.length < n) {
+        const a = Math.floor(Math.random() * len)
+        if (!out.includes(a)) out.push(a)
+      }
+      return out
     }
-    const glitchDur = Math.random() * 280
-    const switchDelay = Math.random() * 800
-    const letter1Delay = Math.random() * 60
-    const letter2Delay = letter1Delay + Math.random() * 80
-    const [i1, i2] = pickTwo()
+    const numLetters = Math.random() < 0.5 ? 4 : Math.random() < 0.6 ? 3 : 2
+    const indices = pickDistinct(numLetters)
+    const glitchDur = 60 + Math.random() * 320
+    const switchDelay = 50 + Math.random() * 700
     const text1 = 'RVSCVNX'
 
     setTitleGlitching(true)
     setTitleText('RVSCVNX')
     setGlitchLetterIndex(null)
     setGlitchLetterIndex2(null)
+    setGlitchLetterIndex3(null)
+    setGlitchLetterIndex4(null)
     setGlitchLetterSub1(null)
     setGlitchLetterSub2(null)
-    const t1a = setTimeout(() => {
-      setGlitchLetterIndex(i1)
-      setGlitchLetterSub1(pickLetterSub(text1[i1]))
-    }, letter1Delay)
-    const t1b = setTimeout(() => {
-      setGlitchLetterIndex2(i2)
-      setGlitchLetterSub2(pickLetterSub(text1[i2]))
-    }, letter2Delay)
-    const t1c = setTimeout(() => {
-      setTitleGlitching(false)
-      setGlitchLetterIndex(null)
-      setGlitchLetterIndex2(null)
-      setGlitchLetterSub1(null)
-      setGlitchLetterSub2(null)
-    }, glitchDur)
+    setGlitchLetterSub3(null)
+    setGlitchLetterSub4(null)
+    const used = new Set(indices)
+    const available = [0, 1, 2, 3, 4, 5].filter(i => !used.has(i))
+    const take = Math.min(available.length, Math.floor(Math.random() * 3))
+    const fontIndices = [...available].sort(() => Math.random() - 0.5).slice(0, take)
+    setGlitchFontMap(
+      Object.fromEntries(
+        fontIndices.map(i => [i, FONT_GLITCH_CLASSES[Math.floor(Math.random() * FONT_GLITCH_CLASSES.length)]])
+      )
+    )
+
+    const timeouts: ReturnType<typeof setTimeout>[] = []
+    indices.forEach((idx, pos) => {
+      const delay = Math.random() * 80 + pos * 25
+      const t = setTimeout(() => {
+        if (pos === 0) { setGlitchLetterIndex(idx); setGlitchLetterSub1(pickLetterSub(text1[idx])) }
+        else if (pos === 1) { setGlitchLetterIndex2(idx); setGlitchLetterSub2(pickLetterSub(text1[idx])) }
+        else if (pos === 2) { setGlitchLetterIndex3(idx); setGlitchLetterSub3(pickLetterSub(text1[idx])) }
+        else { setGlitchLetterIndex4(idx); setGlitchLetterSub4(pickLetterSub(text1[idx])) }
+      }, delay)
+      timeouts.push(t)
+    })
+    const tClear = setTimeout(clearGlitchLetters, glitchDur)
+    timeouts.push(tClear)
+
     const t2 = setTimeout(() => {
-      const glitchDur2 = Math.random() * 280
-      const letter1Delay2 = Math.random() * 60
-      const letter2Delay2 = letter1Delay2 + Math.random() * 80
-      const [j1, j2] = pickTwo()
+      const indices2 = pickDistinct(Math.random() < 0.5 ? 4 : Math.random() < 0.6 ? 3 : 2)
+      const glitchDur2 = 60 + Math.random() * 320
       const text2 = 'RASCAL'
       setTitleGlitching(true)
       setTitleText('RASCAL')
       setGlitchLetterIndex(null)
       setGlitchLetterIndex2(null)
+      setGlitchLetterIndex3(null)
+      setGlitchLetterIndex4(null)
       setGlitchLetterSub1(null)
       setGlitchLetterSub2(null)
-      const t2a = setTimeout(() => {
-        setGlitchLetterIndex(j1)
-        setGlitchLetterSub1(pickLetterSub(text2[j1]))
-      }, letter1Delay2)
-      const t2b = setTimeout(() => {
-        setGlitchLetterIndex2(j2)
-        setGlitchLetterSub2(pickLetterSub(text2[j2]))
-      }, letter2Delay2)
-      const t2c = setTimeout(() => {
-        setTitleGlitching(false)
-        setGlitchLetterIndex(null)
-        setGlitchLetterIndex2(null)
-        setGlitchLetterSub1(null)
-        setGlitchLetterSub2(null)
-      }, glitchDur2)
-      return () => { clearTimeout(t2a); clearTimeout(t2b); clearTimeout(t2c) }
+      setGlitchLetterSub3(null)
+      setGlitchLetterSub4(null)
+      const used2 = new Set(indices2)
+      const available2 = [0, 1, 2, 3, 4, 5].filter(i => !used2.has(i))
+      const take2 = Math.min(available2.length, Math.floor(Math.random() * 3))
+      const fontIndices2 = [...available2].sort(() => Math.random() - 0.5).slice(0, take2)
+      setGlitchFontMap(
+        Object.fromEntries(
+          fontIndices2.map(i => [i, FONT_GLITCH_CLASSES[Math.floor(Math.random() * FONT_GLITCH_CLASSES.length)]])
+        )
+      )
+      const timeouts2: ReturnType<typeof setTimeout>[] = []
+      indices2.forEach((idx, pos) => {
+        const delay = Math.random() * 80 + pos * 25
+        const t = setTimeout(() => {
+          if (pos === 0) { setGlitchLetterIndex(idx); setGlitchLetterSub1(pickLetterSub(text2[idx])) }
+          else if (pos === 1) { setGlitchLetterIndex2(idx); setGlitchLetterSub2(pickLetterSub(text2[idx])) }
+          else if (pos === 2) { setGlitchLetterIndex3(idx); setGlitchLetterSub3(pickLetterSub(text2[idx])) }
+          else { setGlitchLetterIndex4(idx); setGlitchLetterSub4(pickLetterSub(text2[idx])) }
+        }, delay)
+        timeouts2.push(t)
+      })
+      timeouts2.push(setTimeout(clearGlitchLetters, glitchDur2))
+      return () => timeouts2.forEach(clearTimeout)
     }, switchDelay)
-    return () => { clearTimeout(t1a); clearTimeout(t1b); clearTimeout(t1c); clearTimeout(t2) }
+    timeouts.push(t2)
+    return () => timeouts.forEach(clearTimeout)
   }
+
   useEffect(() => {
     const ref = { current: null as ReturnType<typeof setTimeout> | null }
     const scheduleNext = () => {
       if (ref.current) clearTimeout(ref.current)
+      const delay = Math.random() < 0.5 ? 80 + Math.random() * 600 : 400 + Math.random() * 1800
       ref.current = setTimeout(() => {
-        if (Math.random() > 0.1) runTitleGlitch()
-        scheduleNext()
-      }, Math.random() * 5000)
+        runTitleGlitch()
+        if (Math.random() < 0.55) {
+          const burst = setTimeout(() => {
+            runTitleGlitch()
+            if (Math.random() < 0.35) {
+              const burst2 = setTimeout(() => { runTitleGlitch(); scheduleNext() }, 80 + Math.random() * 350)
+              ref.current = burst2
+            } else scheduleNext()
+          }, 60 + Math.random() * 400)
+          ref.current = burst
+        } else scheduleNext()
+      }, delay)
     }
-    ref.current = setTimeout(() => { runTitleGlitch(); scheduleNext() }, Math.random() * 1200)
+    ref.current = setTimeout(() => { runTitleGlitch(); scheduleNext() }, 80 + Math.random() * 500)
     return () => { if (ref.current) clearTimeout(ref.current) }
   }, [])
 
@@ -271,7 +331,7 @@ export default function HomePage() {
   }, [sortedDailies])
 
   return (
-    <main className="min-h-screen pt-24 relative overflow-hidden">
+    <main className="page-root relative overflow-hidden">
       {/* VHS-style overlay */}
       <div className="vhs-overlay" />
       {/* Always-on scrolling scanline */}
@@ -317,8 +377,9 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 1 }}
-            className={`text-5xl md:text-7xl font-grotesk font-light mb-4 tracking-tighter leading-none relative rgb-split ${titleGlitching ? 'title-glitch-transition' : ''}`}
+            className="text-5xl md:text-7xl font-grotesk font-light mb-4 tracking-tighter leading-none relative rgb-split"
           >
+            <span className={`block relative ${titleGlitching ? 'title-glitch-transition' : ''}`}>
             {/* Multi-layer reflection effect */}
             <span className="absolute left-0 top-0 text-[#666]/10 blur-[3px] translate-y-[4px] scale-y-[-1] select-none pointer-events-none">
               {titleText}
@@ -345,16 +406,23 @@ export default function HomePage() {
                 {titleText.split('').map((char, i) => {
                   const isGlitchLetter = titleGlitching && glitchLetterIndex === i
                   const isGlitchLetter2 = titleGlitching && glitchLetterIndex2 === i
+                  const isGlitchLetter3 = titleGlitching && glitchLetterIndex3 === i
+                  const isGlitchLetter4 = titleGlitching && glitchLetterIndex4 === i
                   const displayChar =
                     (isGlitchLetter && glitchLetterSub1) ? glitchLetterSub1 :
-                    (isGlitchLetter2 && glitchLetterSub2) ? glitchLetterSub2 : char
+                    (isGlitchLetter2 && glitchLetterSub2) ? glitchLetterSub2 :
+                    (isGlitchLetter3 && glitchLetterSub3) ? glitchLetterSub3 :
+                    (isGlitchLetter4 && glitchLetterSub4) ? glitchLetterSub4 : char
+                  const styleClass =
+                    isGlitchLetter ? 'title-glitch-letter' :
+                    isGlitchLetter2 ? 'title-glitch-letter-2' :
+                    isGlitchLetter3 ? 'title-glitch-letter-3' :
+                    isGlitchLetter4 ? 'title-glitch-letter-4' : ''
+                  const fontClass = titleGlitching && glitchFontMap[i] ? glitchFontMap[i] : ''
                   return (
                     <span
                       key={`${titleText}-${i}`}
-                      className={
-                        isGlitchLetter ? 'title-glitch-letter' :
-                        isGlitchLetter2 ? 'title-glitch-letter-2' : ''
-                      }
+                      className={`${styleClass} ${fontClass}`.trim() || undefined}
                     >
                       {displayChar}
                     </span>
@@ -374,6 +442,7 @@ export default function HomePage() {
                   </span>
                 </span>
               )}
+            </span>
             </span>
           </motion.h1>
 

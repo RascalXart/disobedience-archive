@@ -28,8 +28,10 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-[#0a0a0a]">
         <AnimatedNoise />
-        <MuseumNavigation />
-        {children}
+        <div className="relative z-[200]">
+          <MuseumNavigation />
+          {children}
+        </div>
       </body>
     </html>
   )

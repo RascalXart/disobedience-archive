@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
-import { DEFAULT_ETHEREUM_RPC_URL } from '@/lib/ethers-provider'
+import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
 import type { CollectionNFT, NFTAttribute } from '@/types'
 
@@ -410,16 +410,67 @@ interface TraitFilter {
 
 export default function WinionsPage() {
   const allNFTsRaw = getAllWinionsNFTs()
-  // Sort by tokenId initially
+  // Sort by number in name; unnumbered scattered; 1 of 1 House Generals scattered throughout (not bunched at start)
   const sortedNFTs = useMemo(() => {
-    return [...allNFTsRaw].sort((a, b) => {
-      const idA = parseInt(a.tokenId) || 0
-      const idB = parseInt(b.tokenId) || 0
-      return idA - idB
+    const isHouseGeneral = (nft: typeof allNFTsRaw[0]) =>
+      nft.attributes?.some((a: { trait_type?: string }) => a.trait_type === '1 of 1 House General') ?? false
+    const hash = (s: string) => s.split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) | 0, 0)
+
+    const houseGenerals = allNFTsRaw.filter(isHouseGeneral)
+    const rest = allNFTsRaw.filter((nft) => !isHouseGeneral(nft))
+
+    const extractNum = (name: string): number | null => {
+      const m = name.match(/#(\d+)/)
+      return m ? parseInt(m[1], 10) : null
+    }
+    const withNum: { nft: typeof allNFTsRaw[0]; num: number }[] = []
+    const withoutNum: typeof allNFTsRaw = []
+    rest.forEach((nft) => {
+      const num = extractNum(nft.name || '')
+      if (num != null) withNum.push({ nft, num })
+      else withoutNum.push(nft)
     })
+    withNum.sort((a, b) => a.num - b.num)
+    withoutNum.sort((a, b) => hash(a.tokenId) - hash(b.tokenId))
+    const restTotal = rest.length
+    const M = withoutNum.length
+    let restSorted: typeof allNFTsRaw
+    if (M === 0) {
+      restSorted = withNum.map((x) => x.nft)
+    } else {
+      const indices = [...Array(restTotal)].map((_, i) => i)
+      indices.sort((a, b) => hash(String(a)) - hash(String(b)))
+      const reserved = new Set(indices.slice(0, M))
+      restSorted = []
+      let numIdx = 0
+      let unnumIdx = 0
+      for (let i = 0; i < restTotal; i++) {
+        if (reserved.has(i)) restSorted.push(withoutNum[unnumIdx++])
+        else restSorted.push(withNum[numIdx++].nft)
+      }
+    }
+
+    const total = allNFTsRaw.length
+    const G = houseGenerals.length
+    if (G === 0) return restSorted
+    // Scatter house generals evenly across the collection (deterministic positions)
+    const generalPositions = new Set(
+      [...Array(G)].map((_, i) => Math.floor(((i + 1) * total) / (G + 1)))
+    )
+    const result: typeof allNFTsRaw = []
+    let restIdx = 0
+    let generalIdx = 0
+    for (let i = 0; i < total; i++) {
+      if (generalPositions.has(i)) result.push(houseGenerals[generalIdx++])
+      else result.push(restSorted[restIdx++])
+    }
+    return result
   }, [allNFTsRaw])
   
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
+  const [heroOpen, setHeroOpen] = useState(false)
+  const [showHeroMeta, setShowHeroMeta] = useState(false)
+  const heroMetaStillRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [selectedTraits, setSelectedTraits] = useState<Set<string>>(new Set())
   const [collapsedTraits, setCollapsedTraits] = useState<Set<string>>(new Set())
   const [visibleCount, setVisibleCount] = useState(50) // Start with 50 images per page
@@ -574,37 +625,15 @@ export default function WinionsPage() {
     return allNFTs.find((nft) => nft.tokenId === selectedTokenId) || null
   }, [selectedTokenId, allNFTs])
 
-  // Resolve ENS names for selected NFT
+  // Resolve ENS names for selected NFT (cached in memory + localStorage)
   useEffect(() => {
     if (!selectedNFT?.owner) return
     if (ensNames[selectedNFT.owner]) return
-    
-    const resolveENS = async (address: string) => {
-      try {
-        const response = await fetch(`https://api.ensideas.com/ens/resolve/${address}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.name) {
-            setEnsNames(prev => ({ ...prev, [address]: data.name }))
-            return
-          }
-        }
-      } catch (e) {
-        try {
-          const { ethers } = await import('ethers')
-          const provider = new ethers.JsonRpcProvider(DEFAULT_ETHEREUM_RPC_URL)
-          const name = await provider.lookupAddress(address)
-          if (name) {
-            setEnsNames(prev => ({ ...prev, [address]: name }))
-          }
-        } catch (err) {
-          // ENS resolution failed
-        }
-      }
-    }
-    
-    resolveENS(selectedNFT.owner)
-  }, [selectedNFT, ensNames])
+
+    resolveENSCached(selectedNFT.owner).then((name) => {
+      if (name) setEnsNames((prev) => ({ ...prev, [selectedNFT!.owner!]: name }))
+    })
+  }, [selectedNFT?.owner, ensNames])
   
   const toggleTrait = (traitKey: string) => {
     setSelectedTraits(prev => {
@@ -654,7 +683,22 @@ export default function WinionsPage() {
       nextTokenId: (idx >= 0 && idx < list.length - 1) ? list[idx + 1].tokenId : idx < 0 ? list[0].tokenId : null,
     }
   }, [selectedNFT, filteredNFTs])
-  
+
+  useEffect(() => {
+    if (!heroOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setHeroOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [heroOpen])
+
+  useEffect(() => {
+    if (heroOpen) setShowHeroMeta(false)
+    if (!heroOpen && heroMetaStillRef.current) {
+      clearTimeout(heroMetaStillRef.current)
+      heroMetaStillRef.current = null
+    }
+  }, [heroOpen])
+
   const toggleCollapse = (traitType: string) => {
     setCollapsedTraits(prev => {
       const next = new Set(prev)
@@ -667,26 +711,45 @@ export default function WinionsPage() {
     })
   }
 
-  // Separate single-attribute, multi-attribute, and "Glitch realm" categories
-  const { singleAttributeTraits, multiAttributeTraits, glitchRealm } = useMemo(() => {
+  // Separate single-attribute and multi-attribute categories (hide Glitch realm from filters)
+  const { singleAttributeTraits, multiAttributeTraits } = useMemo(() => {
     const single: Array<[string, TraitFilter[]]> = []
     const multi: Array<[string, TraitFilter[]]> = []
-    let glitch: [string, TraitFilter[]] | null = null
     
     allTraits.forEach(([traitType, traits]) => {
-      if (traitType.toLowerCase() === 'glitch realm') {
-        glitch = [traitType, traits]
-      } else if (traits.length === 1) {
+      if (traitType.toLowerCase() === 'glitch realm') return
+      if (traits.length === 1) {
         single.push([traitType, traits])
       } else {
         multi.push([traitType, traits])
       }
     })
-    
+
+    const filterOrder = [
+      'House',
+      '1 of 1 House General',
+      'State of Life',
+      'Hooded',
+      'Pixel Grid',
+      '3 Eyes',
+      'Cyclops',
+      'Cat',
+      'Faceless?',
+      'PA Noise',
+      'Twins',
+      'Luck Level',
+      'Mischief Level',
+    ]
+    const orderIndex = (traitType: string) => {
+      const i = filterOrder.findIndex((o) => o.toLowerCase() === traitType.toLowerCase())
+      return i === -1 ? 999 : i
+    }
+    single.sort((a, b) => orderIndex(a[0]) - orderIndex(b[0]))
+    multi.sort((a, b) => orderIndex(a[0]) - orderIndex(b[0]))
+
     return { 
       singleAttributeTraits: single, 
-      multiAttributeTraits: multi,
-      glitchRealm: glitch
+      multiAttributeTraits: multi
     }
   }, [allTraits])
 
@@ -702,7 +765,7 @@ export default function WinionsPage() {
   }, [multiAttributeTraits])
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pt-24">
+    <div className="page-root text-white">
       {/* Header Section - scrollable */}
       <div className="container mx-auto px-4 py-6 md:py-8">
         <motion.div
@@ -860,49 +923,6 @@ export default function WinionsPage() {
               )
             })}
 
-            {/* Glitch realm - Above single categories */}
-            {glitchRealm ? (() => {
-              const [traitType, traits] = glitchRealm as [string, TraitFilter[]]
-              const isCollapsed = collapsedTraits.has(traitType)
-              return (
-                <div key="glitch-realm" className="border-b border-[#222] pb-4 pt-4 border-t border-[#222]">
-                  <button
-                    onClick={() => toggleCollapse(traitType)}
-                    className="w-full flex items-center justify-between mb-3 group"
-                  >
-                    <div className="mono text-xs text-[#666] group-hover:text-[#888] transition-colors">
-                      {traitType}
-                    </div>
-                    <div className="mono text-[10px] text-[#555]">
-                      {isCollapsed ? '▶' : '▼'}
-                    </div>
-                  </button>
-                  
-                  {!isCollapsed && (
-                    <div className="flex flex-wrap gap-2">
-                      {traits.map(trait => {
-                        const key = `${trait.traitType}:${trait.value}`
-                        const isSelected = selectedTraits.has(key)
-                        return (
-                          <button
-                            key={key}
-                            onClick={() => toggleTrait(key)}
-                            className={`mono text-[10px] px-2.5 py-1 border transition-colors ${
-                              isSelected
-                                ? 'border-white bg-white text-[#0a0a0a]'
-                                : 'border-[#333] text-[#888] hover:border-[#555] hover:text-white'
-                            }`}
-                          >
-                            {trait.value} <span className="text-[#555]">({trait.count})</span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
-                </div>
-              )
-            })() : null}
-
             {/* Single-attribute categories - Collapsible (at bottom) */}
             {singleAttributeTraits.length > 0 && (
               <div className="space-y-4 pt-4 border-t border-[#222]">
@@ -1059,6 +1079,13 @@ export default function WinionsPage() {
                     <div className="w-full h-full bg-[#111]" />
                   )}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setHeroOpen(true)}
+                  className="mt-2 mono text-[9px] px-2 py-1 border border-[#222] hover:border-[#444] text-[#666] hover:text-white transition-colors"
+                >
+                  [FULL SCREEN]
+                </button>
                 
                 {/* Twitter Share Button */}
                 <a
@@ -1097,6 +1124,12 @@ export default function WinionsPage() {
                   </div>
                 )}
 
+                {selectedNFT.description && (
+                  <div className="mono text-sm text-[#888] leading-relaxed whitespace-pre-line">
+                    {selectedNFT.description}
+                  </div>
+                )}
+
                 {selectedNFT.attributes && selectedNFT.attributes.length > 0 && (
                   <div>
                     <div className="mono text-xs text-[#666] mb-3">ATTRIBUTES</div>
@@ -1114,6 +1147,99 @@ export default function WinionsPage() {
             </div>
             </motion.div>
           </div>
+
+          {/* Hero fullscreen overlay */}
+          {heroOpen && selectedNFT?.imageUrl && (
+            <div
+              className="fixed inset-0 z-[60] flex flex-col bg-[#0a0a0a] min-w-0 min-h-0 overflow-hidden"
+              onClick={(e) => { e.stopPropagation(); setHeroOpen(false) }}
+            >
+              <ModalNavArrows
+                hasPrev={!!modalNav?.hasPrev}
+                hasNext={!!modalNav?.hasNext}
+                onPrev={() => modalNav?.prevTokenId && setSelectedTokenId(modalNav.prevTokenId)}
+                onNext={() => modalNav?.nextTokenId && setSelectedTokenId(modalNav.nextTokenId)}
+              />
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setHeroOpen(false) }}
+                className="absolute top-4 right-4 z-10 mono text-xs text-[#666] hover:text-white px-2 py-1 border border-[#222] bg-[#111]"
+              >
+                [CLOSE]
+              </button>
+              <div
+                className="flex-1 min-h-0 flex items-center justify-center p-4 relative"
+                onClick={(e) => e.stopPropagation()}
+                onMouseMove={() => {
+                  setShowHeroMeta(true)
+                  if (heroMetaStillRef.current) clearTimeout(heroMetaStillRef.current)
+                  heroMetaStillRef.current = setTimeout(() => setShowHeroMeta(false), 80)
+                }}
+                onTouchStart={() => setShowHeroMeta(true)}
+                onTouchEnd={() => setShowHeroMeta(false)}
+              >
+                <div className={`w-full h-full min-w-0 min-h-0 max-w-full max-h-full transition-opacity duration-200 ${showHeroMeta ? 'opacity-40' : 'opacity-100'}`}>
+                  <img
+                    src={resolveIpfsUrl(selectedNFT.imageUrl) || selectedNFT.imageUrl}
+                    alt={selectedNFT.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className={`absolute inset-0 flex items-center justify-center bg-black/70 transition-opacity duration-200 pointer-events-none p-8 ${showHeroMeta ? 'opacity-100' : 'opacity-0'}`}>
+                  <div className="mono text-left text-sm text-[#ccc] space-y-3 max-w-md [pointer-events:auto]">
+                    <div className="font-grotesk text-white text-xl font-light tracking-tighter">{selectedNFT.name}</div>
+                    {selectedNFT.owner && (
+                      <div>
+                        <span className="text-[#666]">OWNED BY:</span>{' '}
+                        <a
+                          href={`https://opensea.io/${ensNames[selectedNFT.owner]?.replace('.eth', '') || selectedNFT.owner}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#ccc] hover:text-white underline transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {ensNames[selectedNFT.owner] || `${selectedNFT.owner.slice(0, 6)}...${selectedNFT.owner.slice(-4)}`}
+                        </a>
+                      </div>
+                    )}
+                    {selectedNFT.attributes && selectedNFT.attributes.length > 0 && (
+                      <div>
+                        <span className="text-[#666]">ATTRIBUTES:</span>
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          {selectedNFT.attributes.map((attr: NFTAttribute, idx: number) => (
+                            <div key={idx} className="text-[#888] border border-[#222] p-2">
+                              <div className="text-[#666] text-xs">{attr.trait_type}</div>
+                              <div className="text-xs">{attr.value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex-shrink-0 border-t border-[#222] bg-[#0a0a0a] px-4 py-3 text-center">
+                <div className="font-grotesk text-white font-light tracking-tighter">{selectedNFT.name}</div>
+                <div className="mono text-xs text-[#666] mt-0.5">
+                  {selectedNFT.owner ? (
+                    <>
+                      OWNED BY{' '}
+                      <a
+                        href={`https://opensea.io/${ensNames[selectedNFT.owner]?.replace('.eth', '') || selectedNFT.owner}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#888] hover:text-white underline transition-colors"
+                      >
+                        {ensNames[selectedNFT.owner] || `${selectedNFT.owner.slice(0, 6)}...${selectedNFT.owner.slice(-4)}`}
+                      </a>
+                    </>
+                  ) : (
+                    '—'
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
     </div>

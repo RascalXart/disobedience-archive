@@ -19,6 +19,12 @@ body {
   overflow-x: hidden;
 }
 
+/* Shared page root: use on main or top-level page wrapper for consistent layout */
+.page-root {
+  min-height: 100vh;
+  padding-top: 6rem; /* pt-24 */
+}
+
 /* Hide broken image icons - prevent browser default broken image icon */
 img {
   image-rendering: -webkit-optimize-contrast;
@@ -380,38 +386,96 @@ img::before {
 }
 
 .title-glitch-transition {
-  animation: titleGlitchTransition 0.2s steps(5, end) infinite;
+  animation: titleGlitchTransition 0.15s steps(4, end) infinite;
   will-change: transform, filter;
 }
 
-/* Single letter glitch: mono font, terminal color, $ for S sometimes */
+/* Letter glitch 1: cyan/magenta/green strobe, stronger */
 @keyframes titleGlitchLetter {
-  0%, 100% { color: #0ff; transform: translate(0, 0); opacity: 1; }
-  33% { color: #f0f; transform: translate(-1px, 1px); opacity: 0.9; }
-  66% { color: #0f0; transform: translate(1px, -1px); opacity: 1; }
+  0%, 100% { color: #0ff; transform: translate(0, 0); opacity: 1; text-shadow: 0 0 8px #0ff, 0 0 12px #0ff; }
+  25% { color: #f0f; transform: translate(-2px, 2px); opacity: 1; text-shadow: -1px 0 0 #f0f, 1px 0 0 #0f0; }
+  50% { color: #0f0; transform: translate(2px, -2px); opacity: 1; text-shadow: 0 0 10px #0f0; }
+  75% { color: #ff0; transform: translate(-1px, -1px); opacity: 0.95; text-shadow: 0 0 6px #ff0; }
 }
 
 .title-glitch-letter {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   color: #0ff;
-  text-shadow: 0 0 6px currentColor;
-  animation: titleGlitchLetter 0.16s steps(2, end);
+  text-shadow: 0 0 8px currentColor;
+  animation: titleGlitchLetter 0.12s steps(2, end) infinite;
   display: inline-block;
 }
 
-/* Second glitch letter: different font treatment (narrow/condensed feel, italic) */
+/* Letter glitch 2: orange/cyan italic skew */
 @keyframes titleGlitchLetter2 {
   0%, 100% { color: #f80; transform: scaleX(1) skewX(0deg); opacity: 1; }
-  50% { color: #0ff; transform: scaleX(0.92) skewX(-4deg); opacity: 0.95; }
+  33% { color: #0ff; transform: scaleX(0.9) skewX(-6deg); opacity: 1; text-shadow: 0 0 8px #0ff; }
+  66% { color: #f0f; transform: scaleX(1.05) skewX(4deg); opacity: 0.95; }
 }
 
 .title-glitch-letter-2 {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
   font-style: italic;
   color: #f80;
-  text-shadow: 0 0 4px currentColor;
-  animation: titleGlitchLetter2 0.16s steps(2, end);
+  text-shadow: 0 0 6px currentColor;
+  animation: titleGlitchLetter2 0.12s steps(2, end) infinite;
   display: inline-block;
+}
+
+/* Letter glitch 3: red/green RGB split feel */
+@keyframes titleGlitchLetter3 {
+  0%, 100% { color: #f00; transform: translate(0, 0); text-shadow: -1px 0 0 #0f0, 1px 0 0 #00f; }
+  50% { color: #0f0; transform: translate(2px, -2px); text-shadow: 1px 0 0 #f00, -1px 0 0 #00f; }
+}
+
+.title-glitch-letter-3 {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-weight: 600;
+  color: #f00;
+  text-shadow: -1px 0 0 #0f0, 1px 0 0 #00f;
+  animation: titleGlitchLetter3 0.1s steps(2, end) infinite;
+  display: inline-block;
+}
+
+/* Letter glitch 4: white strobe + scale */
+@keyframes titleGlitchLetter4 {
+  0%, 100% { color: #fff; transform: scale(1); opacity: 1; text-shadow: 0 0 12px #fff, 0 0 20px #0ff; }
+  50% { color: #0ff; transform: scale(1.08); opacity: 0.9; text-shadow: 0 0 8px #0ff; }
+}
+
+.title-glitch-letter-4 {
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  color: #fff;
+  text-shadow: 0 0 10px currentColor;
+  animation: titleGlitchLetter4 0.14s steps(2, end) infinite;
+  display: inline-block;
+}
+
+/* Font-only glitch: letter keeps character but switches font (no symbol) */
+.title-glitch-font-mono {
+  display: inline-block;
+  font-family: 'JetBrains Mono', 'Courier New', monospace !important;
+  color: #8af !important;
+  text-shadow: 0 0 4px rgba(136, 170, 255, 0.6) !important;
+  letter-spacing: 0.02em;
+}
+
+.title-glitch-font-italic {
+  display: inline-block;
+  font-style: italic !important;
+  font-family: 'Space Grotesk', sans-serif !important;
+  color: #f8a !important;
+  text-shadow: 0 0 4px rgba(255, 136, 170, 0.5) !important;
+  transform: skewX(-3deg);
+}
+
+.title-glitch-font-narrow {
+  display: inline-block;
+  font-family: 'JetBrains Mono', 'Courier New', monospace !important;
+  letter-spacing: -0.06em;
+  transform: scaleX(0.92);
+  color: #af8 !important;
+  text-shadow: 0 0 4px rgba(170, 255, 136, 0.5) !important;
 }
 
 /* VHS-style overlay - optimized with smaller pattern */

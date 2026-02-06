@@ -85,7 +85,7 @@ async function fetchCollectionData() {
     console.log(`   Total Supply: ${totalSupply ? totalSupply.toString() : 'Unknown'}`);
     console.log('');
 
-    // Determine how many tokens to fetch
+    // Determine how many tokens to fetch (contract uses 1-based token IDs: 1..totalSupply)
     let tokenCount = totalSupply ? Number(totalSupply) : null;
     
     // If no totalSupply, we'll need to try fetching tokens until we hit errors
@@ -93,21 +93,21 @@ async function fetchCollectionData() {
       console.log('   🔍 Attempting to find token count by testing token IDs...');
       tokenCount = await findTokenCount(contract);
       if (!tokenCount) {
-        console.log('   ⚠️  Could not determine token count. Using range 0-664.');
-        tokenCount = 664; // Expected count
+        console.log('   ⚠️  Could not determine token count. Using 664.');
+        tokenCount = 664;
       }
     }
 
-    console.log(`   Fetching ${tokenCount} tokens...`);
+    console.log(`   Fetching tokens 1–${tokenCount}...`);
     console.log('');
 
-    // Fetch all token metadata
+    // Fetch all token metadata (token IDs 1 through tokenCount inclusive)
     const tokens = [];
     const batchSize = 10; // Fetch in batches to avoid rate limits
 
-    for (let i = 0; i < tokenCount; i += batchSize) {
+    for (let i = 1; i <= tokenCount; i += batchSize) {
       const batch = [];
-      for (let j = 0; j < batchSize && (i + j) < tokenCount; j++) {
+      for (let j = 0; j < batchSize && (i + j) <= tokenCount; j++) {
         batch.push(fetchTokenData(contract, i + j));
       }
       
@@ -119,12 +119,13 @@ async function fetchCollectionData() {
       });
 
       // Progress indicator
-      if ((i + batchSize) % 50 === 0 || i + batchSize >= tokenCount) {
-        console.log(`   Progress: ${Math.min(i + batchSize, tokenCount)}/${tokenCount} tokens`);
+      const done = Math.min(i + batchSize - 1, tokenCount);
+      if ((i + batchSize - 1) % 50 < batchSize || done >= tokenCount) {
+        console.log(`   Progress: ${done}/${tokenCount} tokens`);
       }
       
       // Small delay to avoid rate limiting
-      if (i + batchSize < tokenCount) {
+      if (i + batchSize <= tokenCount) {
         await new Promise(resolve => setTimeout(resolve, 200));
       }
     }

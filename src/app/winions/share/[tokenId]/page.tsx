@@ -82,7 +82,7 @@ export default async function WinionSharePage({ params }: WinionSharePageProps) 
   const displayName = `Winiøn #${tokenId}`
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-white flex items-center justify-center p-4">
+    <main className="page-root text-white flex items-center justify-center p-4">
       <div className="max-w-2xl w-full text-center">
         <h1 className="font-grotesk text-3xl md:text-4xl font-light mb-6">{displayName}</h1>
         {imageUrl && (

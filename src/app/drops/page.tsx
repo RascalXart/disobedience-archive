@@ -11,7 +11,7 @@ export default function DropsPage() {
   const allArtworks = getAllArtworks()
 
   return (
-    <main className="min-h-screen pt-24">
+    <main className="page-root">
       <div className="container mx-auto px-4 py-16">
         <motion.div
           initial={{ opacity: 0 }}

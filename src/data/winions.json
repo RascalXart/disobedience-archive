@@ -3,8 +3,8 @@
   "chain": "ethereum",
   "name": "WINIØNS",
   "symbol": "WINS",
-  "totalSupply": 663,
-  "fetchedAt": "2026-02-02T04:16:10.501Z",
+  "totalSupply": 664,
+  "fetchedAt": "2026-02-06T11:34:43.799Z",
   "tokens": [
     {
       "tokenId": "1",
@@ -14054,7 +14054,7 @@
     },
     {
       "tokenId": "415",
-      "tokenURI": "ipfs://QmbTBYDA83qhEgwuZH3zubVPcEZL5xfP5ARD1aCQTr5oz1/50",
+      "tokenURI": "ipfs://QmfFhsibddWDm6sLLVYukW2vE2rvLXRD1qdNMcpD33M4Kq/0",
       "owner": "0x8C1f393c989C667ad20E3d9Df72A4F778C5c64b2",
       "imageUrl": "https://ipfs.io/ipfs/QmVUxaAg5E87tk8SvY72JoKbyetwkKimPoHXRsMWk9y5VK/media",
       "name": "Winiøn #415",
@@ -14062,7 +14062,7 @@
       "attributes": [
         {
           "trait_type": "House",
-          "value": "HAVOC"
+          "value": "CLAY"
         },
         {
           "trait_type": "Hooded",
@@ -22339,6 +22339,41 @@
         {
           "trait_type": "1 of 1 House General",
           "value": "Hellish General"
+        }
+      ],
+      "externalUrl": "https://www.winions.xyz"
+    },
+    {
+      "tokenId": "664",
+      "tokenURI": "ipfs://QmNWg1yv5393pHcQXcpk4SR8WTy1mW5X4HrtM6FsivG7pQ/0",
+      "owner": "0x8C1f393c989C667ad20E3d9Df72A4F778C5c64b2",
+      "imageUrl": "https://ipfs.io/ipfs/QmfAyUnLgdmU21ToWEXBupz7K7cgnSPbMmgbzaFKFTyh3P/media",
+      "name": "ɌꗞᎽÅL ዛꗞꚶꕷꗛ ǤꗛNꗛɌÅL",
+      "description": "House Royal — theater of dominance. Power to them is posture, authority as performance art. Winiøns of house general come from a glitch that convinced itself it was divine.\n\nWiniøns are mischievøus digital beings from a glitch realm: chaotic, cøllectible creatures that swarm wallets, bring luck, and feed on static, spreading digital mischief across art and code. To own one is to bring good fortune to your wallet. The luck is multiplicative, the more you own, the more the luck (and the mischeif) compounds.",
+      "attributes": [
+        {
+          "trait_type": "House",
+          "value": "ROYAL"
+        },
+        {
+          "trait_type": "Glitch realm",
+          "value": "Digital pixel mischief"
+        },
+        {
+          "trait_type": "State of life",
+          "value": "Static"
+        },
+        {
+          "trait_type": "Luck level",
+          "value": "5"
+        },
+        {
+          "trait_type": "Mischief Level",
+          "value": "5"
+        },
+        {
+          "trait_type": "1 of 1 House General",
+          "value": "Royal General"
         }
       ],
       "externalUrl": "https://www.winions.xyz"

@@ -34,7 +34,7 @@ export default async function DropPage({ params }: DropPageProps) {
   const isActive = new Date() >= startDate && new Date() <= endDate
 
   return (
-    <main className="min-h-screen pt-24">
+    <main className="page-root">
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-7xl mx-auto">
           {/* Header Image */}

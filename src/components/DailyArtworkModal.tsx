@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { DailyArtwork } from '@/types'
 import { resolveDailyMediaUrl } from '@/lib/data'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
@@ -18,6 +18,9 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
     allDailies.findIndex(d => d.id === daily.id)
   )
   const [currentDaily, setCurrentDaily] = useState(daily)
+  const [heroOpen, setHeroOpen] = useState(false)
+  const [showHeroMeta, setShowHeroMeta] = useState(false)
+  const heroMetaStillRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   const navigatePrevious = () => {
@@ -37,8 +40,19 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
   }
 
   useEffect(() => {
+    if (heroOpen) setShowHeroMeta(false)
+    if (!heroOpen && heroMetaStillRef.current) {
+      clearTimeout(heroMetaStillRef.current)
+      heroMetaStillRef.current = null
+    }
+  }, [heroOpen])
+
+  useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        if (heroOpen) setHeroOpen(false)
+        else onClose()
+      }
       if (e.key === 'ArrowLeft') { e.preventDefault(); navigatePrevious() }
       if (e.key === 'ArrowRight') { e.preventDefault(); navigateNext() }
     }
@@ -48,7 +62,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
       document.removeEventListener('keydown', handleKey)
       document.body.style.overflow = 'unset'
     }
-  }, [currentIndex, onClose])
+  }, [currentIndex, onClose, heroOpen])
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose()
@@ -127,6 +141,13 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                   />
                 )}
               </div>
+              <button
+                type="button"
+                onClick={() => setHeroOpen(true)}
+                className="mt-2 mono text-[9px] px-2 py-1 border border-[#222] hover:border-[#444] text-[#666] hover:text-white transition-colors"
+              >
+                [FULL SCREEN]
+              </button>
               
               {/* Twitter Share Button */}
               <a
@@ -166,10 +187,17 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                 </div>
 
                 <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
+                  <span className="text-[#666] min-w-[60px] text-hover-glitch">FILE TYPE:</span>
+                  <span className="text-[#999] terminal-reveal">
+                    {currentDaily.imageUrl?.includes('.') ? currentDaily.imageUrl.split('.').pop()?.toUpperCase() ?? '—' : '—'}
+                  </span>
+                </div>
+
+                <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
                   <span className="text-[#666] min-w-[60px] text-hover-glitch">STATUS:</span>
                   <span className="text-[#999] flex items-center gap-2 terminal-reveal">
                     <span className={`w-2 h-2 block ${currentDaily.status === 'available' ? 'bg-[#4a4]' : 'bg-[#666]'}`} />
-                    {currentDaily.status.toUpperCase().replace('_', ' ')}
+                    {currentDaily.status === 'not_listed' ? 'NOT MINTED' : currentDaily.status.toUpperCase().replace('_', ' ')}
                   </span>
                 </div>
 
@@ -199,6 +227,79 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
             </div>
           </div>
         </motion.div>
+
+        {/* Hero fullscreen overlay */}
+        {heroOpen && (
+          <div
+            className="fixed inset-0 z-[60] flex flex-col bg-[#0a0a0a] min-w-0 min-h-0 overflow-hidden"
+            onClick={(e) => { e.stopPropagation(); setHeroOpen(false) }}
+          >
+            <ModalNavArrows
+              hasPrev={currentIndex > 0}
+              hasNext={currentIndex < allDailies.length - 1}
+              onPrev={() => { navigatePrevious() }}
+              onNext={() => { navigateNext() }}
+            />
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setHeroOpen(false) }}
+              className="absolute top-4 right-4 z-10 mono text-xs text-[#666] hover:text-white px-2 py-1 border border-[#222] bg-[#111]"
+            >
+              [CLOSE]
+            </button>
+            <div
+              className="flex-1 min-h-0 flex items-center justify-center p-4 relative"
+              onClick={(e) => e.stopPropagation()}
+              onMouseMove={() => {
+                setShowHeroMeta(true)
+                if (heroMetaStillRef.current) clearTimeout(heroMetaStillRef.current)
+                heroMetaStillRef.current = setTimeout(() => setShowHeroMeta(false), 80)
+              }}
+              onTouchStart={() => setShowHeroMeta(true)}
+              onTouchEnd={() => setShowHeroMeta(false)}
+            >
+              <div className={`w-full h-full min-w-0 min-h-0 max-w-full max-h-full transition-opacity duration-200 ${showHeroMeta ? 'opacity-40' : 'opacity-100'}`}>
+                {isVideo ? (
+                  <video
+                    key={currentDaily.id}
+                    src={resolveDailyMediaUrl(currentDaily.imageUrl)}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <img
+                    key={currentDaily.id}
+                    src={resolveDailyMediaUrl(currentDaily.imageUrl)}
+                    alt={currentDaily.id}
+                    className="w-full h-full object-contain"
+                  />
+                )}
+              </div>
+              <div className={`absolute inset-0 flex items-center justify-center bg-black/70 transition-opacity duration-200 pointer-events-none p-8 ${showHeroMeta ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="mono text-left text-sm text-[#ccc] space-y-3 max-w-md">
+                  <div className="font-grotesk text-white text-xl font-light tracking-tighter">
+                    {currentDaily.id.replace(/_/g, ' ').toUpperCase()}
+                  </div>
+                  <div><span className="text-[#666]">DATE:</span> {new Date(currentDaily.savedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}</div>
+                  <div><span className="text-[#666]">FILE TYPE:</span> {currentDaily.imageUrl?.includes('.') ? currentDaily.imageUrl.split('.').pop()?.toUpperCase() ?? '—' : '—'}</div>
+                  <div><span className="text-[#666]">STATUS:</span> {currentDaily.status === 'not_listed' ? 'NOT MINTED' : currentDaily.status.toUpperCase().replace('_', ' ')}</div>
+                  {currentDaily.tags.length > 0 && (
+                    <div><span className="text-[#666]">TAGS:</span> {currentDaily.tags.map(t => t.toUpperCase()).join(', ')}</div>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="flex-shrink-0 border-t border-[#222] bg-[#0a0a0a] px-4 py-3 text-center">
+              <div className="font-grotesk text-white font-light tracking-tighter">
+                {currentDaily.id.replace(/_/g, ' ').toUpperCase()}
+              </div>
+              <div className="mono text-xs text-[#666] mt-0.5">—</div>
+            </div>
+          </div>
+        )}
       </motion.div>
     </AnimatePresence>
   )

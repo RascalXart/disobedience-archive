@@ -17,66 +17,47 @@ export function AnimatedNoise() {
     const ctx = canvas.getContext('2d', { alpha: false })
     if (!ctx) return
     
-    // Disable image smoothing for nearest neighbor scaling (pixelated look)
     ctx.imageSmoothingEnabled = false
 
-    // Set canvas size to match viewport (full size for display)
-    const resizeCanvas = () => {
-      // Canvas is full viewport size for display
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-      canvas.style.width = '100%'
-      canvas.style.height = '100%'
-      canvas.style.imageRendering = 'pixelated' // Ensure pixels stay crisp when scaled
-      
-      // Regenerate static noise when resizing
-      offscreenCanvasRef.current = null
-    }
-    resizeCanvas()
-    window.addEventListener('resize', resizeCanvas)
-
-    // Generate static noise texture once on offscreen canvas (much smaller)
+    // Generate static noise texture for current viewport size
     const generateStaticNoise = () => {
-      // Noise texture is much smaller - will be scaled up to make pixels bigger
       const noiseWidth = Math.floor(window.innerWidth / 10)
       const noiseHeight = Math.floor(window.innerHeight / 10)
-      
-      if (offscreenCanvasRef.current && 
-          noiseSizeRef.current.width === noiseWidth && 
-          noiseSizeRef.current.height === noiseHeight) {
-        return // Already generated for this size
-      }
-      
-      // Create offscreen canvas for the static noise (much smaller)
+      if (offscreenCanvasRef.current &&
+          noiseSizeRef.current.width === noiseWidth &&
+          noiseSizeRef.current.height === noiseHeight) return
+
       const offscreenCanvas = document.createElement('canvas')
       offscreenCanvas.width = noiseWidth
       offscreenCanvas.height = noiseHeight
       const offscreenCtx = offscreenCanvas.getContext('2d', { alpha: false })
       if (!offscreenCtx) return
-      
-      // Disable image smoothing for nearest neighbor scaling
+
       offscreenCtx.imageSmoothingEnabled = false
-      
       const imageData = offscreenCtx.createImageData(noiseWidth, noiseHeight)
       const data = imageData.data
-      
-      // Generate noise once
       for (let i = 0; i < data.length; i += 4) {
         const noise = Math.random() * 255
-        const value = Math.floor(noise * 0.06) // Reduced intensity for subtle grain
-        data[i] = value     // R
-        data[i + 1] = value // G
-        data[i + 2] = value // B
-        data[i + 3] = 255   // A
+        const value = Math.floor(noise * 0.09)
+        data[i] = data[i + 1] = data[i + 2] = value
+        data[i + 3] = 255
       }
-      
-      // Put the noise data onto the offscreen canvas
       offscreenCtx.putImageData(imageData, 0, 0)
       offscreenCanvasRef.current = offscreenCanvas
       noiseSizeRef.current = { width: noiseWidth, height: noiseHeight }
     }
 
-    generateStaticNoise()
+    const resizeCanvas = () => {
+      canvas.width = window.innerWidth
+      canvas.height = window.innerHeight
+      canvas.style.width = '100%'
+      canvas.style.height = '100%'
+      canvas.style.imageRendering = 'pixelated'
+      offscreenCanvasRef.current = null
+      generateStaticNoise()
+    }
+    resizeCanvas()
+    window.addEventListener('resize', resizeCanvas)
 
     const animate = (timestamp: number) => {
       // Update transform every ~500ms instead of every frame
@@ -138,8 +119,8 @@ export function AnimatedNoise() {
   return (
     <canvas
       ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full pointer-events-none z-[100] mix-blend-mode-screen opacity-100"
-      style={{ imageRendering: 'pixelated', opacity: 0.25 }}
+      className="fixed inset-0 w-full h-full pointer-events-none z-[100] mix-blend-mode-screen opacity-100"
+      style={{ imageRendering: 'pixelated', opacity: 0.33 }}
     />
   )
 }

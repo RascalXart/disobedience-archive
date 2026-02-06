@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { getAllCollectionNFTs, getCollection, getSpecialCollectionNFTs, getRegularCollectionNFTs } from '@/lib/data'
 import { resolveIpfsUrl, getFallbackIpfsUrl } from '@/lib/ipfs'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
-import { DEFAULT_ETHEREUM_RPC_URL } from '@/lib/ethers-provider'
+import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
 import Link from 'next/link'
 
@@ -352,6 +352,9 @@ export default function ConclavePage() {
   
   // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
   const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
+  const [heroOpen, setHeroOpen] = useState(false)
+  const [showHeroMeta, setShowHeroMeta] = useState(false)
+  const heroMetaStillRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
   const [visibleCount, setVisibleCount] = useState(30) // Start with 30 images to avoid overwhelming
   const [isShuffled, setIsShuffled] = useState(false)
@@ -401,37 +404,16 @@ export default function ConclavePage() {
     return allNFTs.find((nft) => nft.tokenId === selectedTokenId) || null
   }, [selectedTokenId, allNFTs])
   
-  // Resolve ENS names
+  // Resolve ENS names (cached in memory + localStorage)
   useEffect(() => {
-    const resolveENS = async (address: string) => {
+    const run = async (address: string) => {
       if (!address || ensNames[address]) return
-      
-      try {
-        const response = await fetch(`https://api.ensideas.com/ens/resolve/${address}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.name) {
-            setEnsNames(prev => ({ ...prev, [address]: data.name }))
-            return
-          }
-        }
-      } catch (e) {
-        try {
-          const { ethers } = await import('ethers')
-          const provider = new ethers.JsonRpcProvider(DEFAULT_ETHEREUM_RPC_URL)
-          const name = await provider.lookupAddress(address)
-          if (name) {
-            setEnsNames(prev => ({ ...prev, [address]: name }))
-          }
-        } catch (err) {
-          // ENS resolution failed
-        }
-      }
+      const name = await resolveENSCached(address)
+      if (name) setEnsNames((prev) => ({ ...prev, [address]: name }))
     }
-    
-    if (popeDoom?.owner) resolveENS(popeDoom.owner)
-    if (clippius?.owner) resolveENS(clippius.owner)
-  }, [popeDoom, clippius, ensNames])
+    if (popeDoom?.owner) run(popeDoom.owner)
+    if (clippius?.owner) run(clippius.owner)
+  }, [popeDoom?.owner, clippius?.owner, ensNames])
   
   // Preload Pope Doom and Clippius images - client-side only to prevent hydration issues
   useEffect(() => {
@@ -474,32 +456,11 @@ export default function ConclavePage() {
   useEffect(() => {
     if (!selectedNFT?.owner) return
     if (ensNames[selectedNFT.owner]) return
-    
-    const resolveENS = async (address: string) => {
-      try {
-        const response = await fetch(`https://api.ensideas.com/ens/resolve/${address}`)
-        if (response.ok) {
-          const data = await response.json()
-          if (data.name) {
-            setEnsNames(prev => ({ ...prev, [address]: data.name }))
-          }
-        }
-      } catch (e) {
-        try {
-          const { ethers } = await import('ethers')
-          const provider = new ethers.JsonRpcProvider(DEFAULT_ETHEREUM_RPC_URL)
-          const name = await provider.lookupAddress(address)
-          if (name) {
-            setEnsNames(prev => ({ ...prev, [address]: name }))
-          }
-        } catch (err) {
-          // ENS resolution failed
-        }
-      }
-    }
-    
-    resolveENS(selectedNFT.owner)
-  }, [selectedNFT, ensNames])
+
+    resolveENSCached(selectedNFT.owner).then((name) => {
+      if (name) setEnsNames((prev) => ({ ...prev, [selectedNFT!.owner!]: name }))
+    })
+  }, [selectedNFT?.owner, ensNames])
 
   // Arrow left/right to switch between pieces when modal is open
   useEffect(() => {
@@ -533,8 +494,23 @@ export default function ConclavePage() {
     }
   }, [selectedNFT, allNFTs])
 
+  useEffect(() => {
+    if (!heroOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setHeroOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [heroOpen])
+
+  useEffect(() => {
+    if (heroOpen) setShowHeroMeta(false)
+    if (!heroOpen && heroMetaStillRef.current) {
+      clearTimeout(heroMetaStillRef.current)
+      heroMetaStillRef.current = null
+    }
+  }, [heroOpen])
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white pt-24">
+    <div className="page-root text-white">
       <div className="container mx-auto px-4 py-12 md:py-20">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -805,6 +781,13 @@ export default function ConclavePage() {
                     <div className="w-full h-full bg-[#111]" />
                   )}
                 </div>
+                <button
+                  type="button"
+                  onClick={() => setHeroOpen(true)}
+                  className="mt-2 mono text-[9px] px-2 py-1 border border-[#222] hover:border-[#444] text-[#666] hover:text-white transition-colors"
+                >
+                  [FULL SCREEN]
+                </button>
                 
                 {/* Twitter Share Button */}
                 <a
@@ -867,6 +850,103 @@ export default function ConclavePage() {
             </div>
             </motion.div>
           </div>
+
+          {/* Hero fullscreen overlay */}
+          {heroOpen && selectedNFT?.imageUrl && (
+            <div
+              className="fixed inset-0 z-[60] flex flex-col bg-[#0a0a0a] min-w-0 min-h-0 overflow-hidden"
+              onClick={(e) => { e.stopPropagation(); setHeroOpen(false) }}
+            >
+              <ModalNavArrows
+                hasPrev={!!modalNav?.hasPrev}
+                hasNext={!!modalNav?.hasNext}
+                onPrev={() => modalNav?.prevTokenId && setSelectedTokenId(modalNav.prevTokenId)}
+                onNext={() => modalNav?.nextTokenId && setSelectedTokenId(modalNav.nextTokenId)}
+              />
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setHeroOpen(false) }}
+                className="absolute top-4 right-4 z-10 mono text-xs text-[#666] hover:text-white px-2 py-1 border border-[#222] bg-[#111]"
+              >
+                [CLOSE]
+              </button>
+              <div
+                className="flex-1 min-h-0 flex items-center justify-center p-4 relative"
+                onClick={(e) => e.stopPropagation()}
+                onMouseMove={() => {
+                  setShowHeroMeta(true)
+                  if (heroMetaStillRef.current) clearTimeout(heroMetaStillRef.current)
+                  heroMetaStillRef.current = setTimeout(() => setShowHeroMeta(false), 80)
+                }}
+                onTouchStart={() => setShowHeroMeta(true)}
+                onTouchEnd={() => setShowHeroMeta(false)}
+              >
+                <div className={`w-full h-full min-w-0 min-h-0 max-w-full max-h-full transition-opacity duration-200 ${showHeroMeta ? 'opacity-40' : 'opacity-100'}`}>
+                  <img
+                    src={resolveIpfsUrl(selectedNFT.imageUrl) || selectedNFT.imageUrl}
+                    alt={selectedNFT.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className={`absolute inset-0 flex items-center justify-center bg-black/70 transition-opacity duration-200 pointer-events-none p-8 ${showHeroMeta ? 'opacity-100' : 'opacity-0'}`}>
+                  <div className="mono text-left text-sm text-[#ccc] space-y-3 max-w-md [pointer-events:auto]">
+                    <div className="font-grotesk text-white text-xl font-light tracking-tighter">{selectedNFT.name}</div>
+                    <div><span className="text-[#666]">TOKEN:</span> #{selectedNFT.tokenId}</div>
+                    {selectedNFT.description && (
+                      <div className="text-[#888] leading-relaxed whitespace-pre-line max-h-32 overflow-y-auto"><span className="text-[#666]">DESCRIPTION:</span><br />{selectedNFT.description}</div>
+                    )}
+                    {selectedNFT.owner && (
+                      <div>
+                        <span className="text-[#666]">OWNED BY:</span>{' '}
+                        <a
+                          href={`https://opensea.io/${ensNames[selectedNFT.owner]?.replace('.eth', '') || selectedNFT.owner}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#ccc] hover:text-white underline transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {ensNames[selectedNFT.owner] || `${selectedNFT.owner.slice(0, 6)}...${selectedNFT.owner.slice(-4)}`}
+                        </a>
+                      </div>
+                    )}
+                    {selectedNFT.attributes && selectedNFT.attributes.length > 0 && (
+                      <div>
+                        <span className="text-[#666]">ATTRIBUTES:</span>
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                          {selectedNFT.attributes.map((attr: any, idx: number) => (
+                            <div key={idx} className="text-[#888] border border-[#222] p-2">
+                              <div className="text-[#666] text-xs">{attr.trait_type || attr.name}</div>
+                              <div className="text-xs">{attr.value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex-shrink-0 border-t border-[#222] bg-[#0a0a0a] px-4 py-3 text-center">
+                <div className="font-grotesk text-white font-light tracking-tighter">{selectedNFT.name}</div>
+                <div className="mono text-xs text-[#666] mt-0.5">
+                  {selectedNFT.owner ? (
+                    <>
+                      OWNED BY{' '}
+                      <a
+                        href={`https://opensea.io/${ensNames[selectedNFT.owner]?.replace('.eth', '') || selectedNFT.owner}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#888] hover:text-white underline transition-colors"
+                      >
+                        {ensNames[selectedNFT.owner] || `${selectedNFT.owner.slice(0, 6)}...${selectedNFT.owner.slice(-4)}`}
+                      </a>
+                    </>
+                  ) : (
+                    '—'
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
       )}
     </div>

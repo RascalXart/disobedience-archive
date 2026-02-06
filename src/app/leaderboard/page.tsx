@@ -24,7 +24,7 @@ export default function LeaderboardPage() {
   }, [])
 
   return (
-    <main className="min-h-screen pt-24 relative overflow-hidden">
+    <main className="page-root relative overflow-hidden">
       {/* Ultra grainy glitched background */}
       <div 
         className="fixed inset-0 z-0"
