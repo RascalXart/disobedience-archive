@@ -138,9 +138,11 @@ export default function HomePage() {
     return () => { if (ref.current) clearTimeout(ref.current) }
   }, [])
 
-  // Typed subtitle after title: random phrase, typewriter, different each time
+  // Typed subtitle: type in fast (chunked), hold, delete back fast (chunked), then next phrase
   useEffect(() => {
+    const TICK = 4
     let typingId: ReturnType<typeof setInterval> | null = null
+    let deleteId: ReturnType<typeof setInterval> | null = null
     let holdId: ReturnType<typeof setTimeout> | null = null
     let nextId: ReturnType<typeof setTimeout> | null = null
 
@@ -148,26 +150,37 @@ export default function HomePage() {
       const phrase = TYPED_PHRASES[Math.floor(Math.random() * TYPED_PHRASES.length)]
       setSubtitlePhrase(phrase)
       setSubtitleVisibleLength(0)
-      const speed = 35 + Math.random() * 45
+      const typeChunk = Math.max(1, Math.ceil(phrase.length / 4))
       let len = 0
       typingId = setInterval(() => {
-        len += 1
+        len = Math.min(len + typeChunk, phrase.length)
         setSubtitleVisibleLength(len)
         if (len >= phrase.length) {
           if (typingId) clearInterval(typingId)
           typingId = null
           holdId = setTimeout(() => {
-            setSubtitlePhrase(null)
-            setSubtitleVisibleLength(0)
-            nextId = setTimeout(startPhrase, Math.random() * 4000)
+            holdId = null
+            let del = phrase.length
+            const deleteChunk = Math.max(1, Math.ceil(phrase.length / 6))
+            deleteId = setInterval(() => {
+              del = Math.max(0, del - deleteChunk)
+              setSubtitleVisibleLength(del)
+              if (del <= 0) {
+                if (deleteId) clearInterval(deleteId)
+                deleteId = null
+                setSubtitlePhrase(null)
+                nextId = setTimeout(startPhrase, Math.random() * 4000)
+              }
+            }, TICK)
           }, 600 + Math.random() * 2200)
         }
-      }, speed)
+      }, TICK)
     }
 
     nextId = setTimeout(startPhrase, Math.random() * 3000)
     return () => {
       if (typingId) clearInterval(typingId)
+      if (deleteId) clearInterval(deleteId)
       if (holdId) clearTimeout(holdId)
       if (nextId) clearTimeout(nextId)
     }
