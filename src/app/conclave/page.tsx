@@ -3,347 +3,12 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllCollectionNFTs, getCollection, getSpecialCollectionNFTs, getRegularCollectionNFTs } from '@/lib/data'
-import { resolveIpfsUrl, getFallbackIpfsUrl } from '@/lib/ipfs'
+import { resolveIpfsUrl } from '@/lib/ipfs'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
+import { AbortableIpfsImage } from '@/components/AbortableIpfsImage'
 import Link from 'next/link'
-
-// IPFS Gateways - prioritize dedicated gateway if available
-// To use Pinata dedicated gateway (free tier available):
-// 1. Sign up at https://app.pinata.cloud/
-// 2. Get your gateway token
-// 3. Set NEXT_PUBLIC_PINATA_GATEWAY_TOKEN in .env.local
-const PINATA_GATEWAY_TOKEN = process.env.NEXT_PUBLIC_PINATA_GATEWAY_TOKEN || ''
-const PINATA_DEDICATED = PINATA_GATEWAY_TOKEN 
-  ? `https://${PINATA_GATEWAY_TOKEN}.mypinata.cloud/ipfs/`
-  : null
-
-// Use ipfs.io first; filebase.io often returns ERR_SSL_PROTOCOL_ERROR in browsers
-const PRIMARY_GATEWAY = 'https://ipfs.io/ipfs/'
-const FALLBACK_GATEWAYS = [
-  'https://dweb.link/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/',
-  'https://ipfs.filebase.io/ipfs/',
-]
-
-const IPFS_GATEWAYS = PINATA_DEDICATED
-  ? [PINATA_DEDICATED, PRIMARY_GATEWAY, ...FALLBACK_GATEWAYS]
-  : [PRIMARY_GATEWAY, ...FALLBACK_GATEWAYS]
-
-// Generate path variations to try when original fails
-function generateIpfsPathVariations(originalUrl: string): string[] {
-  const match = originalUrl.match(/\/ipfs\/([^?]+)/)
-  if (!match) return [originalUrl]
-  
-  const cidAndPath = match[1]
-  const parts = cidAndPath.split('/')
-  const cid = parts[0]
-  const originalPath = parts.slice(1).join('/')
-  
-  const variations: string[] = [cidAndPath] // Always try original first
-  
-  // If path exists, try common variations
-  if (originalPath) {
-    // Try CID root (common fallback)
-    variations.push(cid)
-    
-    // Try with common path prefixes
-    const pathParts = originalPath.split('/')
-    if (pathParts.length > 1) {
-      // Try without last segment (e.g., /media -> /)
-      variations.push(`${cid}/${pathParts.slice(0, -1).join('/')}`)
-    }
-    
-    // Try with 'media' prefix if not already present
-    if (!originalPath.includes('media')) {
-      variations.push(`${cid}/media/${originalPath}`)
-    }
-  }
-  
-  return Array.from(new Set(variations))
-}
-
-// Simplified IPFS Image component - tries gateways sequentially with proper delays
-function IpfsImage({ src, alt, className, loading, fetchPriority }: { src: string; alt: string; className?: string; loading?: 'lazy' | 'eager'; fetchPriority?: 'high' | 'low' | 'auto' }) {
-  // Check if URL is already R2 or non-IPFS - use directly
-  const isR2OrDirect = src && (src.includes('r2.dev') || src.includes('r2.cloudflarestorage.com') || (!src.includes('ipfs') && (src.startsWith('http://') || src.startsWith('https://'))))
-  
-  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS
-  const originalResolved = resolveIpfsUrl(src) || src
-  const pathVariations = useMemo(() => {
-    if (isR2OrDirect) return []
-    return generateIpfsPathVariations(originalResolved)
-  }, [originalResolved, isR2OrDirect])
-  
-  const [gatewayIndex, setGatewayIndex] = useState(0)
-  const [pathIndex, setPathIndex] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [mounted, setMounted] = useState(false)
-  // Always start as false to ensure server/client match - set to true in useEffect
-  const [shouldLoad, setShouldLoad] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const imgRef = useRef<HTMLImageElement | null>(null)
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  
-  // Build current URL
-  const currentSrc = useMemo(() => {
-    if (!shouldLoad || isR2OrDirect) return ''
-    const gateway = IPFS_GATEWAYS[gatewayIndex] || IPFS_GATEWAYS[0]
-    const path = pathVariations[pathIndex] || pathVariations[0]
-    return `${gateway}${path}`
-  }, [gatewayIndex, pathIndex, pathVariations, shouldLoad, isR2OrDirect])
-
-  // Extract IPFS hash and path from a failed URL
-  const extractIpfsHash = useCallback((failedUrl: string): { cid: string; path: string } | null => {
-    const match = failedUrl.match(/\/ipfs\/([^?]+)/)
-    if (!match) return null
-    
-    const cidAndPath = match[1]
-    const parts = cidAndPath.split('/')
-    const cid = parts[0]
-    const path = parts.slice(1).join('/')
-    
-    return { cid, path }
-  }, [])
-
-  // Handle image error - retry with fallback gateways if filebase.io fails
-  const handleError = useCallback((e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    // Only handle errors if mounted and should be loading
-    if (!mounted || !shouldLoad) return
-    
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-
-    // If current gateway is filebase.io and it failed, try fallback gateways
-    const currentGateway = IPFS_GATEWAYS[gatewayIndex]
-    if (currentGateway === PRIMARY_GATEWAY && e?.currentTarget?.src) {
-      const hashInfo = extractIpfsHash(e.currentTarget.src)
-      if (hashInfo) {
-        // Try first fallback gateway that hasn't been tried yet
-        for (const fallbackGateway of FALLBACK_GATEWAYS) {
-          // Skip if this gateway was already tried (check if src contains it)
-          if (e.currentTarget.src.includes(fallbackGateway)) continue
-          
-          const fallbackUrl = `${fallbackGateway}${hashInfo.cid}${hashInfo.path ? '/' + hashInfo.path : ''}`
-          
-          // Find the gateway index in IPFS_GATEWAYS
-          const newGatewayIndex = IPFS_GATEWAYS.findIndex(g => g === fallbackGateway)
-          if (newGatewayIndex >= 0) {
-            setTimeout(() => {
-              setGatewayIndex(newGatewayIndex)
-              setPathIndex(0)
-              setIsLoading(true)
-              // Update the image src directly
-              if (imgRef.current) {
-                imgRef.current.src = fallbackUrl
-              }
-            }, 300)
-            return
-          }
-        }
-      }
-    }
-
-    // Try next path variation first
-    if (pathIndex + 1 < pathVariations.length) {
-      setTimeout(() => {
-        setPathIndex(pathIndex + 1)
-        setIsLoading(true)
-      }, 500)
-      return
-    }
-    
-    // Try next gateway
-    if (gatewayIndex + 1 < IPFS_GATEWAYS.length) {
-      setTimeout(() => {
-        setGatewayIndex(gatewayIndex + 1)
-        setPathIndex(0)
-        setIsLoading(true)
-      }, 800)
-      return
-    }
-    
-    // Never give up - cycle back to start and keep trying
-    // Reset to first gateway and first path, then retry
-    setTimeout(() => {
-      setGatewayIndex(0)
-      setPathIndex(0)
-      setIsLoading(true)
-      // Update the image src to retry
-      if (imgRef.current && pathVariations.length > 0) {
-        const firstGateway = IPFS_GATEWAYS[0]
-        const firstPath = pathVariations[0]
-        imgRef.current.src = `${firstGateway}${firstPath}`
-      }
-    }, 2000) // Wait 2 seconds before retrying from the beginning
-  }, [pathIndex, pathVariations.length, gatewayIndex, mounted, shouldLoad, extractIpfsHash, pathVariations])
-
-  // Mark as mounted after hydration to prevent mismatches
-  useEffect(() => {
-    setMounted(true)
-    // For eager/high priority images, load immediately after mount
-    if (loading === 'eager' || fetchPriority === 'high') {
-      setShouldLoad(true)
-    }
-  }, [loading, fetchPriority])
-
-  // Reset when src changes
-  useEffect(() => {
-    setGatewayIndex(0)
-    setPathIndex(0)
-    setIsLoading(true)
-  }, [src])
-
-  // Set timeout for current attempt
-  useEffect(() => {
-    if (!shouldLoad || !currentSrc || isR2OrDirect) return
-    
-    setIsLoading(true)
-    const timeout = setTimeout(() => {
-      if (imgRef.current && !imgRef.current.complete) {
-        // Create a synthetic event for timeout errors
-        const syntheticEvent = {
-          currentTarget: imgRef.current,
-        } as React.SyntheticEvent<HTMLImageElement, Event>
-        handleError(syntheticEvent)
-      }
-    }, 6000) // 6 second timeout per attempt
-
-    return () => {
-      clearTimeout(timeout)
-    }
-  }, [currentSrc, shouldLoad, handleError, isR2OrDirect])
-  
-  // Intersection Observer for lazy loading - only after mount to prevent hydration issues
-  useEffect(() => {
-    // Only run after component is mounted
-    if (!mounted) return
-    
-    // Eager or high priority images already handled in mount effect
-    if (loading === 'eager' || fetchPriority === 'high') {
-      return
-    }
-    
-    if (shouldLoad) return
-    
-    let observer: IntersectionObserver | null = null
-    
-    const checkAndObserve = () => {
-      if (!containerRef.current) return
-      
-      // Check if already in viewport
-      const rect = containerRef.current.getBoundingClientRect()
-      if (rect.top < window.innerHeight + 200 && rect.bottom > -200) {
-        setShouldLoad(true)
-        return
-      }
-      
-      // Set up Intersection Observer for images not yet in viewport
-      observer = new IntersectionObserver(
-        (entries) => {
-          if (entries[0]?.isIntersecting) {
-            setShouldLoad(true)
-            if (observer) {
-              observer.disconnect()
-              observer = null
-            }
-          }
-        },
-        { rootMargin: '200px', threshold: 0.01 }
-      )
-
-      if (containerRef.current) {
-        observer.observe(containerRef.current)
-      }
-    }
-    
-    // Check immediately
-    checkAndObserve()
-    
-    // Also check after a small delay to catch any layout shifts
-    const timer = setTimeout(checkAndObserve, 100)
-    
-    return () => {
-      clearTimeout(timer)
-      if (observer) {
-        observer.disconnect()
-      }
-    }
-  }, [loading, shouldLoad, fetchPriority, mounted])
-  
-  const handleLoad = useCallback(() => {
-    // Only handle load if mounted and should be loading
-    if (!mounted || !shouldLoad) return
-    
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-    setIsLoading(false)
-  }, [mounted, shouldLoad])
-
-  // Always render identical structure - use useEffect to update after mount
-  // This ensures server and client initial render match exactly
-  // MUST BE BEFORE ANY EARLY RETURNS
-  useEffect(() => {
-    if (!mounted || !containerRef.current) return
-    
-    // Update data attributes after mount to trigger CSS changes
-    const placeholder = containerRef.current.querySelector('.ipfs-placeholder') as HTMLElement
-    const loadingOverlay = containerRef.current.querySelector('.ipfs-loading') as HTMLElement
-    const img = containerRef.current.querySelector('img') as HTMLImageElement
-    
-    if (placeholder) {
-      placeholder.style.display = (shouldLoad && currentSrc) ? 'none' : 'block'
-    }
-    if (loadingOverlay) {
-      loadingOverlay.style.display = (shouldLoad && isLoading) ? 'block' : 'none'
-    }
-    if (img) {
-      img.style.opacity = (shouldLoad && !isLoading && currentSrc) ? '1' : '0'
-      if (shouldLoad && currentSrc) {
-        img.src = currentSrc
-      }
-    }
-  }, [mounted, shouldLoad, currentSrc, isLoading])
-
-  return (
-    <div ref={containerRef} className="w-full h-full relative">
-      {/* Placeholder - always rendered with same initial style */}
-      <div 
-        className="absolute inset-0 bg-[#111] w-full h-full ipfs-placeholder"
-        style={{ zIndex: 1, display: 'block' }}
-      />
-      {/* Loading overlay - always rendered with same initial style */}
-      <div 
-        className="absolute inset-0 bg-[#111] w-full h-full ipfs-loading"
-        style={{ zIndex: 2, display: 'none' }}
-      />
-      {/* Image - always rendered with same initial src and style */}
-      <img
-        ref={imgRef}
-        src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-        alt={alt}
-        className={className}
-        loading={loading}
-        decoding="async"
-        onError={(e) => handleError(e)}
-        onLoad={handleLoad}
-        style={{
-          opacity: 0,
-          transition: 'opacity 0.3s ease-in',
-          position: 'relative',
-          zIndex: 0,
-        }}
-        fetchPriority={fetchPriority}
-        suppressHydrationWarning
-      />
-    </div>
-  )
-}
 
 export default function ConclavePage() {
   const collection = getCollection()
@@ -356,7 +21,7 @@ export default function ConclavePage() {
   const [showHeroMeta, setShowHeroMeta] = useState(false)
   const heroMetaStillRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
-  const [visibleCount, setVisibleCount] = useState(30) // Start with 30 images to avoid overwhelming
+  const [visibleCount, setVisibleCount] = useState(30)
   const [isShuffled, setIsShuffled] = useState(false)
   
   // Sort regular NFTs by tokenId initially
@@ -414,44 +79,6 @@ export default function ConclavePage() {
     if (popeDoom?.owner) run(popeDoom.owner)
     if (clippius?.owner) run(clippius.owner)
   }, [popeDoom?.owner, clippius?.owner, ensNames])
-  
-  // Preload Pope Doom and Clippius images - client-side only to prevent hydration issues
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    
-    const preloadImages = () => {
-      if (popeDoom?.imageUrl) {
-        const resolvedUrl = resolveIpfsUrl(popeDoom.imageUrl) || popeDoom.imageUrl
-        // Remove existing preload if any
-        const existing = document.querySelector(`link[rel="preload"][href="${resolvedUrl}"]`)
-        if (existing) existing.remove()
-        
-        const link = document.createElement('link')
-        link.rel = 'preload'
-        link.as = 'image'
-        link.href = resolvedUrl
-        link.setAttribute('fetchpriority', 'high')
-        document.head.insertBefore(link, document.head.firstChild)
-      }
-      if (clippius?.imageUrl) {
-        const resolvedUrl = resolveIpfsUrl(clippius.imageUrl) || clippius.imageUrl
-        // Remove existing preload if any
-        const existing = document.querySelector(`link[rel="preload"][href="${resolvedUrl}"]`)
-        if (existing) existing.remove()
-        
-        const link = document.createElement('link')
-        link.rel = 'preload'
-        link.as = 'image'
-        link.href = resolvedUrl
-        link.setAttribute('fetchpriority', 'high')
-        document.head.insertBefore(link, document.head.firstChild)
-      }
-    }
-    
-    // Run after a small delay to ensure DOM is ready
-    const timer = setTimeout(preloadImages, 100)
-    return () => clearTimeout(timer)
-  }, [popeDoom?.imageUrl, clippius?.imageUrl])
   
   useEffect(() => {
     if (!selectedNFT?.owner) return
@@ -590,12 +217,11 @@ export default function ConclavePage() {
                 <div className="grid md:grid-cols-2 gap-8 items-start">
                   <div className="relative aspect-square overflow-hidden bg-[#111] border-2 border-[#444]">
                     {popeDoom.imageUrl ? (
-                      <IpfsImage
+                      <AbortableIpfsImage
                         src={popeDoom.imageUrl}
                         alt={popeDoom.name}
                         className="w-full h-full object-contain"
-                        loading="eager"
-                        fetchPriority="high"
+                        priority
                       />
                     ) : (
                       <div className="w-full h-full bg-[#111]" />
@@ -637,12 +263,11 @@ export default function ConclavePage() {
                 <div className="grid md:grid-cols-3 gap-8 items-start">
                   <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#333] max-w-xs">
                     {clippius.imageUrl ? (
-                      <IpfsImage
+                      <AbortableIpfsImage
                         src={clippius.imageUrl}
                         alt={clippius.name}
                         className="w-full h-full object-contain"
-                        loading="eager"
-                        fetchPriority="high"
+                        priority
                       />
                     ) : (
                       <div className="w-full h-full bg-[#111]" />
@@ -704,11 +329,10 @@ export default function ConclavePage() {
                   >
                     <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
                       {nft.imageUrl ? (
-                        <IpfsImage
+                        <AbortableIpfsImage
                           src={nft.imageUrl}
                           alt={nft.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                          loading="lazy"
                         />
                       ) : (
                         <div className="w-full h-full bg-[#111]" />
@@ -771,11 +395,11 @@ export default function ConclavePage() {
               <div className="flex flex-col">
                 <div className="relative aspect-square bg-[#0a0a0a]">
                   {selectedNFT.imageUrl ? (
-                    <IpfsImage
+                    <AbortableIpfsImage
                       src={selectedNFT.imageUrl}
                       alt={selectedNFT.name}
                       className="w-full h-full object-contain"
-                      loading="eager"
+                      priority
                     />
                   ) : (
                     <div className="w-full h-full bg-[#111]" />

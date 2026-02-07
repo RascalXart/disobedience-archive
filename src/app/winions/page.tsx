@@ -4,376 +4,15 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
+import { AbortableIpfsImage } from '@/components/AbortableIpfsImage'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
 import type { CollectionNFT, NFTAttribute } from '@/types'
 
-// Gateways that work in browser (no filebase - it throws ERR_SSL_PROTOCOL_ERROR)
-const PRIMARY_GATEWAY = 'https://ipfs.io/ipfs/'
-const FALLBACK_GATEWAYS = [
-  'https://dweb.link/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/',
-  'https://cloudflare-ipfs.com/ipfs/',
-]
-
-const IPFS_GATEWAYS = [PRIMARY_GATEWAY, ...FALLBACK_GATEWAYS]
-
-// Generate path variations to try when original fails
-function generateIpfsPathVariations(originalUrl: string): string[] {
-  const match = originalUrl.match(/\/ipfs\/([^?]+)/)
-  if (!match) return [originalUrl]
-  
-  const cidAndPath = match[1]
-  const parts = cidAndPath.split('/')
-  const cid = parts[0]
-  const originalPath = parts.slice(1).join('/')
-  
-  const variations: string[] = [cidAndPath] // Always try original first
-  
-  // If path exists, try common variations
-  if (originalPath) {
-    // Try CID root (common fallback)
-    variations.push(cid)
-    
-    // Try with common path prefixes
-    const pathParts = originalPath.split('/')
-    if (pathParts.length > 1) {
-      // Try without last segment (e.g., /media -> /)
-      variations.push(`${cid}/${pathParts.slice(0, -1).join('/')}`)
-    }
-    
-    // Try with 'media' prefix if not already present
-    if (!originalPath.includes('media')) {
-      variations.push(`${cid}/media/${originalPath}`)
-    }
-  }
-  
-  return Array.from(new Set(variations))
-}
-
-// Static image component - load when in viewport (Intersection Observer), fallback gateways on error
-function StaticWinionImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
-  const originalResolved = resolveIpfsUrl(src) || src
-  const pathVariations = useMemo(() => {
-    if (!originalResolved.includes('ipfs')) return []
-    return generateIpfsPathVariations(originalResolved)
-  }, [originalResolved])
-  
-  const [gatewayIndex, setGatewayIndex] = useState(0)
-  const [pathIndex, setPathIndex] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [mounted, setMounted] = useState(false)
-  const [shouldLoad, setShouldLoad] = useState(false)
-  const [isVisible, setIsVisible] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const retryTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const imgRef = useRef<HTMLImageElement | null>(null)
-  const containerRef = useRef<HTMLDivElement | null>(null)
-  const observerRef = useRef<IntersectionObserver | null>(null)
-  
-  const cancelAllLoads = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current)
-      retryTimeoutRef.current = null
-    }
-    if (observerRef.current) {
-      observerRef.current.disconnect()
-      observerRef.current = null
-    }
-    setShouldLoad(false)
-    setIsVisible(false)
-    setIsLoading(false)
-  }, [])
-  
-  // Build current URL - convert GIF to static if needed
-  const currentSrc = useMemo(() => {
-    if (!shouldLoad) return ''
-    const gateway = IPFS_GATEWAYS[gatewayIndex] || IPFS_GATEWAYS[0]
-    const path = pathVariations[pathIndex] || pathVariations[0]
-    let url = `${gateway}${path}`
-    
-    // If it's a GIF, we'll let the browser handle it but stop animation
-    // For now, just use the URL as-is (browser will show first frame)
-    return url
-  }, [gatewayIndex, pathIndex, pathVariations, shouldLoad])
-
-  // Extract IPFS hash and path from a failed URL
-  const extractIpfsHash = useCallback((failedUrl: string): { cid: string; path: string } | null => {
-    const match = failedUrl.match(/\/ipfs\/([^?]+)/)
-    if (!match) return null
-    
-    const cidAndPath = match[1]
-    const parts = cidAndPath.split('/')
-    const cid = parts[0]
-    const path = parts.slice(1).join('/')
-    
-    return { cid, path }
-  }, [])
-
-  const handleError = useCallback((e?: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    // Only retry if image is still visible and should be loading
-    if (!mounted || !shouldLoad || !isVisible) {
-      cancelAllLoads()
-      return
-    }
-    
-    // Check if still in viewport before retrying
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect()
-      const stillInViewport = rect.top < window.innerHeight + 100 && rect.bottom > -100
-      if (!stillInViewport) {
-        cancelAllLoads()
-        return
-      }
-    }
-    
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-
-    // If current gateway is filebase.io and it failed, try fallback gateways
-    const currentGateway = IPFS_GATEWAYS[gatewayIndex]
-    if (currentGateway === PRIMARY_GATEWAY && e?.currentTarget?.src) {
-      const hashInfo = extractIpfsHash(e.currentTarget.src)
-      if (hashInfo) {
-        // Try first fallback gateway that hasn't been tried yet
-        for (const fallbackGateway of FALLBACK_GATEWAYS) {
-          // Skip if this gateway was already tried (check if src contains it)
-          if (e.currentTarget.src.includes(fallbackGateway)) continue
-          
-          const fallbackUrl = `${fallbackGateway}${hashInfo.cid}${hashInfo.path ? '/' + hashInfo.path : ''}`
-          
-          // Find the gateway index in IPFS_GATEWAYS
-          const newGatewayIndex = IPFS_GATEWAYS.findIndex(g => g === fallbackGateway)
-          if (newGatewayIndex >= 0) {
-            retryTimeoutRef.current = setTimeout(() => {
-              // Check again if still visible before retrying
-              if (!isVisible || !shouldLoad) {
-                cancelAllLoads()
-                return
-              }
-              setGatewayIndex(newGatewayIndex)
-              setPathIndex(0)
-              setIsLoading(true)
-              // Update the image src directly
-              if (imgRef.current) {
-                imgRef.current.src = fallbackUrl
-              }
-            }, 300)
-            return
-          }
-        }
-      }
-    }
-
-    // Try next path variation first
-    if (pathIndex + 1 < pathVariations.length) {
-      retryTimeoutRef.current = setTimeout(() => {
-        // Check again if still visible before retrying
-        if (!isVisible || !shouldLoad) {
-          cancelAllLoads()
-          return
-        }
-        setPathIndex(pathIndex + 1)
-        setIsLoading(true)
-      }, 500)
-      return
-    }
-    
-    // Try next gateway
-    if (gatewayIndex + 1 < IPFS_GATEWAYS.length) {
-      retryTimeoutRef.current = setTimeout(() => {
-        // Check again if still visible before retrying
-        if (!isVisible || !shouldLoad) {
-          cancelAllLoads()
-          return
-        }
-        setGatewayIndex(gatewayIndex + 1)
-        setPathIndex(0)
-        setIsLoading(true)
-      }, 800)
-      return
-    }
-    
-    // Never give up - cycle back to start and keep trying (only if still visible)
-    retryTimeoutRef.current = setTimeout(() => {
-      // Check again if still visible before retrying
-      if (!isVisible || !shouldLoad) {
-        cancelAllLoads()
-        return
-      }
-      setGatewayIndex(0)
-      setPathIndex(0)
-      setIsLoading(true)
-      // Update the image src to retry
-      if (imgRef.current && pathVariations.length > 0) {
-        const firstGateway = IPFS_GATEWAYS[0]
-        const firstPath = pathVariations[0] || ''
-        imgRef.current.src = `${firstGateway}${firstPath}`
-      }
-    }, 2000) // Wait 2 seconds before retrying from the beginning
-  }, [pathIndex, pathVariations.length, gatewayIndex, mounted, shouldLoad, isVisible, extractIpfsHash, pathVariations, cancelAllLoads])
-
-  useEffect(() => {
-    setMounted(true)
-    // Don't auto-load - use Intersection Observer for lazy loading only
-  }, [])
-
-  // Reset everything when src changes (e.g., filter/shuffle changes)
-  useEffect(() => {
-    cancelAllLoads()
-    setGatewayIndex(0)
-    setPathIndex(0)
-    setIsLoading(true)
-    setShouldLoad(false)
-    setIsVisible(false)
-  }, [src, cancelAllLoads])
-
-  useEffect(() => {
-    if (!shouldLoad || !currentSrc || !isVisible) return
-    
-    setIsLoading(true)
-    timeoutRef.current = setTimeout(() => {
-      // Check if still visible before timing out
-      if (!isVisible || !shouldLoad) {
-        cancelAllLoads()
-        return
-      }
-      if (imgRef.current && !imgRef.current.complete) {
-        // Create a synthetic event for timeout errors
-        const syntheticEvent = {
-          currentTarget: imgRef.current,
-        } as React.SyntheticEvent<HTMLImageElement, Event>
-        handleError(syntheticEvent)
-      }
-    }, 6000) // 6 second timeout per attempt
-
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-        timeoutRef.current = null
-      }
-    }
-  }, [currentSrc, shouldLoad, isVisible, handleError, cancelAllLoads])
-  
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      cancelAllLoads()
-    }
-  }, [cancelAllLoads])
-  
-  // Intersection Observer: load only when in or near viewport (browser handles connection limits)
-  useEffect(() => {
-    if (!mounted) return
-    if (!containerRef.current) return
-    
-    if (observerRef.current) {
-      observerRef.current.disconnect()
-      observerRef.current = null
-    }
-    
-    const checkViewport = () => {
-      if (!containerRef.current) return false
-      const rect = containerRef.current.getBoundingClientRect()
-      return rect.top < window.innerHeight + 300 && rect.bottom > -300
-    }
-    
-    const isInViewport = checkViewport()
-    setIsVisible(isInViewport)
-    if (isInViewport && !shouldLoad) setShouldLoad(true)
-    if (!isInViewport && shouldLoad) cancelAllLoads()
-    
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0]
-        if (!entry) return
-        const nowVisible = entry.isIntersecting
-        setIsVisible(nowVisible)
-        if (nowVisible && !shouldLoad) setShouldLoad(true)
-        if (!nowVisible && shouldLoad) cancelAllLoads()
-      },
-      { rootMargin: '300px', threshold: 0.01 }
-    )
-    observerRef.current.observe(containerRef.current)
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect()
-        observerRef.current = null
-      }
-    }
-  }, [mounted, shouldLoad, cancelAllLoads])
-  
-  const handleLoad = useCallback(() => {
-    if (!mounted || !shouldLoad) return
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-    setIsLoading(false)
-  }, [mounted, shouldLoad])
-
-  // Update styles after mount to prevent hydration issues
-  useEffect(() => {
-    if (!mounted || !containerRef.current) return
-    
-    const placeholder = containerRef.current.querySelector('.winion-placeholder') as HTMLElement
-    const loadingOverlay = containerRef.current.querySelector('.winion-loading') as HTMLElement
-    const img = containerRef.current.querySelector('img') as HTMLImageElement
-    
-    if (placeholder) {
-      placeholder.style.display = (shouldLoad && currentSrc) ? 'none' : 'block'
-    }
-    if (loadingOverlay) {
-      loadingOverlay.style.display = (shouldLoad && isLoading) ? 'block' : 'none'
-    }
-    if (img) {
-      img.style.opacity = (shouldLoad && !isLoading && currentSrc) ? '1' : '0'
-      if (shouldLoad && currentSrc) {
-        img.src = currentSrc
-      }
-    }
-  }, [mounted, shouldLoad, currentSrc, isLoading])
-
-  // Never show "NO IMAGE" - keep retrying indefinitely
-  // hasError is no longer used, we just keep trying
-
+function WinionImage({ src, alt, className, priority }: { src: string; alt: string; className?: string; priority?: boolean }) {
   return (
-    <div ref={containerRef} className="w-full h-full relative">
-      <div 
-        className="absolute inset-0 bg-[#111] w-full h-full winion-placeholder"
-        style={{ zIndex: 1, display: 'block' }}
-      />
-      <div 
-        className="absolute inset-0 bg-[#111] w-full h-full winion-loading"
-        style={{ zIndex: 2, display: 'none' }}
-      />
-      <img
-        ref={imgRef}
-        src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
-        alt={alt}
-        className={className}
-        loading="lazy"
-        decoding="async"
-        onError={(e) => handleError(e)}
-        onLoad={handleLoad}
-        style={{
-          opacity: 0,
-          transition: 'opacity 0.3s ease-in',
-          position: 'relative',
-          zIndex: 0,
-          // Prevent GIF animation - show only first frame
-          imageRendering: 'crisp-edges',
-        }}
-        suppressHydrationWarning
-      />
-    </div>
+    <AbortableIpfsImage src={src} alt={alt} className={className} priority={priority} />
   )
 }
 
@@ -448,7 +87,7 @@ export default function WinionsPage() {
   const heroMetaStillRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [selectedTraits, setSelectedTraits] = useState<Set<string>>(new Set())
   const [collapsedTraits, setCollapsedTraits] = useState<Set<string>>(new Set())
-  const [visibleCount, setVisibleCount] = useState(50) // Start with 50 images per page
+  const [visibleCount, setVisibleCount] = useState(50)
   const [isShuffled, setIsShuffled] = useState(false)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
   // Start with sidebar collapsed on mobile - always false initially to match SSR
@@ -687,7 +326,7 @@ export default function WinionsPage() {
   }
 
   // Separate single-attribute and multi-attribute categories (hide Glitch realm from filters)
-  const { singleAttributeTraits, multiAttributeTraits } = useMemo(() => {
+  const { singleAttributeTraits, multiAttributeTraits, bottomLevelTraits } = useMemo(() => {
     const single: Array<[string, TraitFilter[]]> = []
     const multi: Array<[string, TraitFilter[]]> = []
     
@@ -712,9 +351,8 @@ export default function WinionsPage() {
       'Faceless?',
       'PA Noise',
       'Twins',
-      'Luck Level',
-      'Mischief Level',
     ]
+    const bottomFilterTypes = new Set(['Luck Level', 'Mischief Level'].map((s) => s.toLowerCase()))
     const orderIndex = (traitType: string) => {
       const i = filterOrder.findIndex((o) => o.toLowerCase() === traitType.toLowerCase())
       return i === -1 ? 999 : i
@@ -722,22 +360,26 @@ export default function WinionsPage() {
     single.sort((a, b) => orderIndex(a[0]) - orderIndex(b[0]))
     multi.sort((a, b) => orderIndex(a[0]) - orderIndex(b[0]))
 
+    const mainMulti = multi.filter(([traitType]) => !bottomFilterTypes.has(traitType.toLowerCase()))
+    const bottomLevelTraits = multi.filter(([traitType]) => bottomFilterTypes.has(traitType.toLowerCase()))
+
     return { 
       singleAttributeTraits: single, 
-      multiAttributeTraits: multi
+      multiAttributeTraits: mainMulti,
+      bottomLevelTraits,
     }
   }, [allTraits])
 
   // Smart collapsing: collapse multi-attribute traits with many options by default
   useEffect(() => {
     const autoCollapse = new Set<string>()
-    multiAttributeTraits.forEach(([traitType, traits]) => {
+    ;[...multiAttributeTraits, ...bottomLevelTraits].forEach(([traitType, traits]) => {
       if (traits.length > 8) {
         autoCollapse.add(traitType)
       }
     })
     setCollapsedTraits(autoCollapse)
-  }, [multiAttributeTraits])
+  }, [multiAttributeTraits, bottomLevelTraits])
 
   return (
     <div className="page-root text-white">
@@ -898,7 +540,7 @@ export default function WinionsPage() {
               )
             })}
 
-            {/* Single-attribute categories - Collapsible (at bottom) */}
+            {/* Single-attribute categories */}
             {singleAttributeTraits.length > 0 && (
               <div className="space-y-4 pt-4 border-t border-[#222]">
                 {singleAttributeTraits.map(([traitType, traits]) => {
@@ -931,6 +573,52 @@ export default function WinionsPage() {
                         >
                           {trait.value} <span className="text-[#555]">({trait.count})</span>
                         </button>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* Luck Level & Mischief Level at bottom */}
+            {bottomLevelTraits.length > 0 && (
+              <div className="space-y-4 pt-4 border-t border-[#222]">
+                {bottomLevelTraits.map(([traitType, traits]) => {
+                  const isCollapsed = collapsedTraits.has(traitType)
+                  return (
+                    <div key={traitType} className="border-b border-[#222] pb-4 last:border-0">
+                      <button
+                        onClick={() => toggleCollapse(traitType)}
+                        className="w-full flex items-center justify-between mb-3 group"
+                      >
+                        <div className="mono text-xs text-[#666] group-hover:text-[#888] transition-colors">
+                          {traitType}
+                        </div>
+                        <div className="mono text-[10px] text-[#555]">
+                          {isCollapsed ? '▶' : '▼'}
+                        </div>
+                      </button>
+                      
+                      {!isCollapsed && (
+                        <div className="flex flex-wrap gap-2">
+                          {traits.map(trait => {
+                            const key = `${trait.traitType}:${trait.value}`
+                            const isSelected = selectedTraits.has(key)
+                            return (
+                              <button
+                                key={key}
+                                onClick={() => toggleTrait(key)}
+                                className={`mono text-[10px] px-2.5 py-1 border transition-colors ${
+                                  isSelected
+                                    ? 'border-white bg-white text-[#0a0a0a]'
+                                    : 'border-[#333] text-[#888] hover:border-[#555] hover:text-white'
+                                }`}
+                              >
+                                {trait.value} <span className="text-[#555]">({trait.count})</span>
+                              </button>
+                            )
+                          })}
+                        </div>
                       )}
                     </div>
                   )
@@ -976,8 +664,7 @@ export default function WinionsPage() {
                   >
                     <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
                       {nft.imageUrl ? (
-                        <StaticWinionImage
-                          key={uniqueKey}
+                        <WinionImage
                           src={nft.imageUrl}
                           alt={nft.name}
                           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
@@ -1045,10 +732,11 @@ export default function WinionsPage() {
               <div className="flex flex-col min-w-0 flex-shrink-0">
                 <div className="relative aspect-square bg-[#0a0a0a] w-full flex-shrink-0">
                   {selectedNFT.imageUrl ? (
-                    <StaticWinionImage
+                    <WinionImage
                       src={selectedNFT.imageUrl}
                       alt={selectedNFT.name}
                       className="w-full h-full object-contain"
+                      priority
                     />
                   ) : (
                     <div className="w-full h-full bg-[#111]" />
