@@ -7,8 +7,48 @@ import { resolveIpfsUrl } from '@/lib/ipfs'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
-import { AbortableIpfsImage } from '@/components/AbortableIpfsImage'
+import { SmartIPFSImage, pauseAllIPFSLoads, resumeAllIPFSLoads } from '@/components/SmartIPFSImage'
+import { useProgressiveLoader } from '@/lib/progressive-loader'
 import Link from 'next/link'
+import type { CollectionNFT } from '@/types'
+
+/** Grid slot: SmartIPFSImage with label. */
+function ConclaveGridCardSlot({
+  nft,
+  onSelect,
+}: {
+  nft: CollectionNFT
+  onSelect: () => void
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.15 }}
+      className="group cursor-pointer"
+      onClick={onSelect}
+    >
+      <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
+        {nft.imageUrl ? (
+          <SmartIPFSImage
+            src={nft.imageUrl}
+            alt={nft.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+          />
+        ) : (
+          <div className="w-full h-full bg-[#111]" />
+        )}
+        <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
+      </div>
+      <div className="mt-3">
+        <div className="mono text-xs text-[#666] group-hover:text-[#888] transition-colors">
+          {nft.name}
+        </div>
+        <div className="mono text-[10px] text-[#555]">Token #{nft.tokenId}</div>
+      </div>
+    </motion.div>
+  )
+}
 
 export default function ConclavePage() {
   const collection = getCollection()
@@ -21,7 +61,6 @@ export default function ConclavePage() {
   const [showHeroMeta, setShowHeroMeta] = useState(false)
   const heroMetaStillRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
-  const [visibleCount, setVisibleCount] = useState(30)
   const [isShuffled, setIsShuffled] = useState(false)
   
   // Sort regular NFTs by tokenId initially
@@ -49,7 +88,13 @@ export default function ConclavePage() {
   
   // Memoize allNFTs to prevent dependency issues
   const allNFTs = useMemo(() => [...specialNFTs, ...displayRegularNFTs], [specialNFTs, displayRegularNFTs])
-  
+
+  const {
+    visibleItems,
+    hasMore,
+    sentinelRef,
+  } = useProgressiveLoader(displayRegularNFTs, 12)
+
   const popeDoom = useMemo(() => 
     specialNFTs.find(nft => 
       nft.name && (nft.name.includes('Pope Doom') || nft.name.includes('Pøpe Døøm') || nft.name.includes('POPE DOOM'))
@@ -69,6 +114,16 @@ export default function ConclavePage() {
     return allNFTs.find((nft) => nft.tokenId === selectedTokenId) || null
   }, [selectedTokenId, allNFTs])
   
+  // Pause all grid image loads when modal opens, resume when it closes
+  const modalOpen = selectedTokenId !== null
+  useEffect(() => {
+    if (modalOpen) {
+      pauseAllIPFSLoads()
+    } else {
+      resumeAllIPFSLoads()
+    }
+  }, [modalOpen])
+
   // Resolve ENS names (cached in memory + localStorage)
   useEffect(() => {
     const run = async (address: string) => {
@@ -217,11 +272,11 @@ export default function ConclavePage() {
                 <div className="grid md:grid-cols-2 gap-8 items-start">
                   <div className="relative aspect-square overflow-hidden bg-[#111] border-2 border-[#444]">
                     {popeDoom.imageUrl ? (
-                      <AbortableIpfsImage
+                      <SmartIPFSImage
                         src={popeDoom.imageUrl}
                         alt={popeDoom.name}
                         className="w-full h-full object-contain"
-                        priority
+                        eager
                       />
                     ) : (
                       <div className="w-full h-full bg-[#111]" />
@@ -263,11 +318,11 @@ export default function ConclavePage() {
                 <div className="grid md:grid-cols-3 gap-8 items-start">
                   <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#333] max-w-xs">
                     {clippius.imageUrl ? (
-                      <AbortableIpfsImage
+                      <SmartIPFSImage
                         src={clippius.imageUrl}
                         alt={clippius.name}
                         className="w-full h-full object-contain"
-                        priority
+                        eager
                       />
                     ) : (
                       <div className="w-full h-full bg-[#111]" />
@@ -318,46 +373,18 @@ export default function ConclavePage() {
                 </button>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-                {displayRegularNFTs.slice(0, visibleCount).map((nft, index) => (
-                  <motion.div
+                {visibleItems.map((nft) => (
+                  <ConclaveGridCardSlot
                     key={nft.tokenId}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.03 }}
-                    className="group cursor-pointer"
-                    onClick={() => setSelectedTokenId(nft.tokenId)}
-                  >
-                    <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
-                      {nft.imageUrl ? (
-                        <AbortableIpfsImage
-                          src={nft.imageUrl}
-                          alt={nft.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-[#111]" />
-                      )}
-                      <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
-                    </div>
-                    <div className="mt-3">
-                      <div className="mono text-xs text-[#666] group-hover:text-[#888] transition-colors">
-                        {nft.name}
-                      </div>
-                      <div className="mono text-[10px] text-[#555]">Token #{nft.tokenId}</div>
-                    </div>
-                  </motion.div>
+                    nft={nft}
+                    onSelect={() => {
+                      pauseAllIPFSLoads()
+                      setSelectedTokenId(nft.tokenId)
+                    }}
+                  />
                 ))}
               </div>
-              {displayRegularNFTs.length > visibleCount && (
-                <div className="mt-8 text-center">
-                  <button
-                    onClick={() => setVisibleCount(prev => Math.min(prev + 30, displayRegularNFTs.length))}
-                    className="mono text-xs px-6 py-3 border border-[#222] hover:border-[#333] transition-colors bg-[#111] text-[#888] hover:text-white"
-                  >
-                    LOAD MORE ({displayRegularNFTs.length - visibleCount} REMAINING)
-                  </button>
-                </div>
-              )}
+              {hasMore && <div ref={sentinelRef} className="h-1" />}
             </>
           ) : null}
         </motion.div>
@@ -394,13 +421,14 @@ export default function ConclavePage() {
               <div className="grid md:grid-cols-2 gap-8">
               <div className="flex flex-col">
                 <div className="relative aspect-square bg-[#0a0a0a]">
-                  {selectedNFT.imageUrl ? (
-                    <AbortableIpfsImage
+                  {selectedNFT.imageUrl && !heroOpen ? (
+                    <SmartIPFSImage
+                      key={selectedNFT.tokenId}
                       src={selectedNFT.imageUrl}
                       alt={selectedNFT.name}
                       className="w-full h-full object-contain"
                       priority
-                    />
+                              />
                   ) : (
                     <div className="w-full h-full bg-[#111]" />
                   )}
@@ -506,10 +534,12 @@ export default function ConclavePage() {
                 onTouchEnd={() => setShowHeroMeta(false)}
               >
                 <div className={`w-full h-full min-w-0 min-h-0 max-w-full max-h-full transition-opacity duration-200 ${showHeroMeta ? 'opacity-40' : 'opacity-100'}`}>
-                  <img
-                    src={resolveIpfsUrl(selectedNFT.imageUrl) || selectedNFT.imageUrl}
+                  <SmartIPFSImage
+                    key={selectedNFT.tokenId}
+                    src={selectedNFT.imageUrl}
                     alt={selectedNFT.name}
                     className="w-full h-full object-contain"
+                    priority
                   />
                 </div>
                 <div className={`absolute inset-0 flex items-center justify-center bg-black/70 transition-opacity duration-200 pointer-events-none p-8 ${showHeroMeta ? 'opacity-100' : 'opacity-0'}`}>

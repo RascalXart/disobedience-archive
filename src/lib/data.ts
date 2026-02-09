@@ -134,28 +134,39 @@ export function getAllCollectionNFTs(): CollectionNFT[] {
   return collection?.tokens || [];
 }
 
+let cachedSpecialNFTs: CollectionNFT[] | null = null;
+
 export function getSpecialCollectionNFTs(): CollectionNFT[] {
+  if (cachedSpecialNFTs) return cachedSpecialNFTs;
   const collection = getCollection();
   if (!collection || !('specialTokens' in collection)) {
     return [];
   }
   const special = (collection as any).specialTokens;
   if (!special) return [];
-  
+
   const tokens = collection.tokens || [];
   const specialTokenIds = [special.popeDoom, special.clippius].filter(Boolean);
-  return tokens.filter(t => specialTokenIds.includes(t.tokenId));
+  cachedSpecialNFTs = tokens.filter(t => specialTokenIds.includes(t.tokenId));
+  return cachedSpecialNFTs;
 }
 
+let cachedRegularNFTs: CollectionNFT[] | null = null;
+
 export function getRegularCollectionNFTs(): CollectionNFT[] {
+  if (cachedRegularNFTs) return cachedRegularNFTs;
   const collection = getCollection();
   if (!collection) return [];
-  
+
   const special = (collection as any).specialTokens;
-  if (!special) return collection.tokens || [];
-  
+  if (!special) {
+    cachedRegularNFTs = collection.tokens || [];
+    return cachedRegularNFTs;
+  }
+
   const specialTokenIds = [special.popeDoom, special.clippius].filter(Boolean);
-  return (collection.tokens || []).filter(t => !specialTokenIds.includes(t.tokenId));
+  cachedRegularNFTs = (collection.tokens || []).filter(t => !specialTokenIds.includes(t.tokenId));
+  return cachedRegularNFTs;
 }
 
 export function getCollectionNFTByTokenId(tokenId: string): CollectionNFT | undefined {

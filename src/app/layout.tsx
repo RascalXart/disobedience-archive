@@ -19,6 +19,11 @@ export const metadata: Metadata = {
   },
 }
 
+const IPFS_ORIGIN = (() => {
+  const base = typeof process !== 'undefined' ? (process.env.NEXT_PUBLIC_IPFS_PROXY ?? '').replace(/\/$/, '') : ''
+  return base ? new URL(base).origin : 'https://ipfs.io'
+})()
+
 export default function RootLayout({
   children,
 }: {
@@ -26,6 +31,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href={IPFS_ORIGIN} />
+        <link rel="dns-prefetch" href={IPFS_ORIGIN} />
+      </head>
       <body className="bg-[#0a0a0a]">
         <AnimatedNoise />
         <div className="relative z-[200]">

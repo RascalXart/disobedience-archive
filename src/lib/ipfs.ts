@@ -9,13 +9,12 @@ const IPFS_PROXY_BASE = typeof process !== 'undefined' ? (process.env.NEXT_PUBLI
 const IPFS_GATEWAYS = [
   'https://ipfs.io/ipfs/',
   'https://dweb.link/ipfs/',
-  'https://gateway.pinata.cloud/ipfs/',
 ]
 
 /**
- * Resolves an IPFS URI to a single URL.
+ * Resolves an IPFS URI to a single URL (no query params; callers add e.g. ?timeout= for the worker).
  * If NEXT_PUBLIC_IPFS_PROXY is set, returns the proxy URL (worker handles caching and gateway retries).
- * Otherwise returns the first gateway URL.
+ * Otherwise returns the first gateway URL (https://ipfs.io/ipfs/).
  */
 export function resolveIpfsUrl(ipfsUrl: string | null): string | null {
   if (!ipfsUrl) return null
@@ -88,8 +87,43 @@ export function getDirectGatewayUrl(ipfsUrl: string | null): string | null {
 }
 
 /**
+ * Returns a list of URLs to try in order: primary (proxy or gateway), then fallback gateways.
+ * Use for retry-on-error in image components.
+ */
+export function getIpfsUrlsToTry(ipfsUrl: string | null): string[] {
+  if (!ipfsUrl) return []
+  const primary = resolveIpfsUrl(ipfsUrl)
+  const urls: string[] = []
+  if (primary && (primary.startsWith('http://') || primary.startsWith('https://'))) {
+    urls.push(primary)
+  }
+  for (let i = 0; i < IPFS_GATEWAYS.length; i++) {
+    const fallback = getFallbackIpfsUrl(ipfsUrl, i)
+    if (fallback && !urls.includes(fallback)) urls.push(fallback)
+  }
+  if (urls.length === 0 && (ipfsUrl.startsWith('http://') || ipfsUrl.startsWith('https://'))) {
+    urls.push(ipfsUrl)
+  }
+  return urls
+}
+
+/**
  * Gets a fallback IPFS URL if the primary one fails
  */
+/**
+ * Returns the local thumbnail path for an IPFS image URL.
+ * Matches the filename convention from generate-thumbnails.js.
+ * e.g. "https://ipfs.io/ipfs/QmXyz/media" → "/thumbs/QmXyz_media.webp"
+ */
+export function getThumbnailPath(ipfsUrl: string | null): string | null {
+  const parsed = parseIpfsUri(ipfsUrl)
+  if (!parsed) return null
+  const { cid, path } = parsed
+  const cidPath = path ? `${cid}/${path}` : cid
+  const safeName = cidPath.replace(/\//g, '_')
+  return `/thumbs/${safeName}.webp`
+}
+
 export function getFallbackIpfsUrl(ipfsUrl: string | null, gatewayIndex: number = 1): string | null {
   if (!ipfsUrl) return null
   

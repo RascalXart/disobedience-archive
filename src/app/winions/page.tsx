@@ -4,15 +4,62 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
-import { AbortableIpfsImage } from '@/components/AbortableIpfsImage'
+import { SmartIPFSImage, pauseAllIPFSLoads, resumeAllIPFSLoads } from '@/components/SmartIPFSImage'
+import { useProgressiveLoader } from '@/lib/progressive-loader'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
 import type { CollectionNFT, NFTAttribute } from '@/types'
 
-function WinionImage({ src, alt, className, priority }: { src: string; alt: string; className?: string; priority?: boolean }) {
+/** Modal/hero image: priority flag exempts from global pause */
+function WinionImage({
+  src,
+  alt,
+  className,
+}: {
+  src: string
+  alt: string
+  className?: string
+}) {
   return (
-    <AbortableIpfsImage src={src} alt={alt} className={className} priority={priority} />
+    <SmartIPFSImage src={src} alt={alt} className={className} priority />
+  )
+}
+
+/** Grid slot: SmartIPFSImage with label. */
+function WinionGridCardSlot({
+  nft,
+  onSelect,
+}: {
+  nft: CollectionNFT
+  onSelect: () => void
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.15 }}
+      className="group cursor-pointer"
+      onClick={onSelect}
+    >
+      <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
+        {nft.imageUrl ? (
+          <SmartIPFSImage
+            src={nft.imageUrl}
+            alt={nft.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+          />
+        ) : (
+          <div className="w-full h-full bg-[#111]" />
+        )}
+        <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
+      </div>
+      <div className="mt-1">
+        <div className="mono text-[8px] text-[#666] group-hover:text-[#888] transition-colors truncate">
+          #{nft.tokenId}
+        </div>
+      </div>
+    </motion.div>
   )
 }
 
@@ -87,9 +134,9 @@ export default function WinionsPage() {
   const heroMetaStillRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [selectedTraits, setSelectedTraits] = useState<Set<string>>(new Set())
   const [collapsedTraits, setCollapsedTraits] = useState<Set<string>>(new Set())
-  const [visibleCount, setVisibleCount] = useState(50)
   const [isShuffled, setIsShuffled] = useState(false)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
+  const [gridSize, setGridSize] = useState(180)
   // Start with sidebar collapsed on mobile - always false initially to match SSR
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   
@@ -239,6 +286,16 @@ export default function WinionsPage() {
     return allNFTs.find((nft) => nft.tokenId === selectedTokenId) || null
   }, [selectedTokenId, allNFTs])
 
+  // Pause all grid image loads when modal opens, resume when it closes
+  const modalOpen = selectedTokenId !== null
+  useEffect(() => {
+    if (modalOpen) {
+      pauseAllIPFSLoads()
+    } else {
+      resumeAllIPFSLoads()
+    }
+  }, [modalOpen])
+
   // Resolve ENS names for selected NFT (cached in memory + localStorage)
   useEffect(() => {
     if (!selectedNFT?.owner) return
@@ -370,6 +427,12 @@ export default function WinionsPage() {
     }
   }, [allTraits])
 
+  const {
+    visibleItems,
+    hasMore,
+    sentinelRef,
+  } = useProgressiveLoader(filteredNFTs, 20)
+
   // Smart collapsing: collapse multi-attribute traits with many options by default
   useEffect(() => {
     const autoCollapse = new Set<string>()
@@ -456,12 +519,12 @@ export default function WinionsPage() {
         
         {/* Left Sidebar - Filters (sticky on desktop, scrollable independently) */}
         <div
-          className={`fixed md:sticky inset-y-0 left-0 top-24 z-40 md:z-auto w-80 border-r border-[#222] bg-[#0a0a0a]/95 backdrop-blur-sm transform transition-transform duration-300 h-[calc(100vh-6rem)] flex flex-col ${
+          className={`fixed md:sticky inset-y-0 left-0 top-24 z-40 md:z-auto w-80 border-r border-[#222] bg-[#0a0a0a]/25 backdrop-blur-md transform transition-transform duration-300 h-[calc(100vh-6rem)] flex flex-col ${
             isMobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
           }`}
         >
           {/* Sticky header */}
-          <div className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a]/95 backdrop-blur-sm z-10 border-b border-[#222] pb-6 flex-shrink-0">
+          <div className="p-6 space-y-6 sticky top-0 bg-[#0a0a0a]/25 backdrop-blur-md z-10 border-b border-[#222] pb-6 flex-shrink-0">
             {/* Mobile close button - positioned to never be cut off */}
             <div className="md:hidden flex justify-end mb-4 pr-2">
               <button
@@ -492,6 +555,18 @@ export default function WinionsPage() {
                   </button>
                 )}
               </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <span className="mono text-[10px] text-[#666] flex-shrink-0">SIZE</span>
+              <input
+                type="range"
+                min={80}
+                max={300}
+                value={gridSize}
+                onChange={(e) => setGridSize(Number(e.target.value))}
+                className="w-full h-1 appearance-none bg-[#333] rounded-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-0 [&::-webkit-slider-thumb]:cursor-pointer"
+              />
             </div>
           </div>
 
@@ -648,51 +723,19 @@ export default function WinionsPage() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                    {filteredNFTs.slice(0, visibleCount).map((nft, index) => {
-                    // Create a key that changes when shuffle/filters change to force component reset
-                    const filterKey = Array.from(selectedTraits).sort().join(',')
-                    const uniqueKey = `${nft.tokenId}-${isShuffled ? 'shuffled' : 'sorted'}-${filterKey}-${index}`
-                    return (
-                  <motion.div
-                    key={uniqueKey}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.01 }}
-                    className="group cursor-pointer"
-                    onClick={() => setSelectedTokenId(nft.tokenId)}
-                  >
-                    <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
-                      {nft.imageUrl ? (
-                        <WinionImage
-                          src={nft.imageUrl}
-                          alt={nft.name}
-                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
-                        />
-                      ) : (
-                        <div className="w-full h-full bg-[#111]" />
-                      )}
-                      <div className="absolute inset-0 bg-[#0a0a0a]/0 group-hover:bg-[#0a0a0a]/20 transition-colors" />
-                    </div>
-                    <div className="mt-1">
-                      <div className="mono text-[8px] text-[#666] group-hover:text-[#888] transition-colors truncate">
-                        #{nft.tokenId}
-                      </div>
-                    </div>
-                  </motion.div>
-                    )
-                  })}
+                <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${gridSize}px, 1fr))` }}>
+                  {visibleItems.map((nft) => (
+                    <WinionGridCardSlot
+                      key={nft.tokenId}
+                      nft={nft}
+                      onSelect={() => {
+                        pauseAllIPFSLoads()
+                        setSelectedTokenId(nft.tokenId)
+                      }}
+                    />
+                  ))}
                 </div>
-                {filteredNFTs.length > visibleCount && (
-                  <div className="mt-8 text-center">
-                    <button
-                      onClick={() => setVisibleCount(prev => Math.min(prev + 50, filteredNFTs.length))}
-                      className="mono text-xs px-6 py-3 border border-[#222] hover:border-[#333] transition-colors bg-[#111] text-[#888] hover:text-white"
-                    >
-                      LOAD MORE ({filteredNFTs.length - visibleCount} REMAINING)
-                    </button>
-                  </div>
-                )}
+                {hasMore && <div ref={sentinelRef} className="h-1" />}
               </>
             )}
           </div>
@@ -731,12 +774,12 @@ export default function WinionsPage() {
             <div className="grid md:grid-cols-2 gap-8">
               <div className="flex flex-col min-w-0 flex-shrink-0">
                 <div className="relative aspect-square bg-[#0a0a0a] w-full flex-shrink-0">
-                  {selectedNFT.imageUrl ? (
+                  {selectedNFT.imageUrl && !heroOpen ? (
                     <WinionImage
+                      key={selectedNFT.tokenId}
                       src={selectedNFT.imageUrl}
                       alt={selectedNFT.name}
                       className="w-full h-full object-contain"
-                      priority
                     />
                   ) : (
                     <div className="w-full h-full bg-[#111]" />
@@ -842,10 +885,12 @@ export default function WinionsPage() {
                 onTouchEnd={() => setShowHeroMeta(false)}
               >
                 <div className={`w-full h-full min-w-0 min-h-0 max-w-full max-h-full transition-opacity duration-200 ${showHeroMeta ? 'opacity-40' : 'opacity-100'}`}>
-                  <img
-                    src={resolveIpfsUrl(selectedNFT.imageUrl) || selectedNFT.imageUrl}
+                  <SmartIPFSImage
+                    key={selectedNFT.tokenId}
+                    src={selectedNFT.imageUrl}
                     alt={selectedNFT.name}
                     className="w-full h-full object-contain"
+                    priority
                   />
                 </div>
                 <div className={`absolute inset-0 flex items-center justify-center bg-black/70 transition-opacity duration-200 pointer-events-none p-8 ${showHeroMeta ? 'opacity-100' : 'opacity-0'}`}>

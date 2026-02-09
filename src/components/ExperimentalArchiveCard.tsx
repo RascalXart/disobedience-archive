@@ -1,9 +1,29 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import type { DailyArtwork } from '@/types'
 import { resolveDailyMediaUrl } from '@/lib/data'
+
+// === Grid concurrency limit (homepage images, separate from SmartIPFSImage) ===
+// Only MAX_CONCURRENT_DAILY images load at a time over the shared HTTP/2
+// connection. Without this, 20+ GIFs split bandwidth and ALL load slowly.
+const MAX_CONCURRENT_DAILY = 6
+let _dailySlots = 0
+const _dailySlotSubs = new Set<() => void>()
+function notifyDailySlotChange() { _dailySlotSubs.forEach(cb => cb()) }
+
+// Cancel an img download without hitting the network.
+// img.src = '' causes the browser to request the current page URL — bad.
+// A data URI is local-only: cancels the HTTP stream, fires no network request.
+const CANCEL_SRC = 'data:,'
+
+/** Thumbnail path for a daily (matches generate-daily-thumbnails.js output) */
+function getDailyThumbnailPath(id: string): string {
+  return `/thumbs/${id}.webp`
+}
+
+type ImgState = 'idle' | 'loaded' | 'error'
 
 interface ExperimentalArchiveCardProps {
   daily: DailyArtwork
@@ -17,12 +37,30 @@ interface ExperimentalArchiveCardProps {
 export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY, isModalOpen = false }: ExperimentalArchiveCardProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
+  const [imgState, setImgState] = useState<ImgState>('idle')
+  const [thumbLoaded, setThumbLoaded] = useState(false)
+  const [slotClaimed, setSlotClaimed] = useState(false)
+  const [videoActivated, setVideoActivated] = useState(false)
+
   const cardRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const imgRef = useRef<HTMLImageElement | null>(null)
+  const imgStateRef = useRef<ImgState>('idle')
+  imgStateRef.current = imgState
+
+  const isVideo = daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')
+  const mediaUrl = resolveDailyMediaUrl(daily.imageUrl)
+  const thumbnailSrc = !isVideo ? getDailyThumbnailPath(daily.id) : null
+
+  // Should the full-res <img> be in the DOM and actively loading?
+  const shouldLoadImage = !isVideo && isVisible && imgState === 'idle' && !isModalOpen && slotClaimed
+  // Show the <img> when actively loading OR already loaded
+  const showFullImg = !isVideo && (shouldLoadImage || imgState === 'loaded')
 
   // Random glitch intervals
   useEffect(() => {
     if (!isVisible) return
-    
+
     const interval = setInterval(() => {
       if (Math.random() > 0.7) {
         setGlitchActive(true)
@@ -33,67 +71,95 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
     return () => clearInterval(interval)
   }, [isVisible])
 
-  // Intersection observer for visibility - only load images/videos when in viewport
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const imgRef = useRef<HTMLImageElement>(null)
-  const [shouldLoad, setShouldLoad] = useState(false)
-  const [hasLoaded, setHasLoaded] = useState(false)
-  
+  // IntersectionObserver — viewport visibility, cancel on leave, video play/pause
   useEffect(() => {
+    const el = cardRef.current
+    if (!el) return
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const isIntersecting = entry.isIntersecting
-          setIsVisible(isIntersecting)
-          
-          // Only start loading when in viewport (or about to be)
-          // Once loaded, keep it loaded (don't unload)
-          if (isIntersecting && !shouldLoad && !hasLoaded) {
-            setShouldLoad(true)
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true)
+          if (isVideo) setVideoActivated(true)
+          // Recover images stuck in error state when scrolling back into view
+          if (imgStateRef.current === 'error') {
+            setImgState('idle')
           }
-          
-          // Pause/play video based on visibility
-          if (videoRef.current) {
-            if (isIntersecting) {
-              videoRef.current.play().catch(() => {
-                // Ignore autoplay errors
-              })
-            } else {
-              videoRef.current.pause()
-            }
+        } else {
+          setIsVisible(false)
+        }
+        // Video play/pause
+        if (videoRef.current) {
+          if (entry.isIntersecting) {
+            videoRef.current.play().catch(() => {})
+          } else {
+            videoRef.current.pause()
           }
-        })
+        }
       },
-      { rootMargin: '50px', threshold: 0.01 } // Start loading 50px before entering viewport (reduced for better prioritization)
+      { rootMargin: '200px', threshold: 0.01 }
     )
-
-    if (cardRef.current) {
-      observer.observe(cardRef.current)
-    }
-
+    observer.observe(el)
     return () => observer.disconnect()
-  }, [shouldLoad, hasLoaded])
+  }, [isVideo])
 
+  // Grid concurrency — claim a loading slot (images only, videos bypass)
+  useEffect(() => {
+    if (isVideo || imgState !== 'idle' || !isVisible || isModalOpen) return
+    let claimed = false
+    const tryClaim = () => {
+      if (claimed || _dailySlots >= MAX_CONCURRENT_DAILY) return
+      _dailySlots++
+      claimed = true
+      setSlotClaimed(true)
+      _dailySlotSubs.delete(tryClaim)
+    }
+    tryClaim()
+    if (!claimed) _dailySlotSubs.add(tryClaim)
+    return () => {
+      _dailySlotSubs.delete(tryClaim)
+      if (claimed) {
+        _dailySlots--
+        claimed = false
+        setSlotClaimed(false)
+        notifyDailySlotChange()
+      }
+    }
+  }, [isVideo, imgState, isVisible, isModalOpen])
 
-  const isVideo = daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')
-  const mediaUrl = resolveDailyMediaUrl(daily.imageUrl)
-  
-  // Consistent sizing - no weird cropping
+  // Callback ref for full-res image — cancel download on unmount
+  const fullImgCallbackRef = useCallback((img: HTMLImageElement | null) => {
+    if (img === null && imgRef.current) {
+      if (imgStateRef.current === 'idle') {
+        imgRef.current.src = CANCEL_SRC
+      }
+    }
+    imgRef.current = img
+  }, [])
+
+  // Thumbnail ref — catch already-cached thumbnails (onLoad may fire before React wires it)
+  const thumbRef = useCallback((img: HTMLImageElement | null) => {
+    if (img?.complete && img.naturalWidth > 0) setThumbLoaded(true)
+  }, [])
+
+  const handleLoad = useCallback(() => {
+    setImgState('loaded')
+  }, [])
+
+  const handleError = useCallback(() => {
+    setImgState('error')
+  }, [])
+
   const size = { w: 'w-full', h: 'aspect-square' }
 
-  // Subtle offsets only
-  const offsetX = 0
-  const offsetY = 0
-  
   return (
     <motion.div
       ref={cardRef}
       initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ 
+      animate={{
         opacity: 1,
         scale: 1,
       }}
-      transition={{ 
+      transition={{
         delay: index * 0.02,
         duration: 0.8,
         ease: [0.25, 0.1, 0.25, 1]
@@ -125,7 +191,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
         }}
       >
         {isVideo ? (
-          shouldLoad ? (
+          videoActivated ? (
             <video
               ref={videoRef}
               src={mediaUrl}
@@ -135,6 +201,11 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
               loop
               playsInline
               preload="none"
+              style={{
+                willChange: isModalOpen ? 'auto' : 'transform',
+                opacity: isModalOpen ? 0.3 : 1,
+                filter: isModalOpen ? 'blur(2px)' : 'none',
+              }}
               onError={(e) => {
                 console.error('Video failed to load:', mediaUrl, e)
               }}
@@ -143,31 +214,64 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
             <div className="w-full h-full bg-[#111]" />
           )
         ) : (
-          <div className="w-full h-full relative">
-            {shouldLoad || hasLoaded ? (
+          <div
+            className="w-full h-full relative"
+            style={{
+              willChange: isModalOpen ? 'auto' : 'transform',
+              opacity: isModalOpen ? 0.3 : 1,
+              filter: isModalOpen ? 'blur(2px)' : 'none',
+              transition: 'opacity 0.2s, filter 0.2s',
+            }}
+          >
+            {/* Skeleton pulse */}
+            <div
+              className="absolute inset-0 bg-gray-800 animate-pulse transition-opacity duration-200"
+              style={{ opacity: !thumbLoaded && imgState !== 'loaded' ? 1 : 0 }}
+              aria-hidden
+            />
+            {/* Thumbnail — loads from local WebP, near-instant */}
+            {thumbnailSrc && (
               <img
-                ref={imgRef}
-                src={mediaUrl}
-                alt={daily.id}
-                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.02] group-hover:brightness-110"
-                loading="eager"
+                ref={thumbRef}
+                src={thumbnailSrc}
+                alt=""
+                loading="lazy"
                 decoding="async"
+                aria-hidden
+                onLoad={() => setThumbLoaded(true)}
+                onError={() => setThumbLoaded(false)}
                 style={{
-                  willChange: isModalOpen ? 'auto' : 'transform',
-                  opacity: isModalOpen ? 0.3 : 1,
-                  filter: isModalOpen ? 'blur(2px)' : 'none',
-                }}
-                onLoad={() => {
-                  setHasLoaded(true)
-                }}
-                onError={(e) => {
-                  console.error('Image failed to load:', mediaUrl, e)
-                  const target = e.target as HTMLImageElement
-                  target.style.display = 'none'
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  opacity: thumbLoaded && imgState !== 'loaded' ? 1 : 0,
+                  transition: 'opacity 0.2s ease-out',
                 }}
               />
-            ) : (
-              <div className="w-full h-full bg-[#111]" />
+            )}
+            {/* Full-res image */}
+            {showFullImg && (
+              <img
+                ref={fullImgCallbackRef}
+                key={mediaUrl}
+                src={mediaUrl}
+                alt={daily.id}
+                decoding="async"
+                className="transition-transform duration-300 group-hover:scale-[1.02] group-hover:brightness-110"
+                onLoad={handleLoad}
+                onError={handleError}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'contain',
+                  opacity: imgState === 'loaded' ? 1 : 0,
+                  transition: 'opacity 0.2s ease-out',
+                }}
+              />
             )}
           </div>
         )}
@@ -263,4 +367,3 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
     </motion.div>
   )
 }
-
