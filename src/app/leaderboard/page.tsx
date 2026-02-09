@@ -1,90 +1,132 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
+import { getAllWinionsNFTs, getAllCollectionNFTs } from '@/lib/data'
+import { LeaderboardGlitchEffects } from '@/components/LeaderboardGlitchEffects'
+import { resolveENSCached } from '@/lib/ens-cache'
+import type { CollectionNFT } from '@/types'
+
+type Tab = 'winions' | 'conclave' | '1of1s'
+
+const PAGE_SIZE = 20
+
+// Treasury/sales wallets excluded from leaderboard
+const EXCLUDED_ADDRESSES = new Set([
+  '0xb4795da90b116ef1bd43217d3eadd7ab9a9f7ba7', // Winions sales wallet
+])
+
+interface HolderEntry {
+  address: string
+  count: number
+}
+
+function minifyAddress(address: string): string {
+  return `${address.slice(0, 6)}...${address.slice(-4)}`
+}
+
+function getOpenSeaUrl(address: string, ensName?: string): string {
+  if (ensName) {
+    return `https://opensea.io/${ensName.replace('.eth', '')}`
+  }
+  return `https://opensea.io/${address}`
+}
+
+function aggregateHolders(nfts: CollectionNFT[]): HolderEntry[] {
+  const counts = new Map<string, number>()
+  for (const nft of nfts) {
+    if (!nft.owner) continue
+    const lower = nft.owner.toLowerCase()
+    counts.set(lower, (counts.get(lower) || 0) + 1)
+  }
+  const addressMap = new Map<string, string>()
+  for (const nft of nfts) {
+    if (!nft.owner) continue
+    const lower = nft.owner.toLowerCase()
+    if (!addressMap.has(lower)) addressMap.set(lower, nft.owner)
+  }
+  return Array.from(counts.entries())
+    .filter(([lower]) => !EXCLUDED_ADDRESSES.has(lower))
+    .map(([lower, count]) => ({ address: addressMap.get(lower)!, count }))
+    .sort((a, b) => b.count - a.count)
+}
 
 export default function LeaderboardPage() {
-  const [glitchActive, setGlitchActive] = useState(false)
-  const [intenseGlitch, setIntenseGlitch] = useState(false)
+  const [activeTab, setActiveTab] = useState<Tab>('winions')
+  const [ensNames, setEnsNames] = useState<Record<string, string>>({})
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
-  // Random intense glitch intervals
+  const winionsNFTs = useMemo(() => getAllWinionsNFTs(), [])
+  const conclaveNFTs = useMemo(() => getAllCollectionNFTs(), [])
+
+  const allHolders = useMemo(() => {
+    if (activeTab === 'winions') return aggregateHolders(winionsNFTs)
+    if (activeTab === 'conclave') return aggregateHolders(conclaveNFTs)
+    return []
+  }, [activeTab, winionsNFTs, conclaveNFTs])
+
+  const leaderboard = useMemo(
+    () => allHolders.slice(0, visibleCount),
+    [allHolders, visibleCount]
+  )
+
+  const hasMore = visibleCount < allHolders.length
+
+  useEffect(() => { setVisibleCount(PAGE_SIZE) }, [activeTab])
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (Math.random() > 0.5) {
-        setGlitchActive(true)
-        setTimeout(() => setGlitchActive(false), 150)
-      }
-      if (Math.random() > 0.7) {
-        setIntenseGlitch(true)
-        setTimeout(() => setIntenseGlitch(false), 300)
-      }
-    }, 2000 + Math.random() * 3000)
+    const el = sentinelRef.current
+    if (!el || !hasMore) return
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount(prev => Math.min(prev + PAGE_SIZE, allHolders.length))
+        }
+      },
+      { rootMargin: '200px' }
+    )
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [hasMore, allHolders.length])
 
-    return () => clearInterval(interval)
-  }, [])
+  useEffect(() => {
+    const addresses = leaderboard.map(h => h.address)
+    let cancelled = false
+    async function resolve() {
+      for (const addr of addresses) {
+        if (cancelled) break
+        if (ensNames[addr.toLowerCase()]) continue
+        const name = await resolveENSCached(addr)
+        if (name && !cancelled) {
+          setEnsNames(prev => ({ ...prev, [addr.toLowerCase()]: name }))
+        }
+      }
+    }
+    resolve()
+    return () => { cancelled = true }
+  }, [leaderboard])
+
+  const tabs: { key: Tab; label: string }[] = [
+    { key: 'winions', label: 'WINI\u00D8NS' },
+    { key: 'conclave', label: 'C\u00D8NCLAVE' },
+    { key: '1of1s', label: '1/1s' },
+  ]
+
+  const collectionTotal = activeTab === 'winions' ? winionsNFTs.length
+    : activeTab === 'conclave' ? conclaveNFTs.length
+    : 0
 
   return (
     <main className="page-root relative overflow-hidden">
-      {/* Ultra grainy glitched background */}
-      <div 
-        className="fixed inset-0 z-0"
-        style={{
-          background: `
-            repeating-linear-gradient(0deg, 
-              rgba(0, 0, 0, 0.95) 0px, 
-              rgba(10, 10, 10, 0.95) 1px, 
-              rgba(0, 0, 0, 0.95) 2px
-            ),
-            repeating-linear-gradient(90deg, 
-              rgba(255, 0, 0, 0.03) 0px, 
-              rgba(0, 255, 0, 0.03) 1px, 
-              rgba(0, 0, 255, 0.03) 2px
-            ),
-            radial-gradient(circle at 20% 50%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 80% 50%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
-            radial-gradient(circle at 50% 80%, rgba(0, 0, 255, 0.1) 0%, transparent 50%),
-            #0a0a0a
-          `,
-          backgroundSize: '100% 2px, 2px 100%, 200% 200%, 200% 200%, 200% 200%, 100% 100%',
-          animation: 'grainShift 0.5s steps(10) infinite, corruptText 2s ease-in-out infinite',
-          filter: intenseGlitch ? 'contrast(1.5) brightness(1.2) hue-rotate(90deg)' : 'contrast(1.1) brightness(1.05)',
-          transform: glitchActive ? `translate(${Math.random() * 4 - 2}px, ${Math.random() * 4 - 2}px)` : 'translate(0, 0)',
-        }}
-      />
-
-      {/* Additional noise overlay */}
-      <div 
-        className="fixed inset-0 z-0 opacity-30"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-          animation: 'grainShift 0.3s steps(10) infinite',
-          mixBlendMode: 'overlay',
-        }}
-      />
-
-      {/* RGB split overlay */}
-      {intenseGlitch && (
-        <motion.div
-          className="fixed inset-0 z-10 pointer-events-none"
-          initial={{ opacity: 0 }}
-          animate={{
-            opacity: [0, 0.4, 0, 0.3, 0],
-            x: [-10, 10, -5, 5, 0],
-            y: [5, -5, 3, -3, 0],
-          }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="w-full h-full bg-gradient-to-r from-red-500/30 via-green-500/30 to-blue-500/30 mix-blend-screen" />
-        </motion.div>
-      )}
+      <LeaderboardGlitchEffects />
 
       {/* Scanlines */}
-      <div 
+      <div
         className="fixed inset-0 z-0 pointer-events-none"
         style={{
-          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 4px)',
-          opacity: 0.4,
-          animation: 'vhsFlicker 8s ease-in-out infinite',
+          backgroundImage: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px)',
+          opacity: 0.5,
         }}
       />
 
@@ -93,93 +135,114 @@ export default function LeaderboardPage() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1 }}
-          className="max-w-4xl mx-auto text-center relative"
+          transition={{ duration: 0.8 }}
+          className="max-w-3xl mx-auto"
         >
-          {/* Glitch text layers */}
-          <div className="relative">
-            {/* Reflection layers */}
-            <span 
-              className="absolute left-1/2 -translate-x-1/2 text-[#666]/20 blur-[4px] translate-y-[6px] scale-y-[-1] select-none pointer-events-none font-grotesk text-6xl md:text-8xl font-light tracking-tighter"
-              style={{
-                transform: glitchActive ? `translate(-50%, ${6 + Math.random() * 4 - 2}px) scaleY(-1)` : 'translate(-50%, 6px) scaleY(-1)',
-              }}
-            >
-              THIS PAGE<br />UNDER CONSTRUCTION
-            </span>
-            <span 
-              className="absolute left-1/2 -translate-x-1/2 text-red-500/30 blur-[3px] -translate-x-[4px] select-none pointer-events-none font-grotesk text-6xl md:text-8xl font-light tracking-tighter"
-              style={{
-                transform: glitchActive ? `translate(calc(-50% - ${4 + Math.random() * 4 - 2}px), 0)` : 'translate(calc(-50% - 4px), 0)',
-              }}
-            >
-              THIS PAGE<br />UNDER CONSTRUCTION
-            </span>
-            <span 
-              className="absolute left-1/2 -translate-x-1/2 text-green-500/30 blur-[3px] translate-x-[4px] select-none pointer-events-none font-grotesk text-6xl md:text-8xl font-light tracking-tighter"
-              style={{
-                transform: glitchActive ? `translate(calc(-50% + ${4 + Math.random() * 4 - 2}px), 0)` : 'translate(calc(-50% + 4px), 0)',
-              }}
-            >
-              THIS PAGE<br />UNDER CONSTRUCTION
-            </span>
-            <span 
-              className="absolute left-1/2 -translate-x-1/2 text-blue-500/30 blur-[3px] translate-y-[2px] select-none pointer-events-none font-grotesk text-6xl md:text-8xl font-light tracking-tighter"
-              style={{
-                transform: glitchActive ? `translate(-50%, ${2 + Math.random() * 2 - 1}px)` : 'translate(-50%, 2px)',
-              }}
-            >
-              THIS PAGE<br />UNDER CONSTRUCTION
-            </span>
-            
-            {/* Main text */}
-            <motion.h1
-              className="font-grotesk text-6xl md:text-8xl font-light tracking-tighter relative inline-block"
-              animate={glitchActive ? {
-                x: [0, -3, 3, -2, 2, 0],
-                y: [0, 2, -2, 1, -1, 0],
-                textShadow: [
-                  '0 0 20px rgba(255,0,0,0.8), 0 0 40px rgba(0,255,0,0.6)',
-                  '0 0 15px rgba(0,0,255,0.8), 0 0 35px rgba(255,0,0,0.6)',
-                  '0 0 20px rgba(255,0,0,0.8), 0 0 40px rgba(0,255,0,0.6)',
-                ],
-                filter: [
-                  'contrast(1.5) brightness(1.3) hue-rotate(0deg)',
-                  'contrast(1.8) brightness(1.5) hue-rotate(90deg)',
-                  'contrast(1.5) brightness(1.3) hue-rotate(0deg)',
-                ],
-              } : {
-                textShadow: '0 0 30px rgba(255,255,255,0.3), 0 0 60px rgba(0,255,255,0.2)',
-                filter: 'contrast(1.2) brightness(1.1)',
-              }}
-              transition={{ duration: 0.15 }}
-              style={{
-                animation: intenseGlitch ? 'flicker 0.5s ease-in-out infinite, corruptText 1s ease-in-out infinite' : 'flicker 2s ease-in-out infinite',
-              }}
-            >
-              THIS PAGE<br />UNDER CONSTRUCTION
-            </motion.h1>
+          {/* Header */}
+          <div className="mb-10">
+            <h1 className="font-grotesk text-5xl md:text-7xl font-light tracking-tighter mb-3 lb-header">
+              LEADERB\u00D8ARD
+            </h1>
+            {activeTab !== '1of1s' && (
+              <div className="mono text-[10px] text-[#666] tracking-wider lb-subheader">
+                [TOP_HOLDERS] &mdash; {collectionTotal} TOKENS TRACKED
+              </div>
+            )}
           </div>
 
-          {/* Subtitle with glitch */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 1 }}
-            className="mono text-lg md:text-xl text-[#888] mt-8 tracking-wider flicker corrupt-text relative"
-            style={{
-              animation: 'flicker 1.5s ease-in-out infinite, corruptText 3s ease-in-out infinite',
-              textShadow: `
-                0 0 4px rgba(0, 255, 0, 0.6),
-                2px 0 0 rgba(255, 0, 0, 0.5),
-                -2px 0 0 rgba(0, 0, 255, 0.5),
-                0 2px 0 rgba(255, 255, 0, 0.4)
-              `,
-              filter: 'contrast(1.3) brightness(1.1)',
-            }}
+          {/* Tab system */}
+          <div className="flex gap-2 mb-8">
+            {tabs.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`lb-tab mono text-[10px] px-4 py-2 border transition-all duration-200 ${
+                  activeTab === tab.key
+                    ? 'border-[#555] text-white bg-[#111]'
+                    : 'border-[#222] text-[#666] hover:border-[#333] hover:text-[#888]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Leaderboard table */}
+          <motion.div
+            key={activeTab}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
           >
-            [SYSTEM_CORRUPTION_DETECTED]
-          </motion.p>
+            {activeTab === '1of1s' ? (
+              <div className="mono text-xs text-[#555] text-center py-16">
+                [COMING_SOON]
+              </div>
+            ) : (
+              <>
+                {/* Table header */}
+                <div className="grid grid-cols-[40px_1fr_80px] md:grid-cols-[50px_1fr_100px] gap-2 px-3 py-2 border-b border-[#333] mb-1 lb-row">
+                  <div className="mono text-[9px] text-[#555] tracking-wider">RANK</div>
+                  <div className="mono text-[9px] text-[#555] tracking-wider">HOLDER</div>
+                  <div className="mono text-[9px] text-[#555] tracking-wider text-right">HELD</div>
+                </div>
+
+                {/* Rows */}
+                {leaderboard.map((holder, i) => {
+                  const ens = ensNames[holder.address.toLowerCase()]
+                  const displayName = ens || minifyAddress(holder.address)
+                  const rank = i + 1
+                  const isTop = rank === 1
+
+                  return (
+                    <motion.div
+                      key={holder.address}
+                      initial={{ opacity: 0, x: -8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: Math.min(i, PAGE_SIZE) * 0.03, duration: 0.3 }}
+                      className={`lb-row grid grid-cols-[40px_1fr_80px] md:grid-cols-[50px_1fr_100px] gap-2 px-3 py-3 border-b border-[#1a1a1a] hover:bg-[#111] transition-colors group ${isTop ? 'bg-[#0f0f0f]' : ''}`}
+                    >
+                      <div className={`mono text-xs tabular-nums ${isTop ? 'text-[#c9a84c]' : 'text-[#555]'}`}>
+                        {String(rank).padStart(2, '0')}
+                      </div>
+
+                      <div className="min-w-0">
+                        <a
+                          href={getOpenSeaUrl(holder.address, ens)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`mono text-xs hover:text-white hover:underline underline-offset-2 cursor-pointer transition-colors truncate block ${
+                            isTop ? 'text-[#c9a84c]' : 'text-[#999]'
+                          }`}
+                          title={holder.address}
+                        >
+                          {displayName}
+                        </a>
+                      </div>
+
+                      <div className={`mono text-xs text-right tabular-nums ${isTop ? 'text-[#c9a84c]' : 'text-[#888]'}`}>
+                        {holder.count}
+                      </div>
+                    </motion.div>
+                  )
+                })}
+
+                {hasMore && (
+                  <div ref={sentinelRef} className="py-6 text-center">
+                    <div className="mono text-[10px] text-[#444]">
+                      [LOADING_MORE...]
+                    </div>
+                  </div>
+                )}
+
+                {!hasMore && leaderboard.length > 0 && (
+                  <div className="mono text-[10px] text-[#333] text-center py-6">
+                    [{allHolders.length} HOLDERS TOTAL]
+                  </div>
+                )}
+              </>
+            )}
+          </motion.div>
         </motion.div>
       </div>
     </main>
