@@ -4,23 +4,26 @@
  */
 
 const GATEWAYS = [
-  'https://cloudflare-ipfs.com/ipfs/',
   'https://ipfs.io/ipfs/',
   'https://dweb.link/ipfs/',
 ];
 
-const CACHE_HEADERS = {
-  'Cache-Control': 'public, max-age=31536000, immutable',
+const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
   'Access-Control-Allow-Headers': '*',
   'Access-Control-Max-Age': '86400',
 };
 
+const CACHE_HEADERS = {
+  'Cache-Control': 'public, max-age=31536000, immutable',
+  ...CORS_HEADERS,
+};
+
 function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { signal: controller.signal })
+  return fetch(url, { signal: controller.signal, redirect: 'follow' })
     .then((r) => {
       clearTimeout(timeout);
       return r;
@@ -29,6 +32,31 @@ function fetchWithTimeout(url: string, timeoutMs: number): Promise<Response> {
       clearTimeout(timeout);
       throw e;
     });
+}
+
+/** Race gateways, resolve on first 2xx response. Reject only if ALL fail. */
+function raceForFirstOk(
+  urls: string[],
+  timeoutMs: number
+): Promise<{ gatewayUrl: string; response: Response }> {
+  let rejectCount = 0;
+  return new Promise((resolve, reject) => {
+    urls.forEach((gatewayUrl) => {
+      fetchWithTimeout(gatewayUrl, timeoutMs)
+        .then((r) => {
+          if (r.ok) {
+            resolve({ gatewayUrl, response: r });
+          } else {
+            rejectCount++;
+            if (rejectCount === urls.length) reject(new Error('All gateways failed'));
+          }
+        })
+        .catch(() => {
+          rejectCount++;
+          if (rejectCount === urls.length) reject(new Error('All gateways failed'));
+        });
+    });
+  });
 }
 
 export default {
@@ -73,33 +101,20 @@ export default {
 
     const gatewayUrls = GATEWAYS.map((g) => g + cidAndPath);
 
-    type Winner = { gatewayUrl: string; response: Response };
-    let winner: Winner | null = null;
+    let winner: { gatewayUrl: string; response: Response } | null = null;
 
     try {
-      winner = await Promise.race(
-        gatewayUrls.map((gatewayUrl) =>
-          fetchWithTimeout(gatewayUrl, timeoutMs).then((r) =>
-            r.ok ? { gatewayUrl, response: r } : Promise.reject(new Error('not ok'))
-          )
-        )
-      );
+      winner = await raceForFirstOk(gatewayUrls, timeoutMs);
     } catch {
-      const settled = await Promise.allSettled(
-        gatewayUrls.map((gatewayUrl) =>
-          fetchWithTimeout(gatewayUrl, timeoutMs).then((r) => (r.ok ? { gatewayUrl, response: r } : null))
-        )
-      );
-      const firstOk = settled.find(
-        (s): s is PromiseFulfilledResult<Winner | null> =>
-          s.status === 'fulfilled' && s.value != null
-      );
-      winner = firstOk?.value ?? null;
+      // all gateways failed
     }
 
-    if (!winner || !winner.response.ok) {
+    if (!winner) {
       console.log('All gateways failed:', cidAndPath);
-      return new Response('All gateways failed', { status: 504, headers: CACHE_HEADERS });
+      return new Response('All gateways failed', {
+        status: 504,
+        headers: { ...CORS_HEADERS, 'Cache-Control': 'no-cache' },
+      });
     }
 
     console.log('Gateway winner:', winner.gatewayUrl);
