@@ -10,6 +10,7 @@ import type { DailyArtwork } from '@/types'
 
 export default function HomePage() {
   const [isReversed, setIsReversed] = useState(false)
+  const [showMintedOnly, setShowMintedOnly] = useState(false)
   const [selectedDaily, setSelectedDaily] = useState<DailyArtwork | null>(null)
   const [mouseX, setMouseX] = useState(0)
   const [mouseY, setMouseY] = useState(0)
@@ -50,10 +51,11 @@ export default function HomePage() {
     return () => window.removeEventListener('mousemove', handleMouseMove)
   }, [])
 
-  // Sort dailies based on reverse state
+  // Sort dailies based on reverse state, optionally filter to minted only
   const sortedDailies = useMemo(() => {
-    return isReversed ? [...allDailies].reverse() : allDailies
-  }, [allDailies, isReversed])
+    const base = showMintedOnly ? allDailies.filter(d => d.minted) : allDailies
+    return isReversed ? [...base].reverse() : base
+  }, [allDailies, isReversed, showMintedOnly])
 
   // Symbol substitutions: push symbols often (S→$, A→Λ/∧, R→Я, C→©, L→£, N→И, V→√)
   const pickLetterSub = (char: string) => {
@@ -504,24 +506,36 @@ export default function HomePage() {
           >
             {/* Reflection layers */}
             <span className="absolute left-0 top-0 text-[#666]/10 blur-[1px] translate-y-[2px] scale-y-[-1] select-none pointer-events-none py-3">
-              [ARCHIVE_VIEW] | {allDailies.length} ENTRIES | {isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
+              [ARCHIVE_VIEW] | {sortedDailies.length} ENTRIES | {showMintedOnly ? 'MINTED ONLY' : isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
             </span>
             <span className="absolute left-0 top-0 text-green-500/10 blur-[0.5px] translate-x-[1px] select-none pointer-events-none py-3">
-              [ARCHIVE_VIEW] | {allDailies.length} ENTRIES | {isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
+              [ARCHIVE_VIEW] | {sortedDailies.length} ENTRIES | {showMintedOnly ? 'MINTED ONLY' : isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
             </span>
             <span className="flicker relative text-hover-glitch">
-              [ARCHIVE_VIEW] | {allDailies.length} ENTRIES | {isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
+              [ARCHIVE_VIEW] | {sortedDailies.length} ENTRIES | {showMintedOnly ? 'MINTED ONLY' : isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
             </span>
-            <button
-              onClick={() => setIsReversed(!isReversed)}
-              className="mono text-[9px] px-3 py-1 border border-[#333] hover:border-[#555] text-[#888] hover:text-white transition-all duration-300 hover:glitch text-hover-glitch"
-            >
-              [{isReversed ? '↑' : '↓'} REVERSE]
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowMintedOnly(!showMintedOnly)}
+                className={`mono text-[9px] px-3 py-1 border transition-all duration-300 hover:glitch text-hover-glitch ${
+                  showMintedOnly
+                    ? 'border-red-500/50 text-red-400 bg-red-500/10'
+                    : 'border-[#333] hover:border-[#555] text-[#888] hover:text-white'
+                }`}
+              >
+                [MINTED]
+              </button>
+              <button
+                onClick={() => setIsReversed(!isReversed)}
+                className="mono text-[9px] px-3 py-1 border border-[#333] hover:border-[#555] text-[#888] hover:text-white transition-all duration-300 hover:glitch text-hover-glitch"
+              >
+                [{isReversed ? '↑' : '↓'} REVERSE]
+              </button>
+            </div>
           </motion.div>
 
           {/* Experimental grouped display */}
-          <div className="space-y-20 md:space-y-32">
+          <div className="space-y-6 md:space-y-10">
             {Object.entries(groupedByMonth).map(([month, dailies], monthIndex) => (
               <motion.div
                 key={month}
@@ -532,7 +546,7 @@ export default function HomePage() {
               >
                 {/* Distorted month header with reflections */}
                 <motion.div
-                  className="mb-8 md:mb-12 flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 pb-4 border-b border-[#222] relative"
+                  className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-baseline gap-2 sm:gap-4 pb-3 border-b border-[#222] relative"
                   animate={{
                     x: globalGlitch ? [-1, 1, 0] : 0,
                   }}
@@ -571,7 +585,7 @@ export default function HomePage() {
                 </motion.div>
 
                 {/* Non-linear experimental grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6 relative">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-10 md:gap-x-6 md:gap-y-12 relative">
                   {dailies.map((daily, index) => {
                     const globalIndex = sortedDailies.findIndex(d => d.id === daily.id)
                     return (

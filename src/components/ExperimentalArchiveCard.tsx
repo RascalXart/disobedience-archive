@@ -2,8 +2,14 @@
 
 import { motion } from 'framer-motion'
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import type { DailyArtwork } from '@/types'
 import { resolveDailyMediaUrl } from '@/lib/data'
+import { resolveENSCached } from '@/lib/ens-cache'
+
+function shortenAddress(addr: string): string {
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+}
 
 // === Grid concurrency limit (homepage images, separate from SmartIPFSImage) ===
 // Only MAX_CONCURRENT_DAILY images load at a time over the shared HTTP/2
@@ -41,6 +47,8 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
   const [thumbLoaded, setThumbLoaded] = useState(false)
   const [slotClaimed, setSlotClaimed] = useState(false)
   const [videoActivated, setVideoActivated] = useState(false)
+  const [ownerName, setOwnerName] = useState<string | null>(null)
+  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number } | null>(null)
 
   const cardRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -126,6 +134,17 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
     }
   }, [isVideo, imgState, isVisible, isModalOpen])
 
+  // Resolve ENS for minted piece owner — set short address immediately, upgrade to ENS async
+  useEffect(() => {
+    if (!daily.minted || !daily.owner) return
+    setOwnerName(shortenAddress(daily.owner))
+    let cancelled = false
+    resolveENSCached(daily.owner).then(name => {
+      if (!cancelled && name) setOwnerName(name)
+    })
+    return () => { cancelled = true }
+  }, [daily.minted, daily.owner])
+
   // Callback ref for full-res image — cancel download on unmount
   const fullImgCallbackRef = useCallback((img: HTMLImageElement | null) => {
     if (img === null && imgRef.current) {
@@ -164,7 +183,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
         duration: 0.8,
         ease: [0.25, 0.1, 0.25, 1]
       }}
-      className={`${size.w} mb-8 md:mb-12 group cursor-pointer relative`}
+      className={`${size.w} group cursor-pointer relative`}
       onClick={onClick}
     >
       {/* Glitch overlay */}
@@ -312,7 +331,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
                 }).toUpperCase()}
               </div>
               <div className="text-[#666] text-[8px]">
-                {daily.id.replace(/_/g, ' ').toUpperCase()}
+                {(daily.title || daily.id.replace(/_/g, ' ')).toUpperCase()}
               </div>
             </motion.div>
             <motion.div
@@ -330,7 +349,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
                 }).toUpperCase()}
               </div>
               <div className="text-[#666] text-[8px]">
-                {daily.id.replace(/_/g, ' ').toUpperCase()}
+                {(daily.title || daily.id.replace(/_/g, ' ')).toUpperCase()}
               </div>
             </motion.div>
             <motion.div
@@ -349,7 +368,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
                 }).toUpperCase()}
               </div>
               <div className="text-[#666] text-[8px] text-hover-glitch">
-                {daily.id.replace(/_/g, ' ').toUpperCase()}
+                {(daily.title || daily.id.replace(/_/g, ' ')).toUpperCase()}
               </div>
             </motion.div>
         </div>
@@ -364,6 +383,31 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
 
       {/* Distortion shadow */}
       <div className="absolute inset-0 -z-10 bg-[#000] opacity-0 group-hover:opacity-20 group-hover:scale-125 blur-xl transition-all duration-300" />
+
+      {/* Minted indicator — red circle, absolutely positioned so it doesn't affect grid spacing */}
+      {daily.minted && (
+        <div
+          className="absolute -bottom-4 right-1 w-3 h-3 rounded-full bg-red-500 cursor-pointer transition-all hover:bg-red-400 hover:scale-125 z-10"
+          onMouseEnter={(e) => setTooltipPos({ x: e.clientX, y: e.clientY })}
+          onMouseMove={(e) => setTooltipPos({ x: e.clientX, y: e.clientY })}
+          onMouseLeave={() => setTooltipPos(null)}
+          onClick={(e) => {
+            e.stopPropagation()
+            window.open(`https://opensea.io/assets/ethereum/${daily.contractAddress}/${daily.tokenId}`, '_blank')
+          }}
+        />
+      )}
+
+      {/* Owner tooltip — portaled to body to escape framer-motion transform context */}
+      {tooltipPos && ownerName && createPortal(
+        <div
+          className="fixed z-[100] mono text-[10px] text-white bg-[#111] border border-[#333] px-2 py-1 pointer-events-none whitespace-nowrap"
+          style={{ left: tooltipPos.x + 12, top: tooltipPos.y - 10 }}
+        >
+          {ownerName}
+        </div>,
+        document.body
+      )}
     </motion.div>
   )
 }

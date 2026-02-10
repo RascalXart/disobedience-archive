@@ -80,9 +80,7 @@ export function getAllDailies(): DailyArtwork[] {
   cachedDailies = (dailiesData as DailyArtwork[]).map(daily => ({
     ...daily,
     imageUrl: resolveDailyMediaUrl(daily.imageUrl)
-  })).sort((a, b) => 
-    a.savedDate.localeCompare(b.savedDate)
-  );
+  }));
   
   return cachedDailies;
 }

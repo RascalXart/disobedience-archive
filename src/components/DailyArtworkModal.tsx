@@ -6,6 +6,11 @@ import type { DailyArtwork } from '@/types'
 import { resolveDailyMediaUrl } from '@/lib/data'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
+import { resolveENSCached } from '@/lib/ens-cache'
+
+function shortenAddress(addr: string): string {
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
+}
 
 interface DailyArtworkModalProps {
   daily: DailyArtwork
@@ -20,6 +25,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
   const [currentDaily, setCurrentDaily] = useState(daily)
   const [heroOpen, setHeroOpen] = useState(false)
   const [showHeroMeta, setShowHeroMeta] = useState(false)
+  const [ownerENS, setOwnerENS] = useState<string | null>(null)
   const heroMetaStillRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
@@ -63,6 +69,22 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
       document.body.style.overflow = 'unset'
     }
   }, [currentIndex, onClose, heroOpen])
+
+  // Resolve ENS for minted token owner
+  useEffect(() => {
+    setOwnerENS(null)
+    if (!currentDaily.owner) return
+    let cancelled = false
+    resolveENSCached(currentDaily.owner).then(name => {
+      if (!cancelled) setOwnerENS(name)
+    })
+    return () => { cancelled = true }
+  }, [currentDaily.owner])
+
+  const ownerDisplay = ownerENS || (currentDaily.owner ? shortenAddress(currentDaily.owner) : null)
+  const openSeaUrl = currentDaily.owner
+    ? `https://opensea.io/${ownerENS?.replace('.eth', '') || currentDaily.owner}`
+    : null
 
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) onClose()
@@ -152,7 +174,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
               {/* Twitter Share Button */}
               <a
                 href={generateTwitterShareUrl({
-                  title: currentDaily.id.replace(/_/g, ' ').toUpperCase(),
+                  title: (currentDaily.title || currentDaily.id.replace(/_/g, ' ')).toUpperCase(),
                   date: currentDaily.savedDate,
                   imageUrl: resolveDailyMediaUrl(currentDaily.imageUrl),
                 })}
@@ -170,9 +192,13 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                 [ARTWORK_INFO]
               </div>
               
-              <h2 className="font-grotesk text-2xl md:text-3xl font-light mb-6 tracking-tighter terminal-reveal text-hover-glitch">
-                {currentDaily.id.replace(/_/g, ' ').toUpperCase()}
+              <h2 className="font-grotesk text-2xl md:text-3xl font-light tracking-tighter terminal-reveal text-hover-glitch">
+                {(currentDaily.title || currentDaily.id.replace(/_/g, ' ')).toUpperCase()}
               </h2>
+              {currentDaily.title && (
+                <div className="mono text-[10px] text-[#555] mt-1 mb-6 terminal-reveal">{currentDaily.id.replace(/_/g, ' ').toUpperCase()}</div>
+              )}
+              {!currentDaily.title && <div className="mb-6" />}
               
               <div className="space-y-4 mb-8 mono text-xs">
                 <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
@@ -196,10 +222,45 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                 <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
                   <span className="text-[#666] min-w-[60px] text-hover-glitch">STATUS:</span>
                   <span className="text-[#999] flex items-center gap-2 terminal-reveal">
-                    <span className={`w-2 h-2 block ${currentDaily.status === 'available' ? 'bg-[#4a4]' : 'bg-[#666]'}`} />
-                    {currentDaily.status === 'not_listed' ? 'NOT MINTED' : currentDaily.status.toUpperCase().replace('_', ' ')}
+                    <span className={`w-2 h-2 block ${currentDaily.minted ? 'bg-[#c9a84c]' : currentDaily.status === 'available' ? 'bg-[#4a4]' : 'bg-[#666]'}`} />
+                    {currentDaily.minted ? 'MINTED' : currentDaily.status === 'not_listed' ? 'NOT MINTED' : currentDaily.status.toUpperCase().replace('_', ' ')}
                   </span>
                 </div>
+
+                {currentDaily.minted && ownerDisplay && (
+                  <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
+                    <span className="text-[#666] min-w-[60px] text-hover-glitch">OWNER:</span>
+                    <a
+                      href={openSeaUrl!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#c9a84c] hover:text-white transition-colors terminal-reveal"
+                    >
+                      {ownerDisplay}
+                    </a>
+                  </div>
+                )}
+
+                {currentDaily.minted && currentDaily.tokenId != null && (
+                  <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
+                    <span className="text-[#666] min-w-[60px] text-hover-glitch">TOKEN:</span>
+                    <a
+                      href={`https://opensea.io/assets/ethereum/${currentDaily.contractAddress}/${currentDaily.tokenId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#c9a84c] hover:text-white transition-colors terminal-reveal"
+                    >
+                      RASCAL EVERYDAYS #{currentDaily.tokenId}
+                    </a>
+                  </div>
+                )}
+
+                {currentDaily.description && (
+                  <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
+                    <span className="text-[#666] min-w-[60px] text-hover-glitch">INFO:</span>
+                    <span className="text-[#999] terminal-reveal">{currentDaily.description}</span>
+                  </div>
+                )}
 
                 {currentDaily.tags.length > 0 && (
                   <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
@@ -281,11 +342,17 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
               <div className={`absolute inset-0 flex items-center justify-center bg-black/70 transition-opacity duration-200 pointer-events-none p-8 ${showHeroMeta ? 'opacity-100' : 'opacity-0'}`}>
                 <div className="mono text-left text-sm text-[#ccc] space-y-3 max-w-md">
                   <div className="font-grotesk text-white text-xl font-light tracking-tighter">
-                    {currentDaily.id.replace(/_/g, ' ').toUpperCase()}
+                    {(currentDaily.title || currentDaily.id.replace(/_/g, ' ')).toUpperCase()}
                   </div>
+                  {currentDaily.title && (
+                    <div className="text-[#666] text-xs">{currentDaily.id.replace(/_/g, ' ').toUpperCase()}</div>
+                  )}
                   <div><span className="text-[#666]">DATE:</span> {new Date(currentDaily.savedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}</div>
                   <div><span className="text-[#666]">FILE TYPE:</span> {currentDaily.imageUrl?.includes('.') ? currentDaily.imageUrl.split('.').pop()?.toUpperCase() ?? '—' : '—'}</div>
-                  <div><span className="text-[#666]">STATUS:</span> {currentDaily.status === 'not_listed' ? 'NOT MINTED' : currentDaily.status.toUpperCase().replace('_', ' ')}</div>
+                  <div><span className="text-[#666]">STATUS:</span> {currentDaily.minted ? 'MINTED' : currentDaily.status === 'not_listed' ? 'NOT MINTED' : currentDaily.status.toUpperCase().replace('_', ' ')}</div>
+                  {currentDaily.minted && ownerDisplay && (
+                    <div><span className="text-[#666]">OWNER:</span> {ownerDisplay}</div>
+                  )}
                   {currentDaily.tags.length > 0 && (
                     <div><span className="text-[#666]">TAGS:</span> {currentDaily.tags.map(t => t.toUpperCase()).join(', ')}</div>
                   )}
@@ -294,9 +361,9 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
             </div>
             <div className="flex-shrink-0 border-t border-[#222] bg-[#0a0a0a] px-4 py-3 text-center">
               <div className="font-grotesk text-white font-light tracking-tighter">
-                {currentDaily.id.replace(/_/g, ' ').toUpperCase()}
+                {(currentDaily.title || currentDaily.id.replace(/_/g, ' ')).toUpperCase()}
               </div>
-              <div className="mono text-xs text-[#666] mt-0.5">—</div>
+              <div className="mono text-xs text-[#666] mt-0.5">{currentDaily.title ? currentDaily.id.replace(/_/g, ' ').toUpperCase() : '—'}</div>
             </div>
           </div>
         )}

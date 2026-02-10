@@ -4,686 +4,826 @@
     "imageUrl": "/dailies/rascal_daily_1.gif",
     "savedDate": "2025-05-02",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "FICØ SCØRE MØNKEY",
+    "description": "the genesis RASCAL: EVERYDAY / the first ever made / day 1 / your fico score has dropped 16 points / by reading this",
+    "minted": true,
+    "tokenId": 1,
+    "contractAddress": "0x49341b8ad260419d65bd47b23901f894fd54b16c",
+    "owner": "0x61B04d2b5CB1F1F8505E7b4E1cb3d9E8A0B15BaE"
   },
   {
     "id": "rascal_daily_2",
     "imageUrl": "/dailies/rascal_daily_2.gif",
     "savedDate": "2025-05-02",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "laugh now but one day we'll be in charge"
   },
   {
     "id": "rascal_daily_3",
-    "imageUrl": "/dailies/rascal_daily_3.gif",
-    "savedDate": "2025-05-03",
+    "imageUrl": "/dailies/rascal_daily_187.gif",
+    "savedDate": "2025-05-02",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "back baby"
   },
   {
     "id": "rascal_daily_4",
-    "imageUrl": "/dailies/rascal_daily_4.gif",
-    "savedDate": "2025-05-04",
+    "imageUrl": "/dailies/rascal_daily_3.gif",
+    "savedDate": "2025-05-03",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "WÅTCH YØUR STEP BB",
+    "description": "RASCAL: EVERYDAY / day 3 / watch your step bb / the next one could be your last",
+    "minted": true,
+    "tokenId": 3,
+    "contractAddress": "0x49341b8ad260419d65bd47b23901f894fd54b16c",
+    "owner": "0x4E4b427cea47bD43c6f829FC3eA61B640FF7BFE5"
   },
   {
     "id": "rascal_daily_5",
-    "imageUrl": "/dailies/rascal_daily_5.gif",
-    "savedDate": "2025-05-05",
+    "imageUrl": "/dailies/rascal_daily_4.gif",
+    "savedDate": "2025-05-04",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "AND FOR MY NEXT TRICK"
   },
   {
     "id": "rascal_daily_6",
     "imageUrl": "/dailies/rascal_daily_6.gif",
     "savedDate": "2025-05-06",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "ALL WORK AND NO PLAY MAKES RVSC SOMETHING SOMETHING"
   },
   {
     "id": "rascal_daily_7",
     "imageUrl": "/dailies/rascal_daily_7.gif",
     "savedDate": "2025-05-08",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "THE TICKLING FIELDS"
   },
   {
     "id": "rascal_daily_8",
     "imageUrl": "/dailies/rascal_daily_8.gif",
     "savedDate": "2025-05-08",
     "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_10",
-    "imageUrl": "/dailies/rascal_daily_10.gif",
-    "savedDate": "2025-05-09",
-    "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "OUR NEW FATHER"
   },
   {
     "id": "rascal_daily_9",
+    "imageUrl": "/dailies/rascal_daily_10.gif",
+    "savedDate": "2025-05-09",
+    "status": "not_listed",
+    "tags": [],
+    "title": "OOPS MY FINGER SLIPPED"
+  },
+  {
+    "id": "rascal_daily_10",
     "imageUrl": "/dailies/rascal_daily_9.gif",
     "savedDate": "2025-05-09",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "MY HEART GOES OUT TO YOU"
   },
   {
     "id": "rascal_daily_11",
-    "imageUrl": "/dailies/rascal_daily_11.gif",
-    "savedDate": "2025-05-10",
+    "imageUrl": "/dailies/rascal_daily_186.gif",
+    "savedDate": "2025-05-09",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "UNEARTHLY"
   },
   {
     "id": "rascal_daily_12",
-    "imageUrl": "/dailies/rascal_daily_12.gif",
-    "savedDate": "2025-05-12",
+    "imageUrl": "/dailies/rascal_daily_11.gif",
+    "savedDate": "2025-05-10",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "OH BOY! DO YOU WANT TO JOIN MICKEY SQUAD 13?"
   },
   {
     "id": "rascal_daily_13",
-    "imageUrl": "/dailies/rascal_daily_13.gif",
-    "savedDate": "2025-05-14",
+    "imageUrl": "/dailies/rascal_daily_12.gif",
+    "savedDate": "2025-05-12",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "NO, MORE AI"
   },
   {
     "id": "rascal_daily_14",
-    "imageUrl": "/dailies/rascal_daily_14.gif",
+    "imageUrl": "/dailies/rascal_daily_13.gif",
     "savedDate": "2025-05-14",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "¡AY, AY, AY, NO ME GUSTA!"
   },
   {
     "id": "rascal_daily_15",
-    "imageUrl": "/dailies/rascal_daily_15.gif",
-    "savedDate": "2025-05-15",
+    "imageUrl": "/dailies/rascal_daily_14.gif",
+    "savedDate": "2025-05-14",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "linda mcmahon's secret sauce for making NFTs",
+    "description": "(mix with equal parts photo mosh for best results)"
   },
   {
     "id": "rascal_daily_16",
-    "imageUrl": "/dailies/rascal_daily_16.gif",
-    "savedDate": "2025-05-16",
+    "imageUrl": "/dailies/rascal_daily_15.gif",
+    "savedDate": "2025-05-15",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "BRAIN ON FIRE",
+    "description": "there is a color study of this piece"
   },
   {
     "id": "rascal_daily_17",
-    "imageUrl": "/dailies/rascal_daily_17.gif",
-    "savedDate": "2025-05-17",
+    "imageUrl": "/dailies/rascal_daily_16.gif",
+    "savedDate": "2025-05-16",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "got a bbl and moved to tulum",
+    "description": "@cryptopunks"
   },
   {
     "id": "rascal_daily_18",
-    "imageUrl": "/dailies/rascal_daily_18.gif",
-    "savedDate": "2025-05-18",
+    "imageUrl": "/dailies/rascal_daily_17.gif",
+    "savedDate": "2025-05-17",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "don't at me on self care days"
   },
   {
     "id": "rascal_daily_19",
-    "imageUrl": "/dailies/rascal_daily_19.gif",
+    "imageUrl": "/dailies/rascal_daily_18.gif",
     "savedDate": "2025-05-18",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "congratulations to the happy couple"
   },
   {
     "id": "rascal_daily_20",
-    "imageUrl": "/dailies/rascal_daily_20.gif",
-    "savedDate": "2025-05-21",
+    "imageUrl": "/dailies/rascal_daily_19.gif",
+    "savedDate": "2025-05-18",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "a trophy to the øpulence ",
+    "description": "     this one\n\n             has 12 bathrooms\n\n🚽"
   },
   {
     "id": "rascal_daily_21",
-    "imageUrl": "/dailies/rascal_daily_21.gif",
-    "savedDate": "2025-05-22",
+    "imageUrl": "/dailies/rascal_daily_20.gif",
+    "savedDate": "2025-05-21",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "bull market energy"
   },
   {
     "id": "rascal_daily_22",
-    "imageUrl": "/dailies/rascal_daily_22.gif",
-    "savedDate": "2025-05-23",
+    "imageUrl": "/dailies/rascal_daily_189.gif",
+    "savedDate": "2025-05-21",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "what have the nuns seen?"
   },
   {
     "id": "rascal_daily_23",
-    "imageUrl": "/dailies/rascal_daily_23.gif",
-    "savedDate": "2025-05-25",
+    "imageUrl": "/dailies/rascal_daily_185.gif",
+    "savedDate": "2025-05-22",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "fuck you hiyor"
   },
   {
     "id": "rascal_daily_24",
-    "imageUrl": "/dailies/rascal_daily_24.gif",
-    "savedDate": "2025-05-25",
+    "imageUrl": "/dailies/rascal_daily_21.gif",
+    "savedDate": "2025-05-22",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the real south african refugee",
+    "description": "🦐"
   },
   {
     "id": "rascal_daily_25",
-    "imageUrl": "/dailies/rascal_daily_25.gif",
-    "savedDate": "2025-05-26",
+    "imageUrl": "/dailies/rascal_daily_22.gif",
+    "savedDate": "2025-05-23",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the rats claw for the thrøne"
   },
   {
     "id": "rascal_daily_26",
-    "imageUrl": "/dailies/rascal_daily_26.gif",
-    "savedDate": "2025-05-26",
+    "imageUrl": "/dailies/rascal_daily_23.gif",
+    "savedDate": "2025-05-25",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "to protect and watch"
   },
   {
     "id": "rascal_daily_27",
-    "imageUrl": "/dailies/rascal_daily_27.gif",
-    "savedDate": "2025-05-26",
+    "imageUrl": "/dailies/rascal_daily_24.gif",
+    "savedDate": "2025-05-25",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "a manic sunday"
   },
   {
     "id": "rascal_daily_28",
-    "imageUrl": "/dailies/rascal_daily_28.gif",
+    "imageUrl": "/dailies/rascal_daily_25.gif",
     "savedDate": "2025-05-26",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "relentless",
+    "description": "inspired by a prompt from \n@RogerDickerman\n "
   },
   {
     "id": "rascal_daily_29",
-    "imageUrl": "/dailies/rascal_daily_29.gif",
-    "savedDate": "2025-05-29",
+    "imageUrl": "/dailies/rascal_daily_26.gif",
+    "savedDate": "2025-05-26",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "AI with glitch, part of a balanced breakfast"
   },
   {
     "id": "rascal_daily_30",
-    "imageUrl": "/dailies/rascal_daily_30.gif",
-    "savedDate": "2025-05-29",
+    "imageUrl": "/dailies/rascal_daily_27.gif",
+    "savedDate": "2025-05-26",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "AI plus glitch"
   },
   {
     "id": "rascal_daily_31",
-    "imageUrl": "/dailies/rascal_daily_31.gif",
-    "savedDate": "2025-05-31",
+    "imageUrl": "/dailies/rascal_daily_188.gif",
+    "savedDate": "2025-05-28",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "paper maché hands"
   },
   {
     "id": "rascal_daily_32",
-    "imageUrl": "/dailies/rascal_daily_32.gif",
-    "savedDate": "2025-06-03",
+    "imageUrl": "/dailies/rascal_daily_29.gif",
+    "savedDate": "2025-05-29",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "food bank"
   },
   {
     "id": "rascal_daily_33",
-    "imageUrl": "/dailies/rascal_daily_33.gif",
-    "savedDate": "2025-06-04",
+    "imageUrl": "/dailies/rascal_daily_5.gif",
+    "savedDate": "2025-05-05",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "PLAY IT AGAIN SAM"
   },
   {
     "id": "rascal_daily_34",
-    "imageUrl": "/dailies/rascal_daily_34.gif",
-    "savedDate": "2025-06-04",
+    "imageUrl": "/dailies/rascal_daily_30.gif",
+    "savedDate": "2025-05-29",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "don't even tell me love is real"
   },
   {
     "id": "rascal_daily_35",
-    "imageUrl": "/dailies/rascal_daily_35.gif",
-    "savedDate": "2025-06-06",
+    "imageUrl": "/dailies/rascal_daily_31.gif",
+    "savedDate": "2025-05-31",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "glitch skulls for life"
   },
   {
     "id": "rascal_daily_36",
-    "imageUrl": "/dailies/rascal_daily_36.gif",
-    "savedDate": "2025-06-07",
+    "imageUrl": "/dailies/rascal_daily_32.gif",
+    "savedDate": "2025-06-03",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "HABEMUS PAPA"
   },
   {
     "id": "rascal_daily_37",
-    "imageUrl": "/dailies/rascal_daily_37.gif",
-    "savedDate": "2025-06-08",
+    "imageUrl": "/dailies/rascal_daily_33.gif",
+    "savedDate": "2025-06-04",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "FREE HUGS",
+    "description": "RASCAL: EVERYDAY / day 34 / the snuggles will continue / until morale improves",
+    "minted": true,
+    "tokenId": 4,
+    "contractAddress": "0x49341b8ad260419d65bd47b23901f894fd54b16c",
+    "owner": "0xf9f7aE25e92E3573C5C2E3C97D2658BD2c06dDf6"
   },
   {
     "id": "rascal_daily_38",
-    "imageUrl": "/dailies/rascal_daily_38.gif",
-    "savedDate": "2025-06-09",
+    "imageUrl": "/dailies/rascal_daily_34.gif",
+    "savedDate": "2025-06-04",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "alien frenemy",
+    "description": "👽🪖"
   },
   {
     "id": "rascal_daily_39",
-    "imageUrl": "/dailies/rascal_daily_39.gif",
-    "savedDate": "2025-06-10",
+    "imageUrl": "/dailies/rascal_daily_191.gif",
+    "savedDate": "2025-06-04",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "i want you",
+    "description": "to seize the memes of production"
   },
   {
     "id": "rascal_daily_40",
-    "imageUrl": "/dailies/rascal_daily_40.gif",
-    "savedDate": "2025-06-11",
+    "imageUrl": "/dailies/rascal_daily_35.gif",
+    "savedDate": "2025-06-06",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "ball pit diplomacy"
   },
   {
     "id": "rascal_daily_41",
-    "imageUrl": "/dailies/rascal_daily_41.gif",
-    "savedDate": "2025-06-11",
+    "imageUrl": "/dailies/rascal_daily_36.gif",
+    "savedDate": "2025-06-07",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "RASCALx AWAKENS..."
   },
   {
     "id": "rascal_daily_42",
-    "imageUrl": "/dailies/rascal_daily_42.gif",
-    "savedDate": "2025-06-11",
+    "imageUrl": "/dailies/rascal_daily_37.gif",
+    "savedDate": "2025-06-08",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "blue checks at the last supper",
+    "description": "☑️"
   },
   {
     "id": "rascal_daily_43",
-    "imageUrl": "/dailies/rascal_daily_43.gif",
-    "savedDate": "2025-06-12",
+    "imageUrl": "/dailies/rascal_daily_38.gif",
+    "savedDate": "2025-06-09",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "gotta catch em all"
   },
   {
     "id": "rascal_daily_44",
-    "imageUrl": "/dailies/rascal_daily_44.gif",
-    "savedDate": "2025-06-13",
+    "imageUrl": "/dailies/rascal_daily_39.gif",
+    "savedDate": "2025-06-10",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the golden toilet",
+    "description": "the second tribute to the ØPULENCE"
   },
   {
     "id": "rascal_daily_45",
-    "imageUrl": "/dailies/rascal_daily_45.gif",
-    "savedDate": "2025-06-14",
+    "imageUrl": "/dailies/rascal_daily_40.gif",
+    "savedDate": "2025-06-11",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "KEEPERS OF THE PEACE"
   },
   {
     "id": "rascal_daily_46",
-    "imageUrl": "/dailies/rascal_daily_46.gif",
-    "savedDate": "2025-06-15",
+    "imageUrl": "/dailies/rascal_daily_41.gif",
+    "savedDate": "2025-06-11",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "meowlotov cat tail"
   },
   {
     "id": "rascal_daily_47",
-    "imageUrl": "/dailies/rascal_daily_47.gif",
-    "savedDate": "2025-06-15",
+    "imageUrl": "/dailies/rascal_daily_43.gif",
+    "savedDate": "2025-06-12",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "Labubu is coming for you..."
   },
   {
     "id": "rascal_daily_48",
-    "imageUrl": "/dailies/rascal_daily_48.gif",
-    "savedDate": "2025-06-16",
+    "imageUrl": "/dailies/rascal_daily_44.gif",
+    "savedDate": "2025-06-13",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "THE HIVE GROWS"
   },
   {
     "id": "rascal_daily_49",
-    "imageUrl": "/dailies/rascal_daily_49.gif",
-    "savedDate": "2025-06-18",
+    "imageUrl": "/dailies/rascal_daily_45.gif",
+    "savedDate": "2025-06-14",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "ANGEL OF DEATH"
   },
   {
     "id": "rascal_daily_50",
-    "imageUrl": "/dailies/rascal_daily_50.gif",
-    "savedDate": "2025-06-19",
+    "imageUrl": "/dailies/rascal_daily_46.gif",
+    "savedDate": "2025-06-15",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "origin of the world 1"
   },
   {
     "id": "rascal_daily_51",
-    "imageUrl": "/dailies/rascal_daily_51.gif",
-    "savedDate": "2025-06-19",
+    "imageUrl": "/dailies/rascal_daily_48.gif",
+    "savedDate": "2025-06-16",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "i've been a nasty pope",
+    "description": "i've been a nasty nasty nasty"
   },
   {
     "id": "rascal_daily_52",
-    "imageUrl": "/dailies/rascal_daily_52.gif",
-    "savedDate": "2025-06-20",
+    "imageUrl": "/dailies/rascal_daily_50.gif",
+    "savedDate": "2025-06-19",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "mmmm forbidden usb stick"
   },
   {
     "id": "rascal_daily_53",
-    "imageUrl": "/dailies/rascal_daily_53.gif",
-    "savedDate": "2025-06-21",
+    "imageUrl": "/dailies/rascal_daily_51.gif",
+    "savedDate": "2025-06-19",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "no, more ai 2"
   },
   {
     "id": "rascal_daily_54",
-    "imageUrl": "/dailies/rascal_daily_54.gif",
-    "savedDate": "2025-06-22",
+    "imageUrl": "/dailies/rascal_daily_52.gif",
+    "savedDate": "2025-06-20",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the definition of the American dream ",
+    "description": "the definition of the American dream \nis a meat cute against a dumpster \nbehind an Applebees kiosk \nat a truck stop on the edge of town"
   },
   {
     "id": "rascal_daily_55",
-    "imageUrl": "/dailies/rascal_daily_55.gif",
-    "savedDate": "2025-06-23",
+    "imageUrl": "/dailies/rascal_daily_47.gif",
+    "savedDate": "2025-06-15",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "origin of the world 2"
   },
   {
     "id": "rascal_daily_56",
-    "imageUrl": "/dailies/rascal_daily_56.gif",
-    "savedDate": "2025-06-24",
+    "imageUrl": "/dailies/rascal_daily_53.gif",
+    "savedDate": "2025-06-21",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "Øpulence 3, the golden shower",
+    "description": "the only way to get properly clean \nwhen you've soaked all week in greed\nthe flying golden shower \nnow with extra ammonia!\nonly 4 easy payments of 69.99 eth\n\n🛀"
   },
   {
     "id": "rascal_daily_57",
-    "imageUrl": "/dailies/rascal_daily_57.gif",
-    "savedDate": "2025-06-25",
+    "imageUrl": "/dailies/rascal_daily_54.gif",
+    "savedDate": "2025-06-22",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "special delivery"
   },
   {
     "id": "rascal_daily_58",
-    "imageUrl": "/dailies/rascal_daily_58.gif",
-    "savedDate": "2025-06-26",
+    "imageUrl": "/dailies/rascal_daily_55.gif",
+    "savedDate": "2025-06-23",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "you're my only hope"
   },
   {
     "id": "rascal_daily_59",
-    "imageUrl": "/dailies/rascal_daily_59.gif",
-    "savedDate": "2025-06-27",
+    "imageUrl": "/dailies/rascal_daily_56.gif",
+    "savedDate": "2025-06-24",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "don't doxx me broh"
   },
   {
     "id": "rascal_daily_60",
-    "imageUrl": "/dailies/rascal_daily_60.gif",
-    "savedDate": "2025-06-28",
+    "imageUrl": "/dailies/rascal_daily_57.gif",
+    "savedDate": "2025-06-25",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "mischief afoot"
   },
   {
     "id": "rascal_daily_61",
-    "imageUrl": "/dailies/rascal_daily_61.gif",
-    "savedDate": "2025-06-29",
+    "imageUrl": "/dailies/rascal_daily_58.gif",
+    "savedDate": "2025-06-26",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "beeple is modest"
   },
   {
     "id": "rascal_daily_62",
-    "imageUrl": "/dailies/rascal_daily_62.gif",
-    "savedDate": "2025-06-30",
+    "imageUrl": "/dailies/rascal_daily_59.gif",
+    "savedDate": "2025-06-27",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "cherub bomb"
   },
   {
     "id": "rascal_daily_63",
-    "imageUrl": "/dailies/rascal_daily_63.gif",
-    "savedDate": "2025-07-02",
+    "imageUrl": "/dailies/rascal_daily_60.gif",
+    "savedDate": "2025-06-28",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "social distørtion"
   },
   {
     "id": "rascal_daily_64",
-    "imageUrl": "/dailies/rascal_daily_64.gif",
-    "savedDate": "2025-07-02",
+    "imageUrl": "/dailies/rascal_daily_61.gif",
+    "savedDate": "2025-06-29",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "lady face palm"
   },
   {
     "id": "rascal_daily_65",
-    "imageUrl": "/dailies/rascal_daily_65.gif",
-    "savedDate": "2025-07-03",
+    "imageUrl": "/dailies/rascal_daily_62.gif",
+    "savedDate": "2025-06-30",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "prison freak offs"
   },
   {
     "id": "rascal_daily_66",
-    "imageUrl": "/dailies/rascal_daily_66.gif",
-    "savedDate": "2025-07-04",
+    "imageUrl": "/dailies/rascal_daily_63.gif",
+    "savedDate": "2025-07-02",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "fun is poked at the emperors"
   },
   {
     "id": "rascal_daily_67",
-    "imageUrl": "/dailies/rascal_daily_67.gif",
-    "savedDate": "2025-07-06",
+    "imageUrl": "/dailies/rascal_daily_64.gif",
+    "savedDate": "2025-07-02",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "fînanciål adviçe"
   },
   {
     "id": "rascal_daily_68",
-    "imageUrl": "/dailies/rascal_daily_68.gif",
-    "savedDate": "2025-07-06",
+    "imageUrl": "/dailies/rascal_daily_65.gif",
+    "savedDate": "2025-07-03",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "alligator prison ",
+    "description": "what could go wrong?"
   },
   {
     "id": "rascal_daily_69",
-    "imageUrl": "/dailies/rascal_daily_69.gif",
-    "savedDate": "2025-07-07",
+    "imageUrl": "/dailies/rascal_daily_66.gif",
+    "savedDate": "2025-07-04",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "DRØPPING CÅNDIE$ LIKE BØMB$"
   },
   {
     "id": "rascal_daily_70",
-    "imageUrl": "/dailies/rascal_daily_70.gif",
-    "savedDate": "2025-07-08",
+    "imageUrl": "/dailies/rascal_daily_67.gif",
+    "savedDate": "2025-07-06",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "Gorsh homie! (Stay strapped or get clapped)",
+    "description": "la mara manda Mickey Squad 13 for life fool\n\naqui sin protección \nno sobrevives"
   },
   {
     "id": "rascal_daily_71",
-    "imageUrl": "/dailies/rascal_daily_71.gif",
-    "savedDate": "2025-07-10",
+    "imageUrl": "/dailies/rascal_daily_68.gif",
+    "savedDate": "2025-07-06",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "alligator prison 2"
   },
   {
     "id": "rascal_daily_72",
-    "imageUrl": "/dailies/rascal_daily_72.gif",
-    "savedDate": "2025-07-11",
+    "imageUrl": "/dailies/rascal_daily_69.gif",
+    "savedDate": "2025-07-07",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "Gazton tea party"
   },
   {
     "id": "rascal_daily_73",
-    "imageUrl": "/dailies/rascal_daily_73.gif",
-    "savedDate": "2025-07-11",
+    "imageUrl": "/dailies/rascal_daily_70.gif",
+    "savedDate": "2025-07-08",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "CLEVER GOYIM"
   },
   {
     "id": "rascal_daily_74",
-    "imageUrl": "/dailies/rascal_daily_74.gif",
-    "savedDate": "2025-07-12",
+    "imageUrl": "/dailies/rascal_daily_71.gif",
+    "savedDate": "2025-07-10",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "ØN THE 69th DAY",
+    "description": "commemorating the 69th RASCAL EVERYDAY / day 69 / and on the 69th day, the people rejoiced / for the memes were abundant / and the glitch dailies plentiful",
+    "minted": true,
+    "tokenId": 2,
+    "contractAddress": "0x49341b8ad260419d65bd47b23901f894fd54b16c",
+    "owner": "0xdF8b134fb7743aCD805eCDeE11335dd0Cca921fc"
   },
   {
     "id": "rascal_daily_75",
-    "imageUrl": "/dailies/rascal_daily_75.gif",
-    "savedDate": "2025-07-13",
+    "imageUrl": "/dailies/rascal_daily_72.gif",
+    "savedDate": "2025-07-11",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "ceci n'est pas une auctiøn hammer "
   },
   {
     "id": "rascal_daily_76",
-    "imageUrl": "/dailies/rascal_daily_76.gif",
-    "savedDate": "2025-07-14",
+    "imageUrl": "/dailies/rascal_daily_73.gif",
+    "savedDate": "2025-07-11",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "echos make landfill"
   },
   {
     "id": "rascal_daily_77",
-    "imageUrl": "/dailies/rascal_daily_77.gif",
-    "savedDate": "2025-07-15",
+    "imageUrl": "/dailies/rascal_daily_74.gif",
+    "savedDate": "2025-07-12",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "spring cleaning"
   },
   {
     "id": "rascal_daily_78",
-    "imageUrl": "/dailies/rascal_daily_78.gif",
-    "savedDate": "2025-07-15",
+    "imageUrl": "/dailies/rascal_daily_75.gif",
+    "savedDate": "2025-07-13",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "no days off"
   },
   {
     "id": "rascal_daily_79",
-    "imageUrl": "/dailies/rascal_daily_79.gif",
-    "savedDate": "2025-07-16",
+    "imageUrl": "/dailies/rascal_daily_76.gif",
+    "savedDate": "2025-07-14",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "DåILY CøMMUTE"
   },
   {
     "id": "rascal_daily_80",
-    "imageUrl": "/dailies/rascal_daily_80.gif",
-    "savedDate": "2025-07-17",
+    "imageUrl": "/dailies/rascal_daily_77.gif",
+    "savedDate": "2025-07-15",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "on the other side",
+    "description": "i çlosed my eye$\n   ƒilled with ƒeår \n  as ∂eåth tøøk me\n\n but when i øpened †hem\n   i was filled with joy\n to see what waited"
   },
   {
     "id": "rascal_daily_81",
-    "imageUrl": "/dailies/rascal_daily_81.gif",
-    "savedDate": "2025-07-18",
+    "imageUrl": "/dailies/rascal_daily_78.gif",
+    "savedDate": "2025-07-15",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "...rainbows and blond hair...."
   },
   {
     "id": "rascal_daily_82",
-    "imageUrl": "/dailies/rascal_daily_82.gif",
-    "savedDate": "2025-07-20",
+    "imageUrl": "/dailies/rascal_daily_80.gif",
+    "savedDate": "2025-07-17",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "EASY MØNEY"
   },
   {
     "id": "rascal_daily_83",
-    "imageUrl": "/dailies/rascal_daily_83.gif",
-    "savedDate": "2025-07-21",
+    "imageUrl": "/dailies/rascal_daily_81.gif",
+    "savedDate": "2025-07-18",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "Ø฿ɆɎ ₵Ø₦$Ʉ₥Ɇ ₵Ø₦₣ØⱤ₥"
   },
   {
     "id": "rascal_daily_84",
-    "imageUrl": "/dailies/rascal_daily_84.gif",
-    "savedDate": "2025-07-22",
+    "imageUrl": "/dailies/rascal_daily_82.gif",
+    "savedDate": "2025-07-20",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "moonolith"
   },
   {
     "id": "rascal_daily_85",
-    "imageUrl": "/dailies/rascal_daily_85.gif",
-    "savedDate": "2025-07-23",
+    "imageUrl": "/dailies/rascal_daily_83.gif",
+    "savedDate": "2025-07-21",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "Ø₮ⱧɆⱤ₩ł₴Ɇ ₣₳₥łⱠł₳Ɽ rɆ₳Ⱡł₮Ɏ "
   },
   {
     "id": "rascal_daily_86",
-    "imageUrl": "/dailies/rascal_daily_86.gif",
-    "savedDate": "2025-07-26",
+    "imageUrl": "/dailies/rascal_daily_84.gif",
+    "savedDate": "2025-07-22",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "FØR ØZZY",
+    "description": "RASCAL EVERYDAY #83 / a bat in honor of a legend / Ozzy Osbourne RIP / funds go to The Michael J. Fox Foundation / to fight Parkinson's disease / GOING OFF THE RAILS ON A CRAZY TRAIN",
+    "minted": true,
+    "tokenId": 5,
+    "contractAddress": "0x49341b8ad260419d65bd47b23901f894fd54b16c",
+    "owner": "0xC8E4813877F7fFe878aB2e198114bDFD3897C94D"
   },
   {
     "id": "rascal_daily_87",
-    "imageUrl": "/dailies/rascal_daily_87.gif",
-    "savedDate": "2025-07-26",
+    "imageUrl": "/dailies/rascal_daily_85.gif",
+    "savedDate": "2025-07-23",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "WINGS"
   },
   {
     "id": "rascal_daily_88",
-    "imageUrl": "/dailies/rascal_daily_88.mov",
-    "savedDate": "2025-07-27",
+    "imageUrl": "/dailies/rascal_daily_86.gif",
+    "savedDate": "2025-07-26",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "executor"
   },
   {
     "id": "rascal_daily_89",
-    "imageUrl": "/dailies/rascal_daily_89.mp4",
-    "savedDate": "2025-07-27",
+    "imageUrl": "/dailies/rascal_daily_87.gif",
+    "savedDate": "2025-07-26",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": ""
   },
   {
     "id": "rascal_daily_90",
-    "imageUrl": "/dailies/rascal_daily_90.gif",
-    "savedDate": "2025-07-28",
+    "imageUrl": "/dailies/rascal_daily_88.mov",
+    "savedDate": "2025-07-27",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "Obsolete"
   },
   {
     "id": "rascal_daily_91",
-    "imageUrl": "/dailies/rascal_daily_91.mp4",
-    "savedDate": "2025-07-30",
+    "imageUrl": "/dailies/rascal_daily_89.mp4",
+    "savedDate": "2025-07-27",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "life"
   },
   {
     "id": "rascal_daily_92",
-    "imageUrl": "/dailies/rascal_daily_92.gif",
-    "savedDate": "2025-07-30",
+    "imageUrl": "/dailies/rascal_daily_90.gif",
+    "savedDate": "2025-07-28",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "leaked selfie"
   },
   {
     "id": "rascal_daily_93",
-    "imageUrl": "/dailies/rascal_daily_93.gif",
+    "imageUrl": "/dailies/rascal_daily_91.mp4",
     "savedDate": "2025-07-30",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "shark in yellow"
   },
   {
     "id": "rascal_daily_94",
+    "imageUrl": "/dailies/rascal_daily_92.gif",
+    "savedDate": "2025-07-30",
+    "status": "not_listed",
+    "tags": [],
+    "title": "would you love me again if i gave you this flower?"
+  },
+  {
+    "id": "rascal_daily_95",
     "imageUrl": "/dailies/rascal_daily_94.mp4",
     "savedDate": "2025-08-01",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_95",
+    "id": "rascal_daily_96",
     "imageUrl": "/dailies/rascal_daily_95.mp4",
     "savedDate": "2025-08-01",
     "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_96",
-    "imageUrl": "/dailies/rascal_daily_96.gif",
-    "savedDate": "2025-08-03",
-    "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "you who will not grow",
+    "description": "will find your answers in the dirt "
   },
   {
     "id": "rascal_daily_97",
-    "imageUrl": "/dailies/rascal_daily_97.gif",
+    "imageUrl": "/dailies/rascal_daily_96.gif",
     "savedDate": "2025-08-03",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "late night degen dna"
   },
   {
     "id": "rascal_daily_98",
     "imageUrl": "/dailies/rascal_daily_98.gif",
     "savedDate": "2025-08-04",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "jpegs pulled into the cloud",
+    "description": "is all this\na hallucination?"
   },
   {
     "id": "rascal_daily_99",
@@ -697,7 +837,8 @@
     "imageUrl": "/dailies/rascal_daily_100.gif",
     "savedDate": "2025-08-08",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "girl with the pure fury"
   },
   {
     "id": "rascal_daily_101",
@@ -711,580 +852,646 @@
     "imageUrl": "/dailies/rascal_daily_102.gif",
     "savedDate": "2025-08-09",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the character rig system \nhas taken control of the artist"
   },
   {
     "id": "rascal_daily_103",
     "imageUrl": "/dailies/rascal_daily_103.gif",
     "savedDate": "2025-08-09",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "ASCII FELLOW 1"
   },
   {
     "id": "rascal_daily_104",
-    "imageUrl": "/dailies/rascal_daily_104.gif",
-    "savedDate": "2025-08-11",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_105",
     "imageUrl": "/dailies/rascal_daily_105.gif",
     "savedDate": "2025-08-12",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the mind hacker"
   },
   {
-    "id": "rascal_daily_106",
+    "id": "rascal_daily_105",
     "imageUrl": "/dailies/rascal_daily_106.gif",
     "savedDate": "2025-08-13",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the cat's out of the bag",
+    "description": "do not wait to make it happen"
   },
   {
-    "id": "rascal_daily_107",
-    "imageUrl": "/dailies/rascal_daily_107.gif",
-    "savedDate": "2025-08-15",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_108",
+    "id": "rascal_daily_106",
     "imageUrl": "/dailies/rascal_daily_108.gif",
     "savedDate": "2025-08-15",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the end of all wars"
   },
   {
-    "id": "rascal_daily_109",
-    "imageUrl": "/dailies/rascal_daily_109.mp4",
-    "savedDate": "2025-08-16",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_110",
+    "id": "rascal_daily_107",
     "imageUrl": "/dailies/rascal_daily_110.gif",
     "savedDate": "2025-08-16",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "all ye gather round to bath in the warming glow of the CRTree",
+    "description": "relax for he will only judge thee for the purity of your soul"
   },
   {
-    "id": "rascal_daily_111",
+    "id": "rascal_daily_108",
     "imageUrl": "/dailies/rascal_daily_111.gif",
     "savedDate": "2025-08-17",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_112",
+    "id": "rascal_daily_109",
     "imageUrl": "/dailies/rascal_daily_112.gif",
     "savedDate": "2025-08-18",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_113",
+    "id": "rascal_daily_110",
     "imageUrl": "/dailies/rascal_daily_113.gif",
     "savedDate": "2025-08-19",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_114",
-    "imageUrl": "/dailies/rascal_daily_114.gif",
-    "savedDate": "2025-08-19",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_115",
+    "id": "rascal_daily_111",
     "imageUrl": "/dailies/rascal_daily_115.gif",
     "savedDate": "2025-08-22",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "deep în thøught___"
   },
   {
-    "id": "rascal_daily_116",
-    "imageUrl": "/dailies/rascal_daily_116.gif",
-    "savedDate": "2025-08-24",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_117",
+    "id": "rascal_daily_112",
     "imageUrl": "/dailies/rascal_daily_117.gif",
     "savedDate": "2025-08-24",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "eth on a 5k run"
   },
   {
-    "id": "rascal_daily_118",
+    "id": "rascal_daily_113",
     "imageUrl": "/dailies/rascal_daily_118.gif",
     "savedDate": "2025-08-25",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "flight path"
   },
   {
-    "id": "rascal_daily_119",
+    "id": "rascal_daily_114",
     "imageUrl": "/dailies/rascal_daily_119.gif",
     "savedDate": "2025-08-26",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "space cadillac"
   },
   {
-    "id": "rascal_daily_120",
-    "imageUrl": "/dailies/rascal_daily_120.gif",
-    "savedDate": "2025-08-27",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_121",
+    "id": "rascal_daily_115",
     "imageUrl": "/dailies/rascal_daily_121.gif",
     "savedDate": "2025-08-28",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "Ꞇዛꗛ ᖘĬ𐠷ELꕷ ዛᕔᕓꗛ Ꮍꗞꚶ"
   },
   {
-    "id": "rascal_daily_122",
+    "id": "rascal_daily_116",
     "imageUrl": "/dailies/rascal_daily_122.gif",
     "savedDate": "2025-09-01",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "broken heart subcommittee",
+    "description": "after all of it\n      when it settled\n    he found himself\n        not just a chartered member of\n            tthe broken heart subcommittee\n                    but changed\n                  to a monster\n              who would drain you\n            like a fucking vampire"
   },
   {
-    "id": "rascal_daily_123",
+    "id": "rascal_daily_117",
     "imageUrl": "/dailies/rascal_daily_123.gif",
     "savedDate": "2025-09-01",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "it's going to be ØØØK"
   },
   {
-    "id": "rascal_daily_124",
+    "id": "rascal_daily_118",
     "imageUrl": "/dailies/rascal_daily_124.gif",
     "savedDate": "2025-09-01",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_125",
+    "id": "rascal_daily_119",
     "imageUrl": "/dailies/rascal_daily_125.gif",
     "savedDate": "2025-09-03",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "₲EⱤłØ₵ⱤA₵Ɏ 2: Ʉ₦ł₮ɆĐ $₮₳₮Ɇ$ Ø₣ ĐɆ₵₳Ɏ"
   },
   {
-    "id": "rascal_daily_126",
+    "id": "rascal_daily_120",
     "imageUrl": "/dailies/rascal_daily_126.gif",
     "savedDate": "2025-09-05",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "silk søng snow crash",
+    "description": "the second coming"
   },
   {
-    "id": "rascal_daily_127",
-    "imageUrl": "/dailies/rascal_daily_127.gif",
-    "savedDate": "2025-09-05",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_128",
+    "id": "rascal_daily_121",
     "imageUrl": "/dailies/rascal_daily_128.mp4",
     "savedDate": "2025-09-05",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "crypto whale"
   },
   {
-    "id": "rascal_daily_129",
-    "imageUrl": "/dailies/rascal_daily_129.gif",
-    "savedDate": "2025-09-05",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_130",
+    "id": "rascal_daily_122",
     "imageUrl": "/dailies/rascal_daily_130.gif",
     "savedDate": "2025-09-06",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "skull piano 1"
   },
   {
-    "id": "rascal_daily_131",
-    "imageUrl": "/dailies/rascal_daily_131.gif",
-    "savedDate": "2025-09-06",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_132",
+    "id": "rascal_daily_123",
     "imageUrl": "/dailies/rascal_daily_132.gif",
     "savedDate": "2025-09-06",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "skull piano 2"
   },
   {
-    "id": "rascal_daily_133",
-    "imageUrl": "/dailies/rascal_daily_133.gif",
-    "savedDate": "2025-09-06",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_134",
-    "imageUrl": "/dailies/rascal_daily_134.gif",
-    "savedDate": "2025-09-06",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_135",
-    "imageUrl": "/dailies/rascal_daily_135.gif",
-    "savedDate": "2025-09-06",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_136",
+    "id": "rascal_daily_124",
     "imageUrl": "/dailies/rascal_daily_136.gif",
     "savedDate": "2025-09-08",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "PA"
   },
   {
-    "id": "rascal_daily_137",
+    "id": "rascal_daily_125",
     "imageUrl": "/dailies/rascal_daily_137.gif",
     "savedDate": "2025-09-08",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_138",
+    "id": "rascal_daily_126",
     "imageUrl": "/dailies/rascal_daily_138.gif",
     "savedDate": "2025-09-10",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "tin boy soldiers"
   },
   {
-    "id": "rascal_daily_139",
+    "id": "rascal_daily_127",
     "imageUrl": "/dailies/rascal_daily_139.gif",
     "savedDate": "2025-09-10",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "our apple event"
   },
   {
-    "id": "rascal_daily_140",
+    "id": "rascal_daily_128",
     "imageUrl": "/dailies/rascal_daily_140.png",
     "savedDate": "2025-09-11",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "it's the children who are wrong"
   },
   {
-    "id": "rascal_daily_141",
+    "id": "rascal_daily_129",
     "imageUrl": "/dailies/rascal_daily_141.gif",
     "savedDate": "2025-09-11",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "spray the cities of the world 1"
   },
   {
-    "id": "rascal_daily_142",
+    "id": "rascal_daily_130",
     "imageUrl": "/dailies/rascal_daily_142.gif",
     "savedDate": "2025-09-11",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "spray the cities of the world 2"
   },
   {
-    "id": "rascal_daily_143",
+    "id": "rascal_daily_131",
     "imageUrl": "/dailies/rascal_daily_143.gif",
     "savedDate": "2025-09-12",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_144",
+    "id": "rascal_daily_132",
     "imageUrl": "/dailies/rascal_daily_144.gif",
     "savedDate": "2025-09-13",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "WHOIS?\n                 rascalA, RascalB, RascalC......?͜?̝ͬ͘?̻̍",
+    "description": "do you want to play a game?"
   },
   {
-    "id": "rascal_daily_145",
+    "id": "rascal_daily_133",
     "imageUrl": "/dailies/rascal_daily_145.gif",
     "savedDate": "2025-09-13",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_146",
+    "id": "rascal_daily_134",
     "imageUrl": "/dailies/rascal_daily_146.gif",
     "savedDate": "2025-09-13",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_147",
+    "id": "rascal_daily_135",
     "imageUrl": "/dailies/rascal_daily_147.gif",
     "savedDate": "2025-09-13",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "third earth"
   },
   {
-    "id": "rascal_daily_148",
+    "id": "rascal_daily_136",
     "imageUrl": "/dailies/rascal_daily_148.gif",
     "savedDate": "2025-09-13",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the watcher"
   },
   {
-    "id": "rascal_daily_149",
+    "id": "rascal_daily_137",
     "imageUrl": "/dailies/rascal_daily_149.gif",
     "savedDate": "2025-09-16",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "one bullet ah ah ah"
   },
   {
-    "id": "rascal_daily_150",
+    "id": "rascal_daily_138",
     "imageUrl": "/dailies/rascal_daily_150.gif",
     "savedDate": "2025-09-16",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_151",
+    "id": "rascal_daily_139",
     "imageUrl": "/dailies/rascal_daily_151.gif",
     "savedDate": "2025-09-16",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "would you love me again if i gave you this flower alt"
   },
   {
-    "id": "rascal_daily_152",
+    "id": "rascal_daily_140",
     "imageUrl": "/dailies/rascal_daily_152.mp4",
     "savedDate": "2025-09-17",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "i am rascalx"
   },
   {
-    "id": "rascal_daily_153",
+    "id": "rascal_daily_141",
     "imageUrl": "/dailies/rascal_daily_153.gif",
     "savedDate": "2025-09-17",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_154",
-    "imageUrl": "/dailies/rascal_daily_154.mp4",
-    "savedDate": "2025-09-17",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_155",
+    "id": "rascal_daily_142",
     "imageUrl": "/dailies/rascal_daily_155.gif",
     "savedDate": "2025-09-17",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_156",
+    "id": "rascal_daily_143",
     "imageUrl": "/dailies/rascal_daily_156.mp4",
     "savedDate": "2025-09-18",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "freedom of speech",
+    "description": "the signal is rerouted\nthrough alley walls painted with static,\nthrough the backdoor hum of circuits...\nthey forgot to lock\n\none from the eternal muse\ninfecting norman rockwell"
   },
   {
-    "id": "rascal_daily_157",
+    "id": "rascal_daily_144",
     "imageUrl": "/dailies/rascal_daily_157.gif",
     "savedDate": "2025-09-19",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "shithead",
+    "description": "fcc"
   },
   {
-    "id": "rascal_daily_158",
+    "id": "rascal_daily_145",
     "imageUrl": "/dailies/rascal_daily_158.mp4",
     "savedDate": "2025-09-20",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "*grumbles in marge*"
   },
   {
-    "id": "rascal_daily_159",
+    "id": "rascal_daily_146",
     "imageUrl": "/dailies/rascal_daily_159.png",
     "savedDate": "2025-09-21",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "opportunist"
   },
   {
-    "id": "rascal_daily_160",
+    "id": "rascal_daily_147",
+    "imageUrl": "/dailies/rascal_daily_192.gif",
+    "savedDate": "2025-09-21",
+    "status": "not_listed",
+    "tags": [],
+    "title": "disobey politely"
+  },
+  {
+    "id": "rascal_daily_148",
     "imageUrl": "/dailies/rascal_daily_160.gif",
     "savedDate": "2025-09-22",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "fatal exception /// net::403 (Forbidden)"
   },
   {
-    "id": "rascal_daily_161",
+    "id": "rascal_daily_149",
+    "imageUrl": "/dailies/rascal_daily_193.gif",
+    "savedDate": "2025-09-22",
+    "status": "not_listed",
+    "tags": [],
+    "title": "DEJ∆ VU"
+  },
+  {
+    "id": "rascal_daily_150",
     "imageUrl": "/dailies/rascal_daily_161.gif",
     "savedDate": "2025-09-23",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "beware big autism"
   },
   {
-    "id": "rascal_daily_162",
+    "id": "rascal_daily_151",
     "imageUrl": "/dailies/rascal_daily_162.gif",
     "savedDate": "2025-09-24",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "knockout"
   },
   {
-    "id": "rascal_daily_163",
+    "id": "rascal_daily_152",
     "imageUrl": "/dailies/rascal_daily_163.gif",
     "savedDate": "2025-09-25",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "*chanting*",
+    "description": "kërfuffle, havoc, pixels, mischief, whimsy, bedlam, anarchy, loot, turmoil, uproar, ruckus, tumult, shenanigans, antics, mutiny, rebellion, hijinks, tomfoolery, loot, uproar, ruckus, pandemonium, shits, giggles, winions, winions, winions, winions, winions, winions"
   },
   {
-    "id": "rascal_daily_164",
+    "id": "rascal_daily_153",
     "imageUrl": "/dailies/rascal_daily_164.gif",
     "savedDate": "2025-09-26",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "winions are coming"
   },
   {
-    "id": "rascal_daily_165",
+    "id": "rascal_daily_154",
     "imageUrl": "/dailies/rascal_daily_165.gif",
     "savedDate": "2025-09-27",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "fly on the wall"
   },
   {
-    "id": "rascal_daily_166",
+    "id": "rascal_daily_155",
+    "imageUrl": "/dailies/rascal_daily_194.gif",
+    "savedDate": "2025-09-27",
+    "status": "not_listed",
+    "tags": [],
+    "title": "the prince of fløwers"
+  },
+  {
+    "id": "rascal_daily_156",
     "imageUrl": "/dailies/rascal_daily_166.gif",
     "savedDate": "2025-09-28",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_167",
+    "id": "rascal_daily_157",
+    "imageUrl": "/dailies/rascal_daily_195.gif",
+    "savedDate": "2025-09-30",
+    "status": "not_listed",
+    "tags": [],
+    "title": "only gens"
+  },
+  {
+    "id": "rascal_daily_158",
+    "imageUrl": "/dailies/rascal_daily_196.gif",
+    "savedDate": "2025-10-03",
+    "status": "not_listed",
+    "tags": [],
+    "title": "quand viendra la semaine finale d’octobre ils se révéleront"
+  },
+  {
+    "id": "rascal_daily_159",
     "imageUrl": "/dailies/rascal_daily_167.gif",
     "savedDate": "2025-10-04",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "FTA"
   },
   {
-    "id": "rascal_daily_168",
+    "id": "rascal_daily_160",
     "imageUrl": "/dailies/rascal_daily_168.gif",
     "savedDate": "2025-10-05",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "THE SHADOWBAN"
   },
   {
-    "id": "rascal_daily_169",
+    "id": "rascal_daily_161",
+    "imageUrl": "/dailies/rascal_daily_197.gif",
+    "savedDate": "2025-10-06",
+    "status": "not_listed",
+    "tags": [],
+    "title": "no, more ai baby"
+  },
+  {
+    "id": "rascal_daily_162",
     "imageUrl": "/dailies/rascal_daily_169.gif",
     "savedDate": "2025-10-09",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the final winions selfie"
   },
   {
-    "id": "rascal_daily_170",
+    "id": "rascal_daily_163",
     "imageUrl": "/dailies/rascal_daily_170.gif",
     "savedDate": "2025-10-10",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "it ain't easy being green, homie"
   },
   {
-    "id": "rascal_daily_171",
+    "id": "rascal_daily_164",
     "imageUrl": "/dailies/rascal_daily_171.gif",
     "savedDate": "2025-10-11",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "would you wear the mask?",
+    "description": "what if it could give you \n           great power? \n      cure you from pain\n     .. would you?"
   },
   {
-    "id": "rascal_daily_172",
+    "id": "rascal_daily_165",
     "imageUrl": "/dailies/rascal_daily_172.gif",
     "savedDate": "2025-11-25",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "paint your way out of hell"
   },
   {
-    "id": "rascal_daily_173",
+    "id": "rascal_daily_166",
     "imageUrl": "/dailies/rascal_daily_173.gif",
     "savedDate": "2025-12-01",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "camite warrior"
   },
   {
-    "id": "rascal_daily_174",
-    "imageUrl": "/dailies/rascal_daily_174.gif",
-    "savedDate": "2025-12-04",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_175",
+    "id": "rascal_daily_167",
     "imageUrl": "/dailies/rascal_daily_175.gif",
     "savedDate": "2025-12-04",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "stick em up baby"
   },
   {
-    "id": "rascal_daily_176",
+    "id": "rascal_daily_168",
     "imageUrl": "/dailies/rascal_daily_176.gif",
+    "savedDate": "2025-12-06",
+    "status": "not_listed",
+    "tags": [],
+    "description": "the winiøns \ncould not be more pleased\nto see the shenanigans in miami\nbravo, they say\nto \n@beeple\n \nfor showing the trad art world\nthe mischievous beauty\nof digital art\nand what we are building here\nthe winions give you therefore, mike \nthis honorary...\n🐕👹",
+    "title": "honorary"
+  },
+  {
+    "id": "rascal_daily_169",
+    "imageUrl": "/dailies/rascal_daily_198.gif",
     "savedDate": "2025-12-06",
     "status": "not_listed",
     "tags": []
   },
   {
-    "id": "rascal_daily_177",
+    "id": "rascal_daily_170",
     "imageUrl": "/dailies/rascal_daily_177.mp4",
     "savedDate": "2025-12-07",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "i am rascalx"
   },
   {
-    "id": "rascal_daily_178",
+    "id": "rascal_daily_171",
     "imageUrl": "/dailies/rascal_daily_178.gif",
     "savedDate": "2025-12-10",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": ""
   },
   {
-    "id": "rascal_daily_179",
-    "imageUrl": "/dailies/rascal_daily_179.mp4",
-    "savedDate": "2025-12-11",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_180",
+    "id": "rascal_daily_172",
     "imageUrl": "/dailies/rascal_daily_180.mp4",
     "savedDate": "2025-12-11",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "digital microslave waiting for the bus"
   },
   {
-    "id": "rascal_daily_181",
+    "id": "rascal_daily_173",
     "imageUrl": "/dailies/rascal_daily_181.gif",
     "savedDate": "2025-12-12",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the examination of the self",
+    "description": "📱the absurdity\n📱of thinking we're watching others\n📱art and content from others\n📱as we stare blankly \n📱into the screen\n📱we are examining \n📱naught but ourselves"
   },
   {
-    "id": "rascal_daily_182",
-    "imageUrl": "/dailies/rascal_daily_182.mp4",
-    "savedDate": "2025-12-15",
-    "status": "not_listed",
-    "tags": []
-  },
-  {
-    "id": "rascal_daily_183",
+    "id": "rascal_daily_174",
     "imageUrl": "/dailies/rascal_daily_183.gif",
     "savedDate": "2025-12-15",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "the temple_",
+    "description": "    what separated them\n   from technological civilizations of the time and before\n was the understanding of the number 0\nwho were they?"
   },
   {
-    "id": "rascal_daily_184",
+    "id": "rascal_daily_175",
+    "imageUrl": "/dailies/rascal_daily_202.webp",
+    "savedDate": "2025-12-15",
+    "status": "not_listed",
+    "tags": [],
+    "title": "speechless"
+  },
+  {
+    "id": "rascal_daily_176",
+    "imageUrl": "/dailies/rascal_daily_201.gif",
+    "savedDate": "2025-12-15",
+    "status": "not_listed",
+    "tags": [],
+    "title": "ascension - audience to the machine"
+  },
+  {
+    "id": "rascal_daily_177",
+    "imageUrl": "/dailies/rascal_daily_200.gif",
+    "savedDate": "2025-12-15",
+    "status": "not_listed",
+    "tags": [],
+    "title": "what the machine shows.."
+  },
+  {
+    "id": "rascal_daily_178",
+    "imageUrl": "/dailies/rascal_daily_203.gif",
+    "savedDate": "2025-12-16",
+    "status": "not_listed",
+    "tags": [],
+    "title": "the audience to the machine"
+  },
+  {
+    "id": "rascal_daily_179",
+    "imageUrl": "/dailies/rascal_daily_205.gif",
+    "savedDate": "2025-12-17",
+    "status": "not_listed",
+    "tags": [],
+    "title": "rascalxcopycat"
+  },
+  {
+    "id": "rascal_daily_180",
     "imageUrl": "/dailies/rascal_daily_184.gif",
     "savedDate": "2025-12-18",
     "status": "not_listed",
-    "tags": []
+    "tags": [],
+    "title": "gainfully employed"
+  },
+  {
+    "id": "rascal_daily_181",
+    "imageUrl": "/dailies/rascal_daily_190.gif",
+    "savedDate": "2026-02-05",
+    "status": "not_listed",
+    "tags": [],
+    "title": "comply or die"
+  },
+  {
+    "id": "rascal_daily_182",
+    "imageUrl": "/dailies/rascal_daily_206.jpeg",
+    "savedDate": "2026-02-09",
+    "status": "not_listed",
+    "tags": [],
+    "title": "fully on chain 200k"
   }
 ]

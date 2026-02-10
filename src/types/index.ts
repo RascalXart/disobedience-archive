@@ -15,10 +15,16 @@ export interface Artwork {
 
 export interface DailyArtwork {
   id: string;
+  title?: string;
+  description?: string;
   imageUrl: string;
   savedDate: string;
   status: ArtworkStatus;
   tags: string[];
+  minted?: boolean;
+  tokenId?: number;
+  contractAddress?: string;
+  owner?: string;
 }
 
 export interface Drop {

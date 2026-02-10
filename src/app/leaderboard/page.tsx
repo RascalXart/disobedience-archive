@@ -212,7 +212,7 @@ export default function LeaderboardPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className={`mono text-xs hover:text-white hover:underline underline-offset-2 cursor-pointer transition-colors truncate block ${
-                            isTop ? 'text-[#c9a84c]' : 'text-[#999]'
+                            isTop ? 'text-[#c9a84c]' : ens ? 'text-[#ccc]' : 'text-[#999]'
                           }`}
                           title={holder.address}
                         >
