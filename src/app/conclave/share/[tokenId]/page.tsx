@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getAllCollectionNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
-import { proxyImageForTwitter } from '@/lib/image-proxy'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 
@@ -28,12 +27,10 @@ export async function generateMetadata({ params }: ConclaveSharePageProps): Prom
     }
   }
 
-  const rawImageUrl = nft.imageUrl ? resolveIpfsUrl(nft.imageUrl) || nft.imageUrl : undefined
-  // Use environment variable or default for site URL
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.xyz'
-  
-  // For Twitter/Open Graph, proxy the IPFS image through a service Twitter can access
-  const imageUrl = rawImageUrl ? proxyImageForTwitter(rawImageUrl) : undefined
+
+  // Use static JPG preview for OG image — Twitter can't handle large IPFS GIFs (>5MB)
+  const ogImageUrl = `${siteUrl.replace(/\/+$/, '')}/og/conclave/${tokenId}.jpg`
 
   return {
     title: `${nft.name} | CØNCLAVE`,
@@ -43,22 +40,13 @@ export async function generateMetadata({ params }: ConclaveSharePageProps): Prom
       description: nft.description || `${nft.name} from the CØNCLAVE collection`,
       type: 'website',
       url: `${siteUrl.replace(/\/+$/, '')}/conclave/share/${tokenId}`,
-      images: imageUrl
-        ? [
-            {
-              url: imageUrl,
-              width: 1200,
-              height: 1200,
-              alt: nft.name,
-            },
-          ]
-        : [],
+      images: [{ url: ogImageUrl, width: 600, height: 600, alt: nft.name }],
     },
     twitter: {
       card: 'summary_large_image',
       title: nft.name,
       description: nft.description || `${nft.name} from the CØNCLAVE collection`,
-      images: imageUrl ? [imageUrl] : [],
+      images: [ogImageUrl],
     },
   }
 }

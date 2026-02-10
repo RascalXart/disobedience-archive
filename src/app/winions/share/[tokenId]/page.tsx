@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
-import { proxyImageForTwitter } from '@/lib/image-proxy'
 import type { Metadata } from 'next'
 import Image from 'next/image'
 
@@ -28,13 +27,10 @@ export async function generateMetadata({ params }: WinionSharePageProps): Promis
     }
   }
 
-  const rawImageUrl = nft.imageUrl ? resolveIpfsUrl(nft.imageUrl) || nft.imageUrl : undefined
-  // Use environment variable or default for site URL
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.xyz'
-  
-  // For Twitter/Open Graph, proxy the IPFS image through a service Twitter can access
-  // This ensures Twitter's crawler can fetch the image
-  const imageUrl = rawImageUrl ? proxyImageForTwitter(rawImageUrl) : undefined
+
+  // Use static JPG preview for OG image — Twitter can't handle large IPFS GIFs (>5MB)
+  const ogImageUrl = `${siteUrl.replace(/\/+$/, '')}/og/winions/${tokenId}.jpg`
 
   // Use tokenId to construct display name so it matches the URL
   const displayName = `Winiøn #${tokenId}`
@@ -47,22 +43,13 @@ export async function generateMetadata({ params }: WinionSharePageProps): Promis
       description: nft.description || `${displayName} from the WINIØNS collection`,
       type: 'website',
       url: `${siteUrl.replace(/\/+$/, '')}/winions/share/${tokenId}`,
-      images: imageUrl
-        ? [
-            {
-              url: imageUrl,
-              width: 1200,
-              height: 1200,
-              alt: displayName,
-            },
-          ]
-        : [],
+      images: [{ url: ogImageUrl, width: 600, height: 600, alt: displayName }],
     },
     twitter: {
       card: 'summary_large_image',
       title: displayName,
       description: nft.description || `${displayName} from the WINIØNS collection`,
-      images: imageUrl ? [imageUrl] : [],
+      images: [ogImageUrl],
     },
   }
 }
