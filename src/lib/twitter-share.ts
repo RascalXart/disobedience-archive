@@ -50,7 +50,7 @@ export function generateTwitterShareUrl(data: ShareData): string {
   // This allows the GIF to appear in the tweet preview
   let url = data.url
   if (!url && data.tokenId && data.collection) {
-    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.art')
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.xyz')
     const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
     // Ensure proper path construction - avoid double slashes
     const cleanBasePath = basePath ? (basePath.startsWith('/') ? basePath : `/${basePath}`).replace(/\/+$/, '') : ''

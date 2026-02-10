@@ -6,7 +6,7 @@ import { AnimatedNoise } from '@/components/AnimatedNoise'
 // Favicon configuration - use absolute paths for production
 // Next.js static export handles public folder assets at root
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.art'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.xyz'),
   title: 'Rascal Art',
   description: 'Anonymous crypto-art portfolio and storefront',
   icons: {

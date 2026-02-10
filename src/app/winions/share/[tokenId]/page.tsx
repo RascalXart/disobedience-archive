@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: WinionSharePageProps): Promis
 
   const rawImageUrl = nft.imageUrl ? resolveIpfsUrl(nft.imageUrl) || nft.imageUrl : undefined
   // Use environment variable or default for site URL
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.art'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.xyz'
   
   // For Twitter/Open Graph, proxy the IPFS image through a service Twitter can access
   // This ensures Twitter's crawler can fetch the image

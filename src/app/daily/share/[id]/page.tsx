@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: DailySharePageProps): Promise
     return { title: 'Not Found' }
   }
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.art'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.xyz'
   const title = (daily.title || daily.id.replace(/_/g, ' ')).toUpperCase()
   const description = daily.description || `${title} — Rascal Everydays`
   // imageUrl is already resolved to the full R2 CDN URL by getDailyById
