@@ -176,7 +176,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                 href={generateTwitterShareUrl({
                   title: (currentDaily.title || currentDaily.id.replace(/_/g, ' ')).toUpperCase(),
                   date: currentDaily.savedDate,
-                  imageUrl: resolveDailyMediaUrl(currentDaily.imageUrl),
+                  url: `${typeof window !== 'undefined' ? window.location.origin : ''}/daily/share/${currentDaily.id}`,
                 })}
                 target="_blank"
                 rel="noopener noreferrer"
