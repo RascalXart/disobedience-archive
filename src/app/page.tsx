@@ -318,18 +318,25 @@ export default function HomePage() {
     }
   }, [sortedDailies, isReversed]) // Re-run when dailies change
 
-  // Group by month
+  // Group by month, sorted chronologically
   const groupedByMonth = useMemo(() => {
-    const groups: { [key: string]: typeof sortedDailies } = {}
+    const groups: { [key: string]: { date: Date; items: typeof sortedDailies } } = {}
     sortedDailies.forEach((daily) => {
       const date = new Date(daily.savedDate)
       const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
       if (!groups[monthKey]) {
-        groups[monthKey] = []
+        groups[monthKey] = { date: new Date(date.getFullYear(), date.getMonth(), 1), items: [] }
       }
-      groups[monthKey].push(daily)
+      groups[monthKey].items.push(daily)
     })
-    return groups
+    const sorted = Object.entries(groups).sort(
+      ([, a], [, b]) => a.date.getTime() - b.date.getTime()
+    )
+    const result: { [key: string]: typeof sortedDailies } = {}
+    for (const [key, val] of sorted) {
+      result[key] = val.items
+    }
+    return result
   }, [sortedDailies])
 
   return (
