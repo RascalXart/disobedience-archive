@@ -384,6 +384,13 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
       {/* Distortion shadow */}
       <div className="absolute inset-0 -z-10 bg-[#000] opacity-0 group-hover:opacity-20 group-hover:scale-125 blur-xl transition-all duration-300" />
 
+      {/* Title below image */}
+      {daily.title && (
+        <div className="mono text-[8px] text-[#666] mt-1.5 leading-tight truncate tracking-wide">
+          {daily.title.toUpperCase()}
+        </div>
+      )}
+
       {/* Minted indicator — red circle, absolutely positioned so it doesn't affect grid spacing */}
       {daily.minted && (
         <div
