@@ -93,7 +93,7 @@ export function DriftingArchiveItem({ daily, index, size, onOpenModal }: Driftin
   ]
   const offset = offsetVariants[index % offsetVariants.length]
 
-  const isVideo = daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')
+  const isVideo = daily.imageUrl.includes('.mp4') || daily.imageUrl.includes('.mov')
   const mediaUrl = resolveDailyMediaUrl(daily.imageUrl)
 
   return (

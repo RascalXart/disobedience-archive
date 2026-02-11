@@ -10,6 +10,44 @@ import type { Artwork, DailyArtwork, Drop, Collection, CollectionNFT } from '@/t
 const BASE_PATH = '/disobedience-archive';
 
 /**
+ * Slugifies a title for use in filenames/URLs.
+ * Maps Nordic characters (ø→o, å→a, æ→ae) before stripping non-alphanumeric.
+ */
+function slugifyForFilename(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/ø/g, 'o')
+    .replace(/å/g, 'a')
+    .replace(/æ/g, 'ae')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    || 'untitled'
+}
+
+/**
+ * Resolves a daily imageUrl to a worker-proxied URL with a title-based filename.
+ * This controls the "Save Image As" filename in the browser.
+ * Falls back to "rascal-everyday-{num}" if no title is set.
+ */
+export function resolveDailyDisplayUrl(imageUrl: string, title: string | null | undefined, id: string): string {
+  const proxyBase = (process.env.NEXT_PUBLIC_IPFS_PROXY || 'https://ipfs-proxy.lascaux42693169.workers.dev').replace(/\/$/, '')
+
+  const dailiesMatch = imageUrl.match(/\/dailies\/([^/]+)$/)
+  if (!dailiesMatch) return resolveDailyMediaUrl(imageUrl)
+
+  const originalFilename = dailiesMatch[1]
+  const ext = originalFilename.split('.').pop() || 'gif'
+
+  const slug = title
+    ? slugifyForFilename(title)
+    : `rascal-everyday-${id.replace(/\D/g, '') || '0'}`
+
+  return `${proxyBase}/daily/${slug}.${ext}?src=${encodeURIComponent(originalFilename)}`
+}
+
+/**
  * Resolves daily media URLs to external hosting.
  * In production builds, NEXT_PUBLIC_MEDIA_BASE_URL is required.
  * No fallback to local /public/dailies paths.
@@ -79,7 +117,7 @@ export function getAllDailies(): DailyArtwork[] {
   
   cachedDailies = (dailiesData as DailyArtwork[]).map(daily => ({
     ...daily,
-    imageUrl: resolveDailyMediaUrl(daily.imageUrl)
+    imageUrl: resolveDailyDisplayUrl(daily.imageUrl, daily.title, daily.id)
   }));
   
   return cachedDailies;
@@ -90,7 +128,7 @@ export function getDailyById(id: string): DailyArtwork | undefined {
   if (daily) {
     return {
       ...daily,
-      imageUrl: resolveDailyMediaUrl(daily.imageUrl)
+      imageUrl: resolveDailyDisplayUrl(daily.imageUrl, daily.title, daily.id)
     };
   }
   return undefined;

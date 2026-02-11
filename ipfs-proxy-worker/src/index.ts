@@ -8,6 +8,8 @@ const GATEWAYS = [
   'https://dweb.link/ipfs/',
 ];
 
+const R2_BASE = 'https://pub-71ed1655b8674186957a0405561cd60a.r2.dev';
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
@@ -73,6 +75,53 @@ export default {
 
     if (url.pathname === '/health') {
       return new Response('OK', { status: 200, headers: { 'Content-Type': 'text/plain' } });
+    }
+
+    // Daily image proxy: /daily/{slug}.{ext}?src={r2-filename}
+    // Proxies R2 daily images with Content-Disposition to control "Save Image As" filename
+    const dailyMatch = url.pathname.match(/^\/daily\/(.+)$/);
+    if (dailyMatch) {
+      const desiredFilename = decodeURIComponent(dailyMatch[1]);
+      const r2Filename = url.searchParams.get('src');
+      if (!r2Filename) {
+        return new Response('Missing src parameter', { status: 400, headers: CORS_HEADERS });
+      }
+
+      // Cache key based on R2 filename + desired filename (so title changes get fresh entries)
+      const cacheUrl = new URL(url.toString());
+      const cacheKey = new Request(cacheUrl.toString(), request);
+
+      const cache = caches.default;
+      let cached = await cache.match(cacheKey);
+      if (cached) {
+        console.log('Daily cache HIT:', desiredFilename);
+        const headers = new Headers(cached.headers);
+        Object.entries(CACHE_HEADERS).forEach(([k, v]) => headers.set(k, v));
+        return new Response(cached.body, { status: cached.status, headers });
+      }
+
+      console.log('Daily cache MISS:', desiredFilename, '→', r2Filename);
+
+      const r2Url = `${R2_BASE}/dailies/${encodeURIComponent(r2Filename)}`;
+      try {
+        const r2Response = await fetchWithTimeout(r2Url, 15000);
+        if (!r2Response.ok) {
+          return new Response('R2 fetch failed', { status: r2Response.status, headers: CORS_HEADERS });
+        }
+
+        const headers = new Headers(r2Response.headers);
+        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+        headers.set('Access-Control-Allow-Origin', '*');
+        headers.set('Content-Disposition', `inline; filename="${desiredFilename}"`);
+
+        const responseToReturn = new Response(r2Response.body, { status: 200, headers });
+        const forCache = responseToReturn.clone();
+        ctx.waitUntil(cache.put(cacheKey, forCache));
+        return responseToReturn;
+      } catch (err) {
+        console.log('Daily fetch error:', r2Filename, (err as Error).message);
+        return new Response('R2 fetch failed', { status: 504, headers: CORS_HEADERS });
+      }
     }
 
     const match = url.pathname.match(/^\/ipfs\/(.+)$/);

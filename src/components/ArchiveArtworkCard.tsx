@@ -91,7 +91,7 @@ export function ArchiveArtworkCard({ daily, index }: ArchiveArtworkCardProps) {
         >
           {/* Image container - standardized square aspect ratio */}
           <div className="relative overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors aspect-square">
-            {daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov') ? (
+            {daily.imageUrl.includes('.mp4') || daily.imageUrl.includes('.mov') ? (
               shouldLoad ? (
               <video
                   ref={videoRef}

@@ -70,7 +70,7 @@ export function CompactArchiveCard({ daily, index, onClick }: CompactArchiveCard
     >
         {/* Museum placard-style container */}
         <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-all duration-500">
-          {daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov') ? (
+          {daily.imageUrl.includes('.mp4') || daily.imageUrl.includes('.mov') ? (
             shouldLoad ? (
             <motion.video
                 ref={videoRef}

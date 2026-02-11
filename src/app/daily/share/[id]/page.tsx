@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: DailySharePageProps): Promise
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.xyz'
   const title = (daily.title || daily.id.replace(/_/g, ' ')).toUpperCase()
   const description = daily.description || `${title} — Rascal Everydays`
-  // imageUrl is already resolved to the full R2 CDN URL by getDailyById
+  // imageUrl is resolved to the worker proxy URL by getDailyById
   const imageUrl = daily.imageUrl
 
   return {
@@ -55,7 +55,7 @@ export default async function DailySharePage({ params }: DailySharePageProps) {
   }
 
   const title = (daily.title || daily.id.replace(/_/g, ' ')).toUpperCase()
-  const isVideo = daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')
+  const isVideo = daily.imageUrl.includes('.mp4') || daily.imageUrl.includes('.mov')
 
   return (
     <main className="page-root text-white flex items-center justify-center p-4">

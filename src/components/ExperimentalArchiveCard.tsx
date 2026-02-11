@@ -56,7 +56,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY,
   const imgStateRef = useRef<ImgState>('idle')
   imgStateRef.current = imgState
 
-  const isVideo = daily.imageUrl.endsWith('.mp4') || daily.imageUrl.endsWith('.mov')
+  const isVideo = daily.imageUrl.includes('.mp4') || daily.imageUrl.includes('.mov')
   const mediaUrl = resolveDailyMediaUrl(daily.imageUrl)
   const thumbnailSrc = !isVideo ? getDailyThumbnailPath(daily.id) : null
 

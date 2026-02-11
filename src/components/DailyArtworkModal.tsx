@@ -90,7 +90,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
     if (e.target === e.currentTarget) onClose()
   }
 
-  const isVideo = currentDaily.imageUrl.endsWith('.mp4') || currentDaily.imageUrl.endsWith('.mov')
+  const isVideo = currentDaily.imageUrl.includes('.mp4') || currentDaily.imageUrl.includes('.mov')
 
   return (
     <AnimatePresence mode="wait">
@@ -153,7 +153,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                     decoding="sync"
                     style={{ 
                       willChange: 'transform',
-                      imageRendering: currentDaily.imageUrl.endsWith('.gif') ? 'auto' : 'auto',
+                      imageRendering: currentDaily.imageUrl.includes('.gif') ? 'auto' : 'auto',
                     }}
                     onError={(e) => {
                       console.error('Image failed to load:', resolveDailyMediaUrl(currentDaily.imageUrl), e)
@@ -216,7 +216,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                 <div className="flex items-start gap-4 border-b border-[#222] pb-4 terminal-reveal">
                   <span className="text-[#666] min-w-[60px] text-hover-glitch">FILE TYPE:</span>
                   <span className="text-[#999] terminal-reveal">
-                    {currentDaily.imageUrl?.includes('.') ? currentDaily.imageUrl.split('.').pop()?.toUpperCase() ?? '—' : '—'}
+                    {(() => { const p = (currentDaily.imageUrl?.split('?')[0] || ''); return p.includes('.') ? p.split('.').pop()?.toUpperCase() ?? '—' : '—' })()}
                   </span>
                 </div>
 
@@ -348,7 +348,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                     <div className="text-[#666] text-xs">{currentDaily.id.replace(/_/g, ' ').toUpperCase()}</div>
                   )}
                   <div><span className="text-[#666]">DATE:</span> {new Date(currentDaily.savedDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}</div>
-                  <div><span className="text-[#666]">FILE TYPE:</span> {currentDaily.imageUrl?.includes('.') ? currentDaily.imageUrl.split('.').pop()?.toUpperCase() ?? '—' : '—'}</div>
+                  <div><span className="text-[#666]">FILE TYPE:</span> {(() => { const p = (currentDaily.imageUrl?.split('?')[0] || ''); return p.includes('.') ? p.split('.').pop()?.toUpperCase() ?? '—' : '—' })()}</div>
                   <div><span className="text-[#666]">STATUS:</span> {currentDaily.minted ? 'MINTED' : currentDaily.status === 'not_listed' ? 'NOT MINTED' : currentDaily.status.toUpperCase().replace('_', ' ')}</div>
                   {currentDaily.minted && ownerDisplay && (
                     <div><span className="text-[#666]">OWNER:</span> {ownerDisplay}</div>
