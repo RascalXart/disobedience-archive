@@ -384,7 +384,7 @@ export function SmartIPFSImage({
       {/* Error overlay */}
       <div
         className="absolute inset-0 flex items-center justify-center bg-[#111] transition-opacity duration-200"
-        style={{ opacity: state === 'error' && !thumbLoaded ? 1 : 0 }}
+        style={{ opacity: state === 'error' && !thumbLoaded ? 1 : 0, pointerEvents: state === 'error' && !thumbLoaded ? 'auto' : 'none' }}
         aria-hidden={state !== 'error' || thumbLoaded}
       >
         <span className="text-gray-500 text-sm">Image unavailable</span>
