@@ -5,7 +5,6 @@ import { motion } from 'framer-motion'
 import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
 import { SmartIPFSImage, pauseAllIPFSLoads, resumeAllIPFSLoads } from '@/components/SmartIPFSImage'
-import { useProgressiveLoader } from '@/lib/progressive-loader'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
@@ -68,6 +67,10 @@ interface TraitFilter {
   value: string
   count: number
 }
+
+const GRID_GAP_PX = 12
+const GRID_OVERSCAN_ROWS = 3
+const GRID_LABEL_HEIGHT_PX = 24
 
 export default function WinionsPage() {
   const allNFTsRaw = getAllWinionsNFTs()
@@ -137,6 +140,11 @@ export default function WinionsPage() {
   const [isShuffled, setIsShuffled] = useState(false)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
   const [gridSize, setGridSize] = useState(180)
+  const gridScrollRef = useRef<HTMLDivElement>(null)
+  const gridMeasureRef = useRef<HTMLDivElement>(null)
+  const [gridScrollTop, setGridScrollTop] = useState(0)
+  const [gridViewportHeight, setGridViewportHeight] = useState(0)
+  const [gridViewportWidth, setGridViewportWidth] = useState(0)
   // Start with sidebar collapsed on mobile - always false initially to match SSR
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   
@@ -427,11 +435,73 @@ export default function WinionsPage() {
     }
   }, [allTraits])
 
-  const {
-    visibleItems,
-    hasMore,
-    sentinelRef,
-  } = useProgressiveLoader(filteredNFTs, 20)
+  useEffect(() => {
+    const scrollEl = gridScrollRef.current
+    const measureEl = gridMeasureRef.current
+    if (!scrollEl || !measureEl) return
+
+    const updateMetrics = () => {
+      setGridViewportHeight(scrollEl.clientHeight)
+      setGridViewportWidth(measureEl.clientWidth)
+      setGridScrollTop(scrollEl.scrollTop)
+    }
+
+    updateMetrics()
+
+    const onScroll = () => setGridScrollTop(scrollEl.scrollTop)
+    scrollEl.addEventListener('scroll', onScroll, { passive: true })
+
+    const resizeObserver = new ResizeObserver(updateMetrics)
+    resizeObserver.observe(scrollEl)
+    resizeObserver.observe(measureEl)
+    window.addEventListener('resize', updateMetrics)
+
+    return () => {
+      scrollEl.removeEventListener('scroll', onScroll)
+      resizeObserver.disconnect()
+      window.removeEventListener('resize', updateMetrics)
+    }
+  }, [])
+
+  const virtualGrid = useMemo(() => {
+    const count = filteredNFTs.length
+    if (count === 0) {
+      return {
+        columns: 1,
+        columnWidth: gridSize,
+        rowHeight: gridSize + GRID_LABEL_HEIGHT_PX,
+        totalHeight: 0,
+        startIndex: 0,
+        endIndex: 0,
+        items: [] as CollectionNFT[],
+      }
+    }
+
+    const width = Math.max(gridViewportWidth, gridSize)
+    const columns = Math.max(1, Math.floor((width + GRID_GAP_PX) / (gridSize + GRID_GAP_PX)))
+    const columnWidth = Math.max(80, Math.floor((width - (columns - 1) * GRID_GAP_PX) / columns))
+    const rowHeight = columnWidth + GRID_LABEL_HEIGHT_PX
+    const totalRows = Math.ceil(count / columns)
+    const totalHeight = totalRows * rowHeight
+
+    const startRow = Math.max(0, Math.floor(gridScrollTop / rowHeight) - GRID_OVERSCAN_ROWS)
+    const endRow = Math.min(
+      totalRows - 1,
+      Math.ceil((gridScrollTop + Math.max(gridViewportHeight, rowHeight)) / rowHeight) + GRID_OVERSCAN_ROWS
+    )
+    const startIndex = startRow * columns
+    const endIndex = Math.min(count, (endRow + 1) * columns)
+
+    return {
+      columns,
+      columnWidth,
+      rowHeight,
+      totalHeight,
+      startIndex,
+      endIndex,
+      items: filteredNFTs.slice(startIndex, endIndex),
+    }
+  }, [filteredNFTs, gridViewportWidth, gridViewportHeight, gridScrollTop, gridSize])
 
   // Smart collapsing: collapse multi-attribute traits with many options by default
   useEffect(() => {
@@ -705,7 +775,7 @@ export default function WinionsPage() {
         </div>
 
         {/* Right Side - NFT Grid */}
-        <div className="flex-1 overflow-y-auto w-full">
+        <div ref={gridScrollRef} className="flex-1 overflow-y-auto w-full">
           <div className="p-6">
             {/* Mobile filter toggle button - always visible on mobile */}
             <div className="md:hidden mb-4 flex items-center justify-between sticky top-0 z-20 bg-[#0a0a0a] pb-4 pt-2 -mt-2 -mx-6 px-6 border-b border-[#222]">
@@ -722,21 +792,40 @@ export default function WinionsPage() {
                 <p className="mono text-sm text-[#666]">NO TOKENS MATCH SELECTED TRAITS</p>
               </div>
             ) : (
-              <>
-                <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${gridSize}px, 1fr))` }}>
-                  {visibleItems.map((nft) => (
+              <div ref={gridMeasureRef}>
+                <div
+                  className="relative"
+                  style={{ height: `${virtualGrid.totalHeight}px` }}
+                >
+                  {virtualGrid.items.map((nft, localIndex) => {
+                    const index = virtualGrid.startIndex + localIndex
+                    const row = Math.floor(index / virtualGrid.columns)
+                    const col = index % virtualGrid.columns
+                    const top = row * virtualGrid.rowHeight
+                    const left = col * (virtualGrid.columnWidth + GRID_GAP_PX)
+
+                    return (
+                      <div
+                        key={nft.tokenId}
+                        style={{
+                          position: 'absolute',
+                          top,
+                          left,
+                          width: virtualGrid.columnWidth,
+                        }}
+                      >
                     <WinionGridCardSlot
-                      key={nft.tokenId}
                       nft={nft}
                       onSelect={() => {
                         pauseAllIPFSLoads()
                         setSelectedTokenId(nft.tokenId)
                       }}
                     />
-                  ))}
+                      </div>
+                    )
+                  })}
                 </div>
-                {hasMore && <div ref={sentinelRef} className="h-1" />}
-              </>
+              </div>
             )}
           </div>
         </div>
