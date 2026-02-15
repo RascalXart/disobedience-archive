@@ -4,6 +4,8 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { resolveDailyMediaUrl } from '@/lib/data'
 import type { DailyArtwork } from '@/types'
 
+const ADMIN_KEY_STORAGE_KEY = 'rascal-admin-key'
+
 function AutoTextarea({ value, placeholder, onChange, className }: {
   value: string
   placeholder: string
@@ -45,9 +47,19 @@ function AutoTextarea({ value, placeholder, onChange, className }: {
 
 type FilterMode = 'all' | 'untitled' | 'titled'
 
+function normalizeDaily(daily: DailyArtwork): DailyArtwork {
+  return {
+    ...daily,
+    tags: Array.isArray(daily.tags) ? daily.tags : [],
+  }
+}
+
 export default function AdminPage() {
   const [dailies, setDailies] = useState<DailyArtwork[]>([])
   const [loading, setLoading] = useState(true)
+  const [authReady, setAuthReady] = useState(false)
+  const [adminKey, setAdminKey] = useState('')
+  const [authError, setAuthError] = useState('')
   const [saving, setSaving] = useState(false)
   const [dirty, setDirty] = useState(false)
   const [saveMsg, setSaveMsg] = useState('')
@@ -60,11 +72,43 @@ export default function AdminPage() {
   const [redoStack, setRedoStack] = useState<DailyArtwork[][]>([])
 
   useEffect(() => {
-    fetch('/api/admin/dailies')
-      .then(r => r.json())
-      .then(data => { setDailies(data); lastSavedRef.current = data; setLoading(false) })
-      .catch(() => setLoading(false))
+    const stored = localStorage.getItem(ADMIN_KEY_STORAGE_KEY)
+    if (stored) setAdminKey(stored)
+    setAuthReady(true)
   }, [])
+
+  const getAuthHeaders = useCallback((): Record<string, string> => {
+    const key = adminKey.trim()
+    if (!key) return {}
+    return { 'x-admin-key': key }
+  }, [adminKey])
+
+  useEffect(() => {
+    if (!authReady) return
+    setLoading(true)
+    setAuthError('')
+    fetch('/api/admin/dailies', { headers: getAuthHeaders(), cache: 'no-store' })
+      .then(async (res) => {
+        if (res.status === 401) {
+          setAuthError('Unauthorized. Set your admin key to continue.')
+          setLoading(false)
+          return
+        }
+        if (!res.ok) {
+          setAuthError('Admin API unavailable.')
+          setLoading(false)
+          return
+        }
+        const data = ((await res.json()) as DailyArtwork[]).map(normalizeDaily)
+        setDailies(data)
+        lastSavedRef.current = data
+        setLoading(false)
+      })
+      .catch(() => {
+        setAuthError('Failed to load admin data.')
+        setLoading(false)
+      })
+  }, [authReady, getAuthHeaders])
 
   const save = async () => {
     setSaving(true)
@@ -72,9 +116,19 @@ export default function AdminPage() {
     try {
       const res = await fetch('/api/admin/dailies', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
         body: JSON.stringify(dailies),
       })
+      if (res.status === 401) {
+        setSaveMsg('Unauthorized. Check admin key.')
+        setSaving(false)
+        return
+      }
+      if (!res.ok) {
+        setSaveMsg('Save failed')
+        setSaving(false)
+        return
+      }
       const data = await res.json()
       setSaveMsg(`Saved ${data.count} entries`)
       lastSavedRef.current = dailies
@@ -190,6 +244,28 @@ export default function AdminPage() {
     return <div className="min-h-screen bg-black text-white flex items-center justify-center mono text-sm">Loading...</div>
   }
 
+  if (authError && dailies.length === 0) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0a] text-white px-6 py-16">
+        <div className="max-w-xl mx-auto border border-[#222] bg-[#111] p-6">
+          <h1 className="font-grotesk text-2xl font-light tracking-tight mb-4">DAILIES ADMIN</h1>
+          <p className="mono text-xs text-[#999] mb-4">{authError}</p>
+          <input
+            type="password"
+            placeholder="Admin key"
+            value={adminKey}
+            onChange={(e) => {
+              const next = e.target.value
+              setAdminKey(next)
+              localStorage.setItem(ADMIN_KEY_STORAGE_KEY, next)
+            }}
+            className="w-full mono text-xs bg-[#0a0a0a] border border-[#333] px-3 py-2 text-white placeholder-[#555] focus:border-[#666] outline-none"
+          />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       {/* Sticky header */}
@@ -244,6 +320,17 @@ export default function AdminPage() {
 
         {/* Controls row */}
         <div className="max-w-4xl mx-auto flex items-center gap-3 mt-3 flex-wrap">
+          <input
+            type="password"
+            placeholder="Admin key"
+            value={adminKey}
+            onChange={(e) => {
+              const next = e.target.value
+              setAdminKey(next)
+              localStorage.setItem(ADMIN_KEY_STORAGE_KEY, next)
+            }}
+            className="mono text-xs bg-[#111] border border-[#333] px-3 py-1.5 text-white placeholder-[#555] w-44 focus:border-[#666] outline-none"
+          />
           <input
             type="text"
             placeholder="Search..."
@@ -385,6 +472,7 @@ export default function AdminPage() {
                   >
                     <option value="not_listed">NOT LISTED</option>
                     <option value="available">AVAILABLE</option>
+                    <option value="published">PUBLISHED</option>
                     <option value="sold">SOLD</option>
                   </select>
 

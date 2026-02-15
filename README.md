@@ -1,96 +1,75 @@
-# Rascal Art Website
+# Rascal Art Website (`rascalx.xyz`)
 
-An anonymous crypto-art portfolio and storefront for the artist "Rascal". This site serves as an archive of hundreds of daily artworks ("Rascal Dailies") that are available for purchase as NFTs on Transient Labs.
+Dark glitch-aesthetic NFT portfolio built with Next.js App Router and deployed as a static export on Cloudflare Pages.
 
-## Features
+## Core Architecture
 
-- **Gallery View**: Browse all artworks with filters for status (available/sold/all), tags, and date range
-- **Shop View**: View only available artworks for purchase
-- **Drops Section**: Time-boxed exhibition/collection pages that can be toggled on/off
-- **Artwork Detail Modal**: Full-screen modal with artwork details and Transient Labs purchase/view links
-- **Mobile-First Design**: Fully responsive and accessible
-- **Mysterious Aesthetic**: Dark, experimental museum-like feel
+- Frontend: Next.js 14 + TypeScript + Tailwind + Framer Motion
+- Deployment: Cloudflare Pages (`next build` static export)
+- NFT media: IPFS, routed through Cloudflare Worker proxy
+- Daily media: Cloudflare R2 (`NEXT_PUBLIC_MEDIA_BASE_URL`)
+- Data source: local JSON in `src/data/`
 
-## Tech Stack
+## Main Collections
 
-- **Next.js 14** (App Router)
-- **TypeScript**
-- **Tailwind CSS**
-- **Framer Motion**
-- **Local JSON Database** (for artworks and drops)
+- `WINIØNS` (`src/data/winions.json`)
+- `CØNCLAVE` (`src/data/collection.json`)
+- `Rascal Everydays` (`src/data/dailies.json`)
 
-## Getting Started
+## Image Loading Strategy
 
-1. Install dependencies:
+- `src/components/SmartIPFSImage.tsx`
+  - progressive loading (skeleton -> thumb -> full)
+  - priority mode for modal/fullscreen images
+  - global pause/resume support for background grid loads
+  - grid concurrency caps to prevent bandwidth collapse
+
+- `ipfs-proxy-worker/src/index.ts`
+  - multi-gateway race (`ipfs.io`, `dweb.link`)
+  - Cloudflare edge caching
+  - `/daily/...` proxy route for R2 filename control
+
+## Admin (Dailies)
+
+- UI: `/admin` (`src/app/admin/page.tsx`)
+- API: `src/app/api/admin/dailies/route.ts`
+- Auth:
+  - set `ADMIN_API_KEY` to require auth for GET/PUT
+  - client sends key via `x-admin-key` header
+  - in production, API requires `ADMIN_API_KEY`
+- Notes:
+  - static exports do not provide a long-running Next.js API runtime
+  - use local/dev runtime for JSON editing workflows
+
+## Environment Variables
+
+- `NEXT_PUBLIC_SITE_URL` (e.g. `https://rascalx.xyz`)
+- `NEXT_PUBLIC_IPFS_PROXY` (Worker URL)
+- `NEXT_PUBLIC_MEDIA_BASE_URL` (R2 base URL)
+- `NEXT_PUBLIC_BASE_PATH` (optional; root deploy usually empty)
+- `ADMIN_API_KEY` (optional in dev, required in prod API runtime)
+
+## Local Development
+
 ```bash
 npm install
-```
-
-2. Run the development server:
-```bash
 npm run dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) in your browser.
+App runs on [http://localhost:3001](http://localhost:3001).
 
-## Data Structure
-
-### Artworks (`data/artworks.json`)
-
-Each artwork contains:
-- `id`: Unique identifier
-- `title`: Artwork title
-- `date`: Creation date (YYYY-MM-DD)
-- `imageUrl`: URL to artwork image
-- `minted`: Boolean indicating if NFT is minted
-- `tokenId`: Token ID if minted (null otherwise)
-- `transientLabsUrl`: Link to view/purchase on Transient Labs
-- `priceStrategyKey`: Pricing strategy (e.g., "ladder_6_9")
-- `status`: "available" | "sold" | "not_listed"
-- `tags`: Array of tag strings
-
-### Drops (`data/drops.json`)
-
-Each drop contains:
-- `id`: Unique identifier
-- `title`: Drop title
-- `description`: Drop description
-- `startDate`: Start date (YYYY-MM-DD)
-- `endDate`: End date (YYYY-MM-DD)
-- `active`: Boolean to enable/disable the drop
-- `artworkIds`: Array of artwork IDs included in the drop
-- `imageUrl`: URL to drop banner image
-
-## Project Structure
-
-```
-src/
-├── app/                    # Next.js App Router pages
-│   ├── gallery/           # Gallery page with filters
-│   ├── shop/              # Shop page (available items only)
-│   ├── drops/             # Drops listing and detail pages
-│   └── page.tsx           # Home page
-├── components/             # React components
-│   ├── ArtworkCard.tsx    # Artwork card component
-│   ├── ArtworkModal.tsx   # Artwork detail modal
-│   └── GalleryFilters.tsx # Filter component
-├── lib/                    # Utility functions
-│   └── data.ts            # Data access functions
-└── types/                  # TypeScript types
-    └── index.ts           # Type definitions
-```
-
-## Building for Production
+## Data Quality + Build
 
 ```bash
+npm run validate-data
 npm run build
-npm start
 ```
 
-## Notes
+`npm run build` now validates JSON data before building.
 
-- The site works without wallet connection (MVP)
-- Artworks link to Transient Labs for purchase/viewing
-- Drops can be activated/deactivated by setting `active: true/false` in `data/drops.json`
-- All images use Next.js Image component for optimization
+## Utility Scripts
 
+- `warm-cache.js` - warms IPFS worker cache
+- `generate-thumbnails.js` - NFT thumbs
+- `generate-daily-thumbnails.js` - dailies thumbs
+- `generate-og-images.js` - static OG images for share pages

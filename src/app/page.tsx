@@ -12,8 +12,6 @@ export default function HomePage() {
   const [isReversed, setIsReversed] = useState(false)
   const [showMintedOnly, setShowMintedOnly] = useState(false)
   const [selectedDaily, setSelectedDaily] = useState<DailyArtwork | null>(null)
-  const [mouseX, setMouseX] = useState(0)
-  const [mouseY, setMouseY] = useState(0)
   const [globalGlitch, setGlobalGlitch] = useState(false)
   const [titleText, setTitleText] = useState<'RASCAL' | 'RVSCVNX'>('RASCAL')
   const [titleGlitching, setTitleGlitching] = useState(false)
@@ -33,23 +31,6 @@ export default function HomePage() {
   const TYPED_PHRASES = ['DISOBEDIENCE_ARCHIVE', 'ETERNAL_MUSE', 'CØNCLAVE_001.exe', 'WINIØNS']
   const availableDailies = allDailies.filter(d => d.status === 'available')
   const isModalOpen = selectedDaily !== null
-
-  // Mouse tracking for global effects - throttled for performance
-  useEffect(() => {
-    let lastUpdate = 0
-    const throttleDelay = 50 // Update max 20 times per second instead of every move
-    
-    const handleMouseMove = (e: MouseEvent) => {
-      const now = Date.now()
-      if (now - lastUpdate >= throttleDelay) {
-        setMouseX(e.clientX)
-        setMouseY(e.clientY)
-        lastUpdate = now
-      }
-    }
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
 
   // Sort dailies based on reverse state, optionally filter to minted only
   const sortedDailies = useMemo(() => {
@@ -339,6 +320,14 @@ export default function HomePage() {
     return result
   }, [sortedDailies])
 
+  const dailyIndexById = useMemo(() => {
+    const map = new Map<string, number>()
+    sortedDailies.forEach((daily, index) => {
+      map.set(daily.id, index)
+    })
+    return map
+  }, [sortedDailies])
+
   return (
     <main className="page-root relative overflow-hidden">
       {/* VHS-style overlay */}
@@ -594,15 +583,13 @@ export default function HomePage() {
                 {/* Non-linear experimental grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-10 md:gap-x-6 md:gap-y-12 relative">
                   {dailies.map((daily, index) => {
-                    const globalIndex = sortedDailies.findIndex(d => d.id === daily.id)
+                    const globalIndex = dailyIndexById.get(daily.id) ?? index
                     return (
                               <div key={daily.id} data-scroll-reveal="card" data-index={globalIndex}>
                                 <ExperimentalArchiveCard
                                   daily={daily}
                                   index={globalIndex}
                                   onClick={() => setSelectedDaily(daily)}
-                                  mouseX={mouseX}
-                                  mouseY={mouseY}
                                   isModalOpen={isModalOpen}
                                 />
                               </div>

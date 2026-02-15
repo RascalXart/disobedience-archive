@@ -1,3 +1,5 @@
+import { BASE_PATH } from '@/lib/base-path'
+
 /**
  * Twitter share utility
  * Generates Twitter share URLs with randomized message variations
@@ -51,14 +53,11 @@ export function generateTwitterShareUrl(data: ShareData): string {
   let url = data.url
   if (!url && data.tokenId && data.collection) {
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_SITE_URL || 'https://rascalx.xyz')
-    const basePath = process.env.NEXT_PUBLIC_BASE_PATH || ''
-    // Ensure proper path construction - avoid double slashes
-    const cleanBasePath = basePath ? (basePath.startsWith('/') ? basePath : `/${basePath}`).replace(/\/+$/, '') : ''
     
     if (data.collection === 'WINIØNS') {
-      url = `${baseUrl}${cleanBasePath}/winions/share/${data.tokenId}`
+      url = `${baseUrl}${BASE_PATH}/winions/share/${data.tokenId}`
     } else if (data.collection === 'CØNCLAVE') {
-      url = `${baseUrl}${cleanBasePath}/conclave/share/${data.tokenId}`
+      url = `${baseUrl}${BASE_PATH}/conclave/share/${data.tokenId}`
     }
   }
   

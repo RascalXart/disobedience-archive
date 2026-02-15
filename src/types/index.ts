@@ -1,4 +1,4 @@
-export type ArtworkStatus = "available" | "sold" | "not_listed";
+export type ArtworkStatus = "available" | "sold" | "not_listed" | "published";
 
 export interface Artwork {
   id: string;

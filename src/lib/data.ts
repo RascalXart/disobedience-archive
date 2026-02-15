@@ -2,12 +2,7 @@ import artworksData from '@/data/artworks.json';
 import dailiesData from '@/data/dailies.json';
 import dropsData from '@/data/drops.json';
 import type { Artwork, DailyArtwork, Drop, Collection, CollectionNFT } from '@/types';
-
-// BasePath from next.config.mjs - needed for static assets
-// This should match the basePath in next.config.mjs
-// For Cloudflare Pages (root deployment), set NEXT_PUBLIC_BASE_PATH="" in build env
-// For local dev and GitHub Pages, default to '/disobedience-archive'
-const BASE_PATH = '/disobedience-archive';
+import { prependBasePath } from '@/lib/base-path'
 
 /**
  * Slugifies a title for use in filenames/URLs.
@@ -87,16 +82,8 @@ export function resolveDailyMediaUrl(url: string): string {
  * This is necessary because Next.js basePath affects static asset paths
  */
 export function normalizeImageUrl(url: string): string {
-  // If URL already starts with basePath, return as-is
-  if (url.startsWith(BASE_PATH)) {
-    return url;
-  }
-  // If URL starts with /, prepend basePath
-  if (url.startsWith('/')) {
-    return `${BASE_PATH}${url}`;
-  }
-  // Otherwise, assume it's a relative path and prepend basePath with /
-  return `${BASE_PATH}/${url}`;
+  if (url.startsWith('/')) return prependBasePath(url)
+  return prependBasePath(`/${url}`)
 }
 
 export function getAllArtworks(): Artwork[] {
@@ -117,6 +104,7 @@ export function getAllDailies(): DailyArtwork[] {
   
   cachedDailies = (dailiesData as DailyArtwork[]).map(daily => ({
     ...daily,
+    tags: Array.isArray(daily.tags) ? daily.tags : [],
     imageUrl: resolveDailyDisplayUrl(daily.imageUrl, daily.title, daily.id)
   }));
   
@@ -128,6 +116,7 @@ export function getDailyById(id: string): DailyArtwork | undefined {
   if (daily) {
     return {
       ...daily,
+      tags: Array.isArray(daily.tags) ? daily.tags : [],
       imageUrl: resolveDailyDisplayUrl(daily.imageUrl, daily.title, daily.id)
     };
   }

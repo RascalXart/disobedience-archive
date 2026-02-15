@@ -35,12 +35,10 @@ interface ExperimentalArchiveCardProps {
   daily: DailyArtwork
   index: number
   onClick?: () => void
-  mouseX: number
-  mouseY: number
   isModalOpen?: boolean
 }
 
-export function ExperimentalArchiveCard({ daily, index, onClick, mouseX, mouseY, isModalOpen = false }: ExperimentalArchiveCardProps) {
+export function ExperimentalArchiveCard({ daily, index, onClick, isModalOpen = false }: ExperimentalArchiveCardProps) {
   const [isVisible, setIsVisible] = useState(false)
   const [glitchActive, setGlitchActive] = useState(false)
   const [imgState, setImgState] = useState<ImgState>('idle')

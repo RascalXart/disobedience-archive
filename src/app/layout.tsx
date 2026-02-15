@@ -25,6 +25,20 @@ const IPFS_ORIGIN = (() => {
   return base ? new URL(base).origin : 'https://ipfs.io'
 })()
 
+const MEDIA_ORIGIN = (() => {
+  const mediaBase = typeof process !== 'undefined' ? (process.env.NEXT_PUBLIC_MEDIA_BASE_URL ?? '').replace(/\/$/, '') : ''
+  if (!mediaBase) return 'https://pub-71ed1655b8674186957a0405561cd60a.r2.dev'
+  try {
+    return new URL(mediaBase).origin
+  } catch {
+    return 'https://pub-71ed1655b8674186957a0405561cd60a.r2.dev'
+  }
+})()
+
+const PRECONNECT_ORIGINS = Array.from(
+  new Set([IPFS_ORIGIN, MEDIA_ORIGIN, 'https://ipfs.io', 'https://dweb.link'])
+)
+
 export default function RootLayout({
   children,
 }: {
@@ -33,8 +47,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="preconnect" href={IPFS_ORIGIN} />
-        <link rel="dns-prefetch" href={IPFS_ORIGIN} />
+        {PRECONNECT_ORIGINS.map((origin) => (
+          <link key={`preconnect-${origin}`} rel="preconnect" href={origin} crossOrigin="" />
+        ))}
+        {PRECONNECT_ORIGINS.map((origin) => (
+          <link key={`dns-prefetch-${origin}`} rel="dns-prefetch" href={origin} />
+        ))}
       </head>
       <body className="bg-[#0a0a0a]">
         <AnimatedNoise />
@@ -46,4 +64,3 @@ export default function RootLayout({
     </html>
   )
 }
-
