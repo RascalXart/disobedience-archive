@@ -18,10 +18,22 @@ const activeGridImgs = new Set<HTMLImageElement>()
 // Only MAX_CONCURRENT_GRID grid images load at a time over the shared HTTP/2
 // connection. Without this, 20+ images split bandwidth and ALL load slowly.
 // With it, the first few appear ~4x faster and the rest follow sequentially.
-const MAX_CONCURRENT_GRID = 3
+const DEFAULT_MAX_CONCURRENT_GRID = 3
+let _maxConcurrentGrid = DEFAULT_MAX_CONCURRENT_GRID
 let _gridSlots = 0
 const _slotSubs = new Set<() => void>()
 function notifySlotChange() { _slotSubs.forEach(cb => cb()) }
+
+/**
+ * Winions page can temporarily tune grid concurrency during fast scroll/resize.
+ * Priority images bypass this limit.
+ */
+export function setGridConcurrencyLimit(limit: number) {
+  const next = Math.max(1, Math.min(6, Math.floor(limit)))
+  if (_maxConcurrentGrid === next) return
+  _maxConcurrentGrid = next
+  notifySlotChange()
+}
 
 // Cancel an img download without hitting the network.
 // img.src = '' causes the browser to request the current page URL — bad.
@@ -187,7 +199,7 @@ export function SmartIPFSImage({
     if (priority || eager || state !== 'loading' || !isVisible || globalPaused) return
     let claimed = false
     const tryClaim = () => {
-      if (claimed || _gridSlots >= MAX_CONCURRENT_GRID) return
+      if (claimed || _gridSlots >= _maxConcurrentGrid) return
       _gridSlots++
       claimed = true
       setSlotClaimed(true)

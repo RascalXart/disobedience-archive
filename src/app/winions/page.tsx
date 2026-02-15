@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllWinionsNFTs } from '@/lib/data'
 import { resolveIpfsUrl } from '@/lib/ipfs'
-import { SmartIPFSImage, pauseAllIPFSLoads, resumeAllIPFSLoads } from '@/components/SmartIPFSImage'
+import { SmartIPFSImage, pauseAllIPFSLoads, resumeAllIPFSLoads, setGridConcurrencyLimit } from '@/components/SmartIPFSImage'
 import { useProgressiveLoader } from '@/lib/progressive-loader'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import { resolveENSCached } from '@/lib/ens-cache'
@@ -30,9 +30,11 @@ function WinionImage({
 function WinionGridCardSlot({
   nft,
   onSelect,
+  showImage = true,
 }: {
   nft: CollectionNFT
   onSelect: () => void
+  showImage?: boolean
 }) {
   return (
     <motion.div
@@ -43,7 +45,7 @@ function WinionGridCardSlot({
       onClick={onSelect}
     >
       <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
-        {nft.imageUrl ? (
+        {showImage && nft.imageUrl ? (
           <SmartIPFSImage
             src={nft.imageUrl}
             alt={nft.name}
@@ -68,6 +70,10 @@ interface TraitFilter {
   value: string
   count: number
 }
+
+const GRID_GAP_PX = 12
+const GRID_ROW_EXTRA_PX = 28
+const GRID_OVERSCAN_ROWS = 4
 
 export default function WinionsPage() {
   const allNFTsRaw = getAllWinionsNFTs()
@@ -137,6 +143,12 @@ export default function WinionsPage() {
   const [isShuffled, setIsShuffled] = useState(false)
   const [ensNames, setEnsNames] = useState<Record<string, string>>({})
   const [gridSize, setGridSize] = useState(180)
+  const [isGridResizing, setIsGridResizing] = useState(false)
+  const [gridViewport, setGridViewport] = useState({ width: 0, height: 0, scrollTop: 0 })
+  const gridScrollRef = useRef<HTMLDivElement | null>(null)
+  const gridMeasureRef = useRef<HTMLDivElement | null>(null)
+  const resizeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const fastScrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   // Start with sidebar collapsed on mobile - always false initially to match SSR
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   
@@ -433,6 +445,107 @@ export default function WinionsPage() {
     sentinelRef,
   } = useProgressiveLoader(filteredNFTs, 20)
 
+  // Winions-only grid admission + dynamic concurrency during rapid scrolling.
+  useEffect(() => {
+    const scrollEl = gridScrollRef.current
+    const measureEl = gridMeasureRef.current
+    if (!scrollEl || !measureEl) return
+
+    let lastTop = scrollEl.scrollTop
+    let lastTs = performance.now()
+
+    const updateViewport = () => {
+      setGridViewport({
+        width: measureEl.clientWidth,
+        height: scrollEl.clientHeight,
+        scrollTop: scrollEl.scrollTop,
+      })
+    }
+
+    updateViewport()
+
+    const onScroll = () => {
+      const now = performance.now()
+      const top = scrollEl.scrollTop
+      const dt = Math.max(1, now - lastTs)
+      const velocity = Math.abs(top - lastTop) / dt
+      lastTop = top
+      lastTs = now
+
+      if (velocity > 1.1) {
+        setGridConcurrencyLimit(1)
+        if (fastScrollTimerRef.current) clearTimeout(fastScrollTimerRef.current)
+        fastScrollTimerRef.current = setTimeout(() => {
+          setGridConcurrencyLimit(3)
+          fastScrollTimerRef.current = null
+        }, 180)
+      }
+
+      setGridViewport((prev) => ({
+        ...prev,
+        scrollTop: top,
+        height: scrollEl.clientHeight,
+      }))
+    }
+
+    const onResize = () => {
+      updateViewport()
+    }
+
+    scrollEl.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onResize)
+    const ro = new ResizeObserver(updateViewport)
+    ro.observe(scrollEl)
+    ro.observe(measureEl)
+
+    return () => {
+      scrollEl.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onResize)
+      ro.disconnect()
+      if (fastScrollTimerRef.current) clearTimeout(fastScrollTimerRef.current)
+      setGridConcurrencyLimit(3)
+    }
+  }, [])
+
+  // Briefly suppress new grid image starts while resizing tile size.
+  useEffect(() => {
+    setIsGridResizing(true)
+    setGridConcurrencyLimit(1)
+    if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current)
+    resizeTimerRef.current = setTimeout(() => {
+      setIsGridResizing(false)
+      setGridConcurrencyLimit(3)
+      resizeTimerRef.current = null
+    }, 160)
+    return () => {
+      if (resizeTimerRef.current) clearTimeout(resizeTimerRef.current)
+    }
+  }, [gridSize])
+
+  const imageAdmission = useMemo(() => {
+    const width = Math.max(gridViewport.width, gridSize)
+    const columns = Math.max(1, Math.floor((width + GRID_GAP_PX) / (gridSize + GRID_GAP_PX)))
+    const rowHeight = gridSize + GRID_ROW_EXTRA_PX
+    const startRow = Math.max(0, Math.floor(gridViewport.scrollTop / rowHeight) - GRID_OVERSCAN_ROWS)
+    const endRow = Math.ceil((gridViewport.scrollTop + Math.max(gridViewport.height, rowHeight)) / rowHeight) + GRID_OVERSCAN_ROWS
+    return { columns, startRow, endRow }
+  }, [gridViewport, gridSize])
+
+  const filteredIndexByTokenId = useMemo(() => {
+    const map = new Map<string, number>()
+    filteredNFTs.forEach((nft, index) => {
+      map.set(nft.tokenId, index)
+    })
+    return map
+  }, [filteredNFTs])
+
+  const visibleItemsWithIndex = useMemo(() => {
+    return visibleItems.map((nft, localIndex) => ({
+      nft,
+      absoluteIndex: filteredIndexByTokenId.get(nft.tokenId) ?? localIndex,
+    }))
+  }, [visibleItems, filteredIndexByTokenId])
+
   // Smart collapsing: collapse multi-attribute traits with many options by default
   useEffect(() => {
     const autoCollapse = new Set<string>()
@@ -705,8 +818,8 @@ export default function WinionsPage() {
         </div>
 
         {/* Right Side - NFT Grid */}
-        <div className="flex-1 overflow-y-auto w-full">
-          <div className="p-6">
+        <div ref={gridScrollRef} className="flex-1 overflow-y-auto w-full">
+          <div ref={gridMeasureRef} className="p-6">
             {/* Mobile filter toggle button - always visible on mobile */}
             <div className="md:hidden mb-4 flex items-center justify-between sticky top-0 z-20 bg-[#0a0a0a] pb-4 pt-2 -mt-2 -mx-6 px-6 border-b border-[#222]">
               <button
@@ -724,16 +837,21 @@ export default function WinionsPage() {
             ) : (
               <>
                 <div className="grid gap-3" style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${gridSize}px, 1fr))` }}>
-                  {visibleItems.map((nft) => (
-                    <WinionGridCardSlot
-                      key={nft.tokenId}
-                      nft={nft}
-                      onSelect={() => {
-                        pauseAllIPFSLoads()
-                        setSelectedTokenId(nft.tokenId)
-                      }}
-                    />
-                  ))}
+                  {visibleItemsWithIndex.map(({ nft, absoluteIndex }) => {
+                    const row = Math.floor(absoluteIndex / imageAdmission.columns)
+                    const showImage = !isGridResizing && row >= imageAdmission.startRow && row <= imageAdmission.endRow
+                    return (
+                      <WinionGridCardSlot
+                        key={nft.tokenId}
+                        nft={nft}
+                        showImage={showImage}
+                        onSelect={() => {
+                          pauseAllIPFSLoads()
+                          setSelectedTokenId(nft.tokenId)
+                        }}
+                      />
+                    )
+                  })}
                 </div>
                 {hasMore && <div ref={sentinelRef} className="h-1" />}
               </>
