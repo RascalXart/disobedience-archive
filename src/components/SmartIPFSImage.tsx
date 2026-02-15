@@ -344,9 +344,8 @@ export function SmartIPFSImage({
           ref={thumbRef}
           src={thumbnailSrc}
           alt=""
-          loading={priority || eager ? 'eager' : 'lazy'}
+          loading="eager"
           decoding="async"
-          fetchPriority={priority || eager ? 'high' : 'low'}
           aria-hidden
           onLoad={() => setThumbLoaded(true)}
           onError={() => setThumbLoaded(false)}
@@ -368,8 +367,6 @@ export function SmartIPFSImage({
           key={displayUrl}
           src={displayUrl}
           alt={alt}
-          loading={priority || eager ? 'eager' : 'lazy'}
-          fetchPriority={priority || eager ? 'high' : 'auto'}
           decoding="async"
           className={className}
           onLoad={handleLoad}
