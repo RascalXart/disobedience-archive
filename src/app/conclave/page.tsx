@@ -3,13 +3,14 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllCollectionNFTs, getCollection, getSpecialCollectionNFTs, getRegularCollectionNFTs } from '@/lib/data'
-import { resolveIpfsUrl } from '@/lib/ipfs'
+import { getThumbnailPath, resolveIpfsUrl } from '@/lib/ipfs'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
 import { SmartIPFSImage, pauseAllIPFSLoads, resumeAllIPFSLoads } from '@/components/SmartIPFSImage'
 import { useProgressiveLoader } from '@/lib/progressive-loader'
 import Link from 'next/link'
+import { getConclaveGridPreviewUrl } from '@/lib/grid-previews'
 import type { CollectionNFT } from '@/types'
 
 /** Grid slot: SmartIPFSImage with label. */
@@ -20,6 +21,14 @@ function ConclaveGridCardSlot({
   nft: CollectionNFT
   onSelect: () => void
 }) {
+  const [previewFailed, setPreviewFailed] = useState(false)
+  const [thumbFailed, setThumbFailed] = useState(false)
+  const previewUrl = getConclaveGridPreviewUrl(nft.tokenId)
+  const thumbUrl = nft.imageUrl ? getThumbnailPath(nft.imageUrl) : null
+  const gridUrl = !previewFailed
+    ? previewUrl
+    : (!thumbFailed && thumbUrl ? thumbUrl : null)
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -29,10 +38,16 @@ function ConclaveGridCardSlot({
       onClick={onSelect}
     >
       <div className="relative aspect-square overflow-hidden bg-[#111] border border-[#222] group-hover:border-[#333] transition-colors">
-        {nft.imageUrl ? (
-          <SmartIPFSImage
-            src={nft.imageUrl}
+        {gridUrl ? (
+          <img
+            src={gridUrl}
             alt={nft.name}
+            loading="lazy"
+            decoding="async"
+            onError={() => {
+              if (!previewFailed) setPreviewFailed(true)
+              else setThumbFailed(true)
+            }}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
           />
         ) : (

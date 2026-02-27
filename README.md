@@ -23,6 +23,9 @@ Dark glitch-aesthetic NFT portfolio built with Next.js App Router and deployed a
   - priority mode for modal/fullscreen images
   - global pause/resume support for background grid loads
   - grid concurrency caps to prevent bandwidth collapse
+- Grid pages (home/winions/conclave)
+  - use lightweight preview assets first
+  - modal and fullscreen always use full-resolution original media
 
 - `ipfs-proxy-worker/src/index.ts`
   - multi-gateway race (`ipfs.io`, `dweb.link`)
@@ -46,6 +49,7 @@ Dark glitch-aesthetic NFT portfolio built with Next.js App Router and deployed a
 - `NEXT_PUBLIC_SITE_URL` (e.g. `https://rascalx.xyz`)
 - `NEXT_PUBLIC_IPFS_PROXY` (Worker URL)
 - `NEXT_PUBLIC_MEDIA_BASE_URL` (R2 base URL)
+- `NEXT_PUBLIC_GRID_PREVIEW_BASE_URL` (optional external base URL for grid previews)
 - `NEXT_PUBLIC_BASE_PATH` (optional; root deploy usually empty)
 - `ADMIN_API_KEY` (optional in dev, required in prod API runtime)
 
@@ -72,4 +76,17 @@ npm run build
 - `warm-cache.js` - warms IPFS worker cache
 - `generate-thumbnails.js` - NFT thumbs
 - `generate-daily-thumbnails.js` - dailies thumbs
+- `generate-grid-previews` - compressed animated WebP grid previews
 - `generate-og-images.js` - static OG images for share pages
+
+### Generate Grid Previews
+
+```bash
+npm run generate-grid-previews
+```
+
+Optional:
+
+```bash
+npm run generate-grid-previews -- --collection winions --limit 50
+```

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import type { DailyArtwork } from '@/types'
 import { resolveDailyMediaUrl } from '@/lib/data'
+import { getDailyGridPreviewUrl } from '@/lib/grid-previews'
 import { resolveENSCached } from '@/lib/ens-cache'
 
 function shortenAddress(addr: string): string {
@@ -43,6 +44,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, isModalOpen = f
   const [glitchActive, setGlitchActive] = useState(false)
   const [imgState, setImgState] = useState<ImgState>('idle')
   const [thumbLoaded, setThumbLoaded] = useState(false)
+  const [previewFailed, setPreviewFailed] = useState(false)
   const [slotClaimed, setSlotClaimed] = useState(false)
   const [videoActivated, setVideoActivated] = useState(false)
   const [ownerName, setOwnerName] = useState<string | null>(null)
@@ -55,8 +57,12 @@ export function ExperimentalArchiveCard({ daily, index, onClick, isModalOpen = f
   imgStateRef.current = imgState
 
   const isVideo = daily.imageUrl.includes('.mp4') || daily.imageUrl.includes('.mov')
-  const mediaUrl = resolveDailyMediaUrl(daily.imageUrl)
+  const fullMediaUrl = resolveDailyMediaUrl(daily.imageUrl)
+  const previewUrl = getDailyGridPreviewUrl(daily.id)
   const thumbnailSrc = !isVideo ? getDailyThumbnailPath(daily.id) : null
+  const mediaUrl = isVideo
+    ? fullMediaUrl
+    : (previewFailed ? (thumbnailSrc || fullMediaUrl) : previewUrl)
 
   // Should the full-res <img> be in the DOM and actively loading?
   const shouldLoadImage = !isVideo && isVisible && imgState === 'idle' && !isModalOpen && slotClaimed
@@ -163,8 +169,13 @@ export function ExperimentalArchiveCard({ daily, index, onClick, isModalOpen = f
   }, [])
 
   const handleError = useCallback(() => {
+    if (!isVideo && !previewFailed) {
+      setPreviewFailed(true)
+      setImgState('idle')
+      return
+    }
     setImgState('error')
-  }, [])
+  }, [isVideo, previewFailed])
 
   const size = { w: 'w-full', h: 'aspect-square' }
 
