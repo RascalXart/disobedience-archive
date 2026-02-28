@@ -76,7 +76,7 @@ npm run build
 - `warm-cache.js` - warms IPFS worker cache
 - `generate-thumbnails.js` - NFT thumbs
 - `generate-daily-thumbnails.js` - dailies thumbs
-- `generate-grid-previews` - compressed animated WebP grid previews
+- `generate-grid-previews` - compressed animated WebP grid previews (`curl` + `ffmpeg`)
 - `generate-og-images.js` - static OG images for share pages
 
 ### Generate Grid Previews
@@ -89,4 +89,5 @@ Optional:
 
 ```bash
 npm run generate-grid-previews -- --collection winions --limit 50
+npm run generate-grid-previews -- --overwrite --size 220 --fps 10 --quality 42
 ```

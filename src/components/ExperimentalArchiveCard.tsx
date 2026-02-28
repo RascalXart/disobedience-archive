@@ -62,7 +62,7 @@ export function ExperimentalArchiveCard({ daily, index, onClick, isModalOpen = f
   const thumbnailSrc = !isVideo ? getDailyThumbnailPath(daily.id) : null
   const mediaUrl = isVideo
     ? fullMediaUrl
-    : (previewFailed ? (thumbnailSrc || fullMediaUrl) : previewUrl)
+    : (previewFailed ? fullMediaUrl : previewUrl)
 
   // Should the full-res <img> be in the DOM and actively loading?
   const shouldLoadImage = !isVideo && isVisible && imgState === 'idle' && !isModalOpen && slotClaimed

@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllWinionsNFTs } from '@/lib/data'
-import { getThumbnailPath, resolveIpfsUrl } from '@/lib/ipfs'
+import { resolveIpfsUrl } from '@/lib/ipfs'
 import { SmartIPFSImage, pauseAllIPFSLoads, resumeAllIPFSLoads } from '@/components/SmartIPFSImage'
 import { useProgressiveLoader } from '@/lib/progressive-loader'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
@@ -36,12 +36,9 @@ function WinionGridCardSlot({
   onSelect: () => void
 }) {
   const [previewFailed, setPreviewFailed] = useState(false)
-  const [thumbFailed, setThumbFailed] = useState(false)
   const previewUrl = getWinionGridPreviewUrl(nft.tokenId)
-  const thumbUrl = nft.imageUrl ? getThumbnailPath(nft.imageUrl) : null
-  const gridUrl = !previewFailed
-    ? previewUrl
-    : (!thumbFailed && thumbUrl ? thumbUrl : null)
+  const originalUrl = nft.imageUrl ? resolveIpfsUrl(nft.imageUrl) : null
+  const gridUrl = !previewFailed ? previewUrl : originalUrl
 
   return (
     <motion.div
@@ -60,7 +57,6 @@ function WinionGridCardSlot({
             decoding="async"
             onError={() => {
               if (!previewFailed) setPreviewFailed(true)
-              else setThumbFailed(true)
             }}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
           />

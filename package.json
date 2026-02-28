@@ -9,7 +9,7 @@
     "start": "next start -p 3001",
     "lint": "next lint",
     "validate-data": "node scripts/validate-data.js",
-    "generate-grid-previews": "node scripts/generate-grid-previews.js",
+    "generate-grid-previews": "bash scripts/generate-grid-previews.sh",
     "generate-dailies": "node scripts/generate-dailies.js",
     "fetch-collection": "node scripts/fetch-collection.js",
     "verify-dev": "bash scripts/verify-dev-server.sh",

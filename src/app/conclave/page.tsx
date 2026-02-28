@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { getAllCollectionNFTs, getCollection, getSpecialCollectionNFTs, getRegularCollectionNFTs } from '@/lib/data'
-import { getThumbnailPath, resolveIpfsUrl } from '@/lib/ipfs'
+import { resolveIpfsUrl } from '@/lib/ipfs'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
 import { resolveENSCached } from '@/lib/ens-cache'
 import { ModalNavArrows } from '@/components/ModalNavArrows'
@@ -22,12 +22,9 @@ function ConclaveGridCardSlot({
   onSelect: () => void
 }) {
   const [previewFailed, setPreviewFailed] = useState(false)
-  const [thumbFailed, setThumbFailed] = useState(false)
   const previewUrl = getConclaveGridPreviewUrl(nft.tokenId)
-  const thumbUrl = nft.imageUrl ? getThumbnailPath(nft.imageUrl) : null
-  const gridUrl = !previewFailed
-    ? previewUrl
-    : (!thumbFailed && thumbUrl ? thumbUrl : null)
+  const originalUrl = nft.imageUrl ? resolveIpfsUrl(nft.imageUrl) : null
+  const gridUrl = !previewFailed ? previewUrl : originalUrl
 
   return (
     <motion.div
@@ -46,7 +43,6 @@ function ConclaveGridCardSlot({
             decoding="async"
             onError={() => {
               if (!previewFailed) setPreviewFailed(true)
-              else setThumbFailed(true)
             }}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.02]"
           />
