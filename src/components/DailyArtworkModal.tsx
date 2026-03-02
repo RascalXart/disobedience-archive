@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { DailyArtwork } from '@/types'
 import { resolveDailyMediaUrl } from '@/lib/data'
 import { generateTwitterShareUrl } from '@/lib/twitter-share'
@@ -19,31 +19,43 @@ interface DailyArtworkModalProps {
 }
 
 export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkModalProps) {
-  const [currentIndex, setCurrentIndex] = useState(
-    allDailies.findIndex(d => d.id === daily.id)
-  )
-  const [currentDaily, setCurrentDaily] = useState(daily)
+  const initialIndex = allDailies.findIndex(d => d.id === daily.id)
+  const [currentIndex, setCurrentIndex] = useState(initialIndex >= 0 ? initialIndex : 0)
   const [heroOpen, setHeroOpen] = useState(false)
   const [showHeroMeta, setShowHeroMeta] = useState(false)
   const [ownerENS, setOwnerENS] = useState<string | null>(null)
+  const [modalMediaLoaded, setModalMediaLoaded] = useState(false)
+  const [heroMediaLoaded, setHeroMediaLoaded] = useState(false)
+  const [modalMediaError, setModalMediaError] = useState(false)
+  const [heroMediaError, setHeroMediaError] = useState(false)
+  const [thumbnailFailed, setThumbnailFailed] = useState(false)
+  const [heroThumbnailFailed, setHeroThumbnailFailed] = useState(false)
   const heroMetaStillRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prefersReducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const currentDaily = allDailies[currentIndex] ?? daily
+  const thumbnailSrc = `/thumbs/${currentDaily.id}.webp`
 
-  const navigatePrevious = () => {
-    if (currentIndex > 0) {
-      const newIndex = currentIndex - 1
-      setCurrentIndex(newIndex)
-      setCurrentDaily(allDailies[newIndex])
-    }
-  }
+  useEffect(() => {
+    setModalMediaLoaded(false)
+    setHeroMediaLoaded(false)
+    setModalMediaError(false)
+    setHeroMediaError(false)
+    setThumbnailFailed(false)
+    setHeroThumbnailFailed(false)
+  }, [currentDaily.id])
 
-  const navigateNext = () => {
-    if (currentIndex < allDailies.length - 1) {
-      const newIndex = currentIndex + 1
-      setCurrentIndex(newIndex)
-      setCurrentDaily(allDailies[newIndex])
-    }
-  }
+  useEffect(() => {
+    const idx = allDailies.findIndex((d) => d.id === daily.id)
+    setCurrentIndex(idx >= 0 ? idx : 0)
+  }, [daily.id, allDailies])
+
+  const navigatePrevious = useCallback(() => {
+    setCurrentIndex((idx) => Math.max(0, idx - 1))
+  }, [])
+
+  const navigateNext = useCallback(() => {
+    setCurrentIndex((idx) => Math.min(allDailies.length - 1, idx + 1))
+  }, [allDailies.length])
 
   useEffect(() => {
     if (heroOpen) setShowHeroMeta(false)
@@ -68,7 +80,7 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
       document.removeEventListener('keydown', handleKey)
       document.body.style.overflow = 'unset'
     }
-  }, [currentIndex, onClose, heroOpen])
+  }, [navigatePrevious, navigateNext, onClose, heroOpen])
 
   // Resolve ENS for minted token owner
   useEffect(() => {
@@ -131,6 +143,16 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
             {/* Media - optimized for smooth playback */}
             <div className="flex flex-col">
               <div className="relative aspect-square bg-[#111]" style={{ willChange: 'contents' }}>
+                {!thumbnailFailed && !modalMediaLoaded && (
+                  <img
+                    src={thumbnailSrc}
+                    alt={`${currentDaily.id} thumbnail`}
+                    className="absolute inset-0 w-full h-full object-contain"
+                    loading="eager"
+                    decoding="async"
+                    onError={() => setThumbnailFailed(true)}
+                  />
+                )}
                 {isVideo ? (
                   <video
                     key={currentDaily.id}
@@ -140,27 +162,45 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                     muted
                     playsInline
                     preload="auto"
-                    className="w-full h-full object-contain"
+                    className={`relative z-[1] w-full h-full object-contain transition-opacity duration-300 ${modalMediaLoaded && !modalMediaError ? 'opacity-100' : 'opacity-0'}`}
                     style={{ willChange: 'transform' }}
+                    onLoadedData={() => {
+                      setModalMediaError(false)
+                      setModalMediaLoaded(true)
+                    }}
+                    onError={() => {
+                      setModalMediaError(true)
+                      setModalMediaLoaded(false)
+                    }}
                   />
                 ) : (
                   <img
                     key={currentDaily.id}
                     src={resolveDailyMediaUrl(currentDaily.imageUrl)}
                     alt={currentDaily.id}
-                    className="w-full h-full object-contain"
+                    className={`relative z-[1] w-full h-full object-contain transition-opacity duration-300 ${modalMediaLoaded && !modalMediaError ? 'opacity-100' : 'opacity-0'}`}
                     loading="eager"
                     decoding="sync"
                     style={{ 
                       willChange: 'transform',
                       imageRendering: currentDaily.imageUrl.includes('.gif') ? 'auto' : 'auto',
                     }}
+                    onLoad={() => {
+                      setModalMediaError(false)
+                      setModalMediaLoaded(true)
+                    }}
                     onError={(e) => {
+                      setModalMediaError(true)
+                      setModalMediaLoaded(false)
                       console.error('Image failed to load:', resolveDailyMediaUrl(currentDaily.imageUrl), e)
-                      const target = e.target as HTMLImageElement
-                      target.style.display = 'none'
                     }}
                   />
+                )}
+                {!modalMediaLoaded && !modalMediaError && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#0a0a0a]/80 pointer-events-none">
+                    <div className="w-7 h-7 border border-[#666] border-t-white animate-spin" />
+                    <div className="mono text-[10px] tracking-wider text-[#aaa]">[LOADING_FULL_RES]</div>
+                  </div>
                 )}
               </div>
               <div className="mt-2 flex gap-2">
@@ -319,7 +359,17 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
               onTouchStart={() => setShowHeroMeta(true)}
               onTouchEnd={() => setShowHeroMeta(false)}
             >
-              <div className={`w-full h-full min-w-0 min-h-0 max-w-full max-h-full transition-opacity duration-200 ${showHeroMeta ? 'opacity-40' : 'opacity-100'}`}>
+              <div className={`relative w-full h-full min-w-0 min-h-0 max-w-full max-h-full transition-opacity duration-200 ${showHeroMeta ? 'opacity-40' : 'opacity-100'}`}>
+                {!heroThumbnailFailed && !heroMediaLoaded && (
+                  <img
+                    src={thumbnailSrc}
+                    alt={`${currentDaily.id} thumbnail`}
+                    className="absolute inset-0 w-full h-full object-contain"
+                    loading="eager"
+                    decoding="async"
+                    onError={() => setHeroThumbnailFailed(true)}
+                  />
+                )}
                 {isVideo ? (
                   <video
                     key={currentDaily.id}
@@ -328,15 +378,37 @@ export function DailyArtworkModal({ daily, allDailies, onClose }: DailyArtworkMo
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-contain"
+                    className={`relative z-[1] w-full h-full object-contain transition-opacity duration-300 ${heroMediaLoaded && !heroMediaError ? 'opacity-100' : 'opacity-0'}`}
+                    onLoadedData={() => {
+                      setHeroMediaError(false)
+                      setHeroMediaLoaded(true)
+                    }}
+                    onError={() => {
+                      setHeroMediaError(true)
+                      setHeroMediaLoaded(false)
+                    }}
                   />
                 ) : (
                   <img
                     key={currentDaily.id}
                     src={resolveDailyMediaUrl(currentDaily.imageUrl)}
                     alt={currentDaily.id}
-                    className="w-full h-full object-contain"
+                    className={`relative z-[1] w-full h-full object-contain transition-opacity duration-300 ${heroMediaLoaded && !heroMediaError ? 'opacity-100' : 'opacity-0'}`}
+                    onLoad={() => {
+                      setHeroMediaError(false)
+                      setHeroMediaLoaded(true)
+                    }}
+                    onError={() => {
+                      setHeroMediaError(true)
+                      setHeroMediaLoaded(false)
+                    }}
                   />
+                )}
+                {!heroMediaLoaded && !heroMediaError && (
+                  <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#0a0a0a]/80 pointer-events-none">
+                    <div className="w-7 h-7 border border-[#666] border-t-white animate-spin" />
+                    <div className="mono text-[10px] tracking-wider text-[#aaa]">[LOADING_FULL_RES]</div>
+                  </div>
                 )}
               </div>
               <div className={`absolute inset-0 flex items-center justify-center bg-black/70 transition-opacity duration-200 pointer-events-none p-8 ${showHeroMeta ? 'opacity-100' : 'opacity-0'}`}>

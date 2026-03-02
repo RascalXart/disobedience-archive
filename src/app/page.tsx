@@ -8,6 +8,22 @@ import { DailyArtworkModal } from '@/components/DailyArtworkModal'
 import { useMemo, useState, useEffect, useRef } from 'react'
 import type { DailyArtwork } from '@/types'
 
+function getDailyIdNumber(id: string): number {
+  const match = id.match(/(\d+)$/)
+  return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER
+}
+
+function getDailySourceKey(imageUrl: string): string {
+  try {
+    const parsed = new URL(imageUrl, 'https://rascalx.xyz')
+    const src = parsed.searchParams.get('src')
+    if (src) return src.toLowerCase()
+    return parsed.pathname.toLowerCase()
+  } catch {
+    return imageUrl.toLowerCase()
+  }
+}
+
 export default function HomePage() {
   const [isReversed, setIsReversed] = useState(false)
   const [showMintedOnly, setShowMintedOnly] = useState(false)
@@ -32,11 +48,27 @@ export default function HomePage() {
   const availableDailies = allDailies.filter(d => d.status === 'available')
   const isModalOpen = selectedDaily !== null
 
-  // Sort dailies based on reverse state, optionally filter to minted only
+  // Deterministic order: saved date first, then numeric id.
   const sortedDailies = useMemo(() => {
     const base = showMintedOnly ? allDailies.filter(d => d.minted) : allDailies
-    return isReversed ? [...base].reverse() : base
+    const ordered = [...base].sort((a, b) => {
+      const dateDiff = new Date(a.savedDate).getTime() - new Date(b.savedDate).getTime()
+      if (dateDiff !== 0) return dateDiff
+      return getDailyIdNumber(a.id) - getDailyIdNumber(b.id)
+    })
+    return isReversed ? ordered.reverse() : ordered
   }, [allDailies, isReversed, showMintedOnly])
+
+  // Guard against duplicate source-file entries (e.g. placeholder rows pointing at existing media).
+  const visibleDailies = useMemo(() => {
+    const seen = new Set<string>()
+    return sortedDailies.filter((daily) => {
+      const key = getDailySourceKey(daily.imageUrl)
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+  }, [sortedDailies])
 
   // Symbol substitutions: push symbols often (S→$, A→Λ/∧, R→Я, C→©, L→£, N→И, V→√)
   const pickLetterSub = (char: string) => {
@@ -297,12 +329,12 @@ export default function HomePage() {
     return () => {
       observer.disconnect()
     }
-  }, [sortedDailies, isReversed]) // Re-run when dailies change
+  }, [visibleDailies, isReversed]) // Re-run when dailies change
 
   // Group by month, sorted chronologically
   const groupedByMonth = useMemo(() => {
-    const groups: { [key: string]: { date: Date; items: typeof sortedDailies } } = {}
-    sortedDailies.forEach((daily) => {
+    const groups: { [key: string]: { date: Date; items: typeof visibleDailies } } = {}
+    visibleDailies.forEach((daily) => {
       const date = new Date(daily.savedDate)
       const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
       if (!groups[monthKey]) {
@@ -313,20 +345,20 @@ export default function HomePage() {
     const sorted = Object.entries(groups).sort(
       ([, a], [, b]) => a.date.getTime() - b.date.getTime()
     )
-    const result: { [key: string]: typeof sortedDailies } = {}
+    const result: { [key: string]: typeof visibleDailies } = {}
     for (const [key, val] of sorted) {
       result[key] = val.items
     }
     return result
-  }, [sortedDailies])
+  }, [visibleDailies])
 
   const dailyIndexById = useMemo(() => {
     const map = new Map<string, number>()
-    sortedDailies.forEach((daily, index) => {
+    visibleDailies.forEach((daily, index) => {
       map.set(daily.id, index)
     })
     return map
-  }, [sortedDailies])
+  }, [visibleDailies])
 
   return (
     <main className="page-root relative overflow-hidden">
@@ -502,13 +534,13 @@ export default function HomePage() {
           >
             {/* Reflection layers */}
             <span className="absolute left-0 top-0 text-[#666]/10 blur-[1px] translate-y-[2px] scale-y-[-1] select-none pointer-events-none py-3">
-              [ARCHIVE_VIEW] | {sortedDailies.length} ENTRIES | {showMintedOnly ? 'MINTED ONLY' : isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
+              [ARCHIVE_VIEW] | {visibleDailies.length} ENTRIES | {showMintedOnly ? 'MINTED ONLY' : isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
             </span>
             <span className="absolute left-0 top-0 text-green-500/10 blur-[0.5px] translate-x-[1px] select-none pointer-events-none py-3">
-              [ARCHIVE_VIEW] | {sortedDailies.length} ENTRIES | {showMintedOnly ? 'MINTED ONLY' : isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
+              [ARCHIVE_VIEW] | {visibleDailies.length} ENTRIES | {showMintedOnly ? 'MINTED ONLY' : isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
             </span>
             <span className="flicker relative text-hover-glitch">
-              [ARCHIVE_VIEW] | {sortedDailies.length} ENTRIES | {showMintedOnly ? 'MINTED ONLY' : isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
+              [ARCHIVE_VIEW] | {visibleDailies.length} ENTRIES | {showMintedOnly ? 'MINTED ONLY' : isReversed ? 'REVERSE CHRONOLOGICAL' : 'CHRONOLOGICAL ORDER'}
             </span>
             <div className="flex items-center gap-2">
               <button
@@ -647,7 +679,7 @@ export default function HomePage() {
       {selectedDaily && (
         <DailyArtworkModal
           daily={selectedDaily}
-          allDailies={sortedDailies}
+          allDailies={visibleDailies}
           onClose={() => setSelectedDaily(null)}
         />
       )}
